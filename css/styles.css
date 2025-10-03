@@ -55,10 +55,9 @@ header {
 .nav-bar a::after {
   content: " ";
   position:absolute;
-  align-content: center;
   left: 0;
   bottom: -4px;
-  width: 90%;
+  width: 100%;
   height: 2px;
   background: #07130d;
   border-radius: 5px;
