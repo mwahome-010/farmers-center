@@ -1,11 +1,96 @@
 * {
-    margin: 0;
-    padding: 0;
-    border: 0;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Roboto, "Poppins", sans-serif;
+  color: #07130d;
 }
 
-.navigation ul {
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+/*  background: #29b654; */
+  background-size: cover;
+  background-position: center;
+}
+
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
     display: flex;
-    justify-content: center ;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 99;
+    background-color: #25a14a;
+
+}
+
+.logo {
+  margin-left: 10px;
+  font-size: 2em;
+  color: #07130d;
+  user-select: none;
+}
+
+.nav-bar {
+    margin-right: 10px;
+    display:block;
+    justify-content:space-around;
+    text-align: center;
+}
+
+.nav-bar a {
+    font-size: 1.1em;
+    font-weight: 500;
     text-decoration: none;
+    color: #07130d;
+    position: relative;
+    margin-left: 30px;
+}
+
+.nav-bar a::after {
+  content: " ";
+  position:absolute;
+  align-content: center;
+  left: 0;
+  bottom: -4px;
+  width: 90%;
+  height: 2px;
+  background: #07130d;
+  border-radius: 5px;
+  transform: scaleX(0);
+  transition: transform 0.3s;
+}
+
+.nav-bar a:hover::after {
+  transform: scaleX(1);
+}
+
+.login-popup-btn {
+  width: 80px;
+  height: 40px;
+  background: #07130d8c;
+  border: 1px solid #07130d;
+  outline: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.1em;
+  color: white;
+  font-weight: 500;
+  margin-left: 40px;
+  transition: 0.2s;
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+
+.login-popup-btn:hover {
+  background: #07130da2;
+}
+
+.login-popup-btn:active {
+  background: #07130dc2;
 }
