@@ -47,7 +47,3 @@ document.addEventListener('DOMContentLoaded', function () {
     modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
 });
-export default {
-    openModalFromCard,
-    closeModal
-};

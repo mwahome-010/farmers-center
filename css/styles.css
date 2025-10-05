@@ -240,9 +240,10 @@ header {
   display: block;
 }
 
-.guide-card { cursor: pointer; }
+.guide-card { 
+  cursor: pointer;
+}
 
-/* Guide details modal */
 .guide-modal {
   position: fixed;
   inset: 0;
