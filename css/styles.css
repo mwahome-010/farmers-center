@@ -93,3 +93,30 @@ header {
 .login-popup-btn:active {
   background: #07130dc2;
 }
+
+/*
+.body-wrapper {
+  background: transparent;
+  width: 80%;
+  height: 1vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+*/
+
+.upload-container {
+  padding: 3px;
+  width: 500px;
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.upload-area {
+  padding: 10px;
+
+}
+.upload-area h2{
+  text-align: center;
+}
