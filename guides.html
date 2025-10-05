@@ -1,8 +1,8 @@
 <!--
-	planting guides for different crops/plants/trees(maybe)
-	contains treatment suggestions
+	*planting guides* for different crops/plants/trees(maybe)
+	contains planting suggestions and care instructions for different crops/plants/trees(maybe)
 	search bar on top
-	card-like
+	card-like catalogue of planting guides in rows of 3. With image on top of each card. Clicking on a card should open a popup with more information about the guide. It has a close button to close the popup.
 -->
 
 <!DOCTYPE html>
@@ -12,7 +12,7 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Plant Care Guides</title>
+	<title>Planting Guides</title>
 	<link rel="stylesheet" href="css/styles.css">
 </head>
 
@@ -26,7 +26,71 @@
 			<a href="#">About</a>
 			<button class="login-popup-btn">Login</button>
 		</nav>
+	</header>
+	<main>
+		<div class="search-container">
+			<input type="text" placeholder="Search for a guide">
+		</div>
+		<div class="guide-container">
+			<div class="guide-card">
+				<h3>Maize</h3>
+				<img src="images/maize.jpg" alt="Maize">
+				<h2>Planting Suggestions</h2>
+				<p>Plant the seeds 2-3 inches deep and 12-18 inches apart.</p>
+				<h2>Care Instructions</h2>
+				<p>Water the plants regularly and fertilize them with a balanced fertilizer.</p>
+			</div>
+			<div class="guide-card">
+				<h3>Wheat</h3>
+				<img src="images/ui-cards/wheat.jpg" alt="Wheat">
+				<h2>Planting Suggestions</h2>
+				<p>Plant the seeds 2-3 inches deep and 12-18 inches apart.</p>
+				<h2>Care Instructions</h2>
+				<p>Water the plants regularly and fertilize them with a balanced fertilizer.</p>
+			</div>
+			<div class="guide-card">
+				<h3>Tomato</h3>
+				<img src="images/tomato.jpg" alt="Tomato">
+				<h2>Planting Suggestions</h2>
+				<p>Plant the seeds 2-3 inches deep and 12-18 inches apart.</p>
+				<h2>Care Instructions</h2>
+				<p>Water the plants regularly and fertilize them with a balanced fertilizer.</p>
+			</div>
+			<div class="guide-card">
+				<h3>Potato</h3>
+				<img src="images/potato.jpg" alt="Potato">
+				<h2>Planting Suggestions</h2>
+				<p>Plant the seeds 2-3 inches deep and 12-18 inches apart.</p>
+				<h2>Care Instructions</h2>
+				<p>Water the plants regularly and fertilize them with a balanced fertilizer.</p>
+			</div>
+			<div class="guide-card">
+				<h3>Carrot</h3>
+				<img src="images/carrot.jpg" alt="Carrot">
+				<h2>Planting Suggestions</h2>
+				<p>Plant the seeds 2-3 inches deep and 12-18 inches apart.</p>
+				<h2>Care Instructions</h2>
+				<p>Water the plants regularly and fertilize them with a balanced fertilizer.</p>
+			</div>
+		</div>
+	</main>
 
-</body>
+	<!-- Guide details modal -->
+	<div class="guide-modal" id="guideModal" role="dialog" aria-modal="true" aria-hidden="true">
+		<div class="guide-modal-content">
+			<div class="guide-modal-header">
+				<div class="guide-modal-title" id="guideModalTitle"></div>
+				<button class="guide-modal-close" id="guideModalClose" aria-label="Close">×</button>
+			</div>
+			<div class="guide-modal-body">
+				<img id="guideModalImage" alt="">
+				<div id="guideModalDetails"></div>
+			</div>
+		</div>
+	</div>
 
+	
+	
+	</body>
+	<script src="js/cards.js" defer></script>
 </html>
