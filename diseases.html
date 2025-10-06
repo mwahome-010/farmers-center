@@ -20,18 +20,21 @@
 			<a href="index.html">Home</a>
 			<a href="guides.html">Guides</a>
 			<a href="diseases.html">Diseases</a>
+			<a href="forum.html">Forum</a>
 			<a href="#">About</a>
 			<button class="login-popup-btn">Login</button>
 		</nav>
 	</header>
 	<main>
 		<div class="search-container">
-			<input type="text" placeholder="Search for a disease">
+			<input type="text" placeholder="Search for a disease...">
 		</div>
-		<div class="disease-container">
-			<div class="disease-card">
+		<div class="guide-container">
+			<div class="guide-card">
 				<h3>Blight</h3>
 				<img src="images/blight.jpg" alt="Blight">
+				<h2>Causes</h2>
+				<p>The disease is caused by a fungus called Alternaria alternata and is spread by the wind.</p>
 				<p>Blight is a fungal disease that affects the leaves of plants. It is caused by a fungus called Alternaria alternata.</p>
 				<h2>Treatment Methods</h2>
 				<p>Use a fungicide to treat the disease.</p>
@@ -39,37 +42,49 @@
 				<p>Use a fungicide to prevent the disease.</p>
 				<h2>Symptoms</h2>
 				<p>The leaves of the plant will turn brown and die.</p>
-				<h2>Causes</h2>
-				<p>The disease is caused by a fungus called Alternaria alternata.</p>
-				<p>The disease is spread by the wind.</p>
+				
 			</div>
-			<div class="disease-card">
+			<div class="guide-card">
 				<h3>Rust</h3>
 				<img src="images/rust.jpg" alt="Rust">
 			</div>
-			<div class="disease-card">
+			<div class="guide-card">
 				<h3>Mold</h3>
 				<img src="images/mold.jpg" alt="Mold">
 			</div>
-			<div class="disease-card">
+			<div class="guide-card">
 				<h3>Powdery Mildew</h3>
 				<img src="images/powdery_mildew.jpg" alt="Powdery Mildew">
 			</div>
-			<div class="disease-card">
+			<div class="guide-card">
 				<h3>Leaf Spot</h3>
 				<img src="images/leaf_spot.jpg" alt="Leaf Spot">
 			</div>
-			<div class="disease-card">
+			<div class="guide-card">
 				<h3>Root Rot</h3>
 				<img src="images/root_rot.jpg" alt="Root Rot">
 			</div>
-			<div class="disease-card">
+			<div class="guide-card">
 				<h3>Stem Rot</h3>
 				<img src="images/stem_rot.jpg" alt="Stem Rot">
 			</div>
 			
 		</div>
 	</main>
+
+
+	<div class="guide-modal" id="guideModal" role="dialog" aria-modal="true" aria-hidden="true">
+		<div class="guide-modal-content">
+			<div class="guide-modal-header">
+				<div class="guide-modal-title" id="guideModalTitle"></div>
+				<button class="guide-modal-close" id="guideModalClose" aria-label="Close">×</button>
+			</div>
+			<div class="guide-modal-body">
+				<img id="guideModalImage" alt="">
+				<div id="guideModalDetails"></div>
+			</div>
+		</div>
+	</div>
 
 
 	<script src="js/cards.js" defer></script>
