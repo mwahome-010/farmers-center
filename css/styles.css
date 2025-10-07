@@ -27,14 +27,18 @@ header {
   align-items: center;
   z-index: 99;
   background-color: #25a14a;
+  height: 64px;
+  border-bottom: #07130d solid 1px;
+  
 }
 
 .logo {
-  margin-left: 10px;
+  margin-left: 28px;
   font-size: 2em;
   color: #07130d;
   user-select: none;
 }
+
 
 .nav-bar {
   display: flex;
@@ -42,7 +46,6 @@ header {
   align-items: center;
   height: 52px;
   margin-right: 20px;
-
 }
 
 .nav-bar a {
