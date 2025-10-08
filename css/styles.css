@@ -35,7 +35,7 @@ header {
 .logo {
   margin-left: 28px;
   font-size: 2em;
-  color: #07130d;
+  color: whitesmoke;
   user-select: none;
 }
 
@@ -52,7 +52,7 @@ header {
   font-size: 1.1em;
   font-weight: 500;
   text-decoration: none;
-  color: #07130d;
+  color: wheat;
   position: relative;
   margin-left: 30px;
 }
