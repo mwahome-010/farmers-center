@@ -1,3 +1,5 @@
+import auth from './auth.js';
+
 document.addEventListener('DOMContentLoaded', function () {
     // Toolbar placeholders (non-functional filters/search for now)
     var searchInput = document.getElementById('forumSearch');
@@ -25,7 +27,10 @@ document.addEventListener('DOMContentLoaded', function () {
         modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
     }
-    if (newPostBtn) newPostBtn.addEventListener('click', openModal);
+    // Require authentication before opening new post modal
+    if (newPostBtn) newPostBtn.addEventListener('click', function () {
+        auth.requireAuth(openModal);
+    });
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
     if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
     if (modal) modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
@@ -34,6 +39,15 @@ document.addEventListener('DOMContentLoaded', function () {
     var form = document.getElementById('newPostForm');
     if (form) form.addEventListener('submit', function (e) {
         e.preventDefault();
+
+        // Re-validate authentication at submission time to prevent DOM manipulation bypass
+        if (!auth.isLoggedIn()) {
+            alert('You must be logged in to create a post.');
+            closeModal();
+            auth.openModal();
+            return;
+        }
+
         var title = document.getElementById('newPostTitle').value.trim();
         var category = document.getElementById('newPostCategory').value;
         var body = document.getElementById('newPostBody').value.trim();
@@ -53,7 +67,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
         }
-        post.innerHTML = '\n\t\t\t\t<div class="post-badges">\n\t\t\t\t\t<span class="badge">' + category.charAt(0).toUpperCase() + category.slice(1) + '</span>\n\t\t\t\t\t<span class="status">Pending</span>\n\t\t\t\t</div>\n\t\t\t\t<h3>' + escapeHTML(title) + '</h3>\n\t\t\t\t<p class="post-meta">Posted by <strong>You</strong> · <span>just now</span> · <span class="counts">0 views · 0 comments</span></p>\n\t\t\t\t' + (imageUrl ? '<img src="' + imageUrl + '" alt="uploaded image" style="max-width:100%;border-radius:8px;margin:6px 0;" />' : '') + '\n\t\t\t\t<p>' + escapeHTML(body) + '</p>\n\t\t\t\t<div class="comments">\n\t\t\t\t\t<h4>Comments:</h4>\n\t\t\t\t</div>';
+        var currentUser = auth.getCurrentUser();
+        var username = currentUser ? currentUser.username : 'Anonymous';
+        post.innerHTML = '\n\t\t\t\t<div class="post-badges">\n\t\t\t\t\t<span class="badge">' + category.charAt(0).toUpperCase() + category.slice(1) + '</span>\n\t\t\t\t\t<span class="status">Pending</span>\n\t\t\t\t</div>\n\t\t\t\t<h3>' + escapeHTML(title) + '</h3>\n\t\t\t\t<p class="post-meta">Posted by <strong>' + username + '</strong> · <span>just now</span> · <span class="counts">0 views · 0 comments</span></p>\n\t\t\t\t' + (imageUrl ? '<img src="' + imageUrl + '" alt="uploaded image" style="max-width:100%;border-radius:8px;margin:6px 0;" />' : '') + '\n\t\t\t\t<p>' + escapeHTML(body) + '</p>\n\t\t\t\t<div class="comments">\n\t\t\t\t\t<h4>Comments:</h4>\n\t\t\t\t</div>';
         if (container && container.appendChild) container.appendChild(post);
 
         if (imageUrl) {
@@ -89,9 +105,11 @@ document.addEventListener('DOMContentLoaded', function () {
         ensurePostReplyControls(root);
         root.querySelectorAll('.reply-btn-post').forEach(function (btn) {
             btn.addEventListener('click', function () {
-                var form = btn.closest('.post-reply-controls').querySelector('.reply-form-post');
-                if (!form) return;
-                form.classList.toggle('is-hidden');
+                auth.requireAuth(function () {
+                    var form = btn.closest('.post-reply-controls').querySelector('.reply-form-post');
+                    if (!form) return;
+                    form.classList.toggle('is-hidden');
+                });
             });
         });
         root.querySelectorAll('.reply-cancel-post').forEach(function (btn) {
@@ -103,12 +121,23 @@ document.addEventListener('DOMContentLoaded', function () {
         root.querySelectorAll('.reply-form-post').forEach(function (rf) {
             rf.addEventListener('submit', function (e) {
                 e.preventDefault();
+
+                // Re-validate authentication at submission time
+                if (!auth.isLoggedIn()) {
+                    alert('You must be logged in to reply.');
+                    rf.classList.add('is-hidden');
+                    auth.openModal();
+                    return;
+                }
+
                 var textarea = rf.querySelector('textarea');
                 var text = textarea ? textarea.value.trim() : '';
                 if (!text) return;
+                var currentUser = auth.getCurrentUser();
+                var username = currentUser ? currentUser.username : 'Anonymous';
                 var comment = document.createElement('div');
                 comment.className = 'comment';
-                comment.innerHTML = '<p><strong>You:</strong> ' + text.replace(/</g, '&lt;') + '</p>';
+                comment.innerHTML = '<p><strong>' + username + ':</strong> ' + text.replace(/</g, '&lt;') + '</p>';
                 var commentsContainer = rf.closest('.comments');
                 if (commentsContainer) commentsContainer.appendChild(comment);
                 textarea.value = '';
@@ -118,27 +147,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
         root.querySelectorAll('.reply-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
-                var form = btn.parentElement.querySelector('.reply-form');
-                if (!form) return;
-                form.classList.toggle('is-hidden');
+                auth.requireAuth(function () {
+                    var form = btn.parentElement.querySelector('.reply-form');
+                    if (!form) return;
+                    form.classList.toggle('is-hidden');
+                });
             });
         });
         root.querySelectorAll('.reply-cancel').forEach(function (btn) {
-                var comment = document.createElement('div');
-                comment.className = 'comment';
-                comment.innerHTML = '<p><strong>You:</strong> ' + text.replace(/</g, '&lt;') + '</p>';
-                var commentsContainer = rf.closest('.comments');
-                if (commentsContainer) commentsContainer.appendChild(comment);
-                textarea.value = '';
-                rf.classList.add('is-hidden');
+            btn.addEventListener('click', function () {
+                var form = btn.closest('.reply-form');
+                if (form) form.classList.add('is-hidden');
+            });
+        });
+        root.querySelectorAll('.reply-form').forEach(function (rf) {
             rf.addEventListener('submit', function (e) {
                 e.preventDefault();
+
+                // Re-validate authentication at submission time
+                if (!auth.isLoggedIn()) {
+                    alert('You must be logged in to reply.');
+                    rf.classList.add('is-hidden');
+                    auth.openModal();
+                    return;
+                }
+
                 var textarea = rf.querySelector('textarea');
                 var text = textarea ? textarea.value.trim() : '';
                 if (!text) return;
+                var currentUser = auth.getCurrentUser();
+                var username = currentUser ? currentUser.username : 'Anonymous';
                 var comment = document.createElement('div');
                 comment.className = 'comment';
-                comment.innerHTML = '<p><strong>You:</strong> ' + text.replace(/</g, '&lt;') + '</p>';
+                comment.innerHTML = '<p><strong>' + username + ':</strong> ' + text.replace(/</g, '&lt;') + '</p>';
                 rf.parentElement.parentElement.appendChild(comment);
                 textarea.value = '';
                 rf.classList.add('is-hidden');
@@ -147,3 +188,4 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     wireReplySection(document);
 });
+export default {};

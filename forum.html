@@ -3,11 +3,12 @@
 -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forum</title> 
-    <link rel="stylesheet" href="css/styles.css">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Forum</title>
+	<link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
@@ -22,7 +23,7 @@
 			<button class="login-popup-btn">Login</button>
 		</nav>
 	</header>
-    <main>
+	<main>
 		<div class="forum-toolbar">
 			<input type="text" id="forumSearch" placeholder="Search threads">
 			<select id="forumCategoryFilter" aria-label="Filter by category">
@@ -34,24 +35,26 @@
 			<select id="forumSort" aria-label="Sort threads">
 				<option value="newest">Newest</option>
 				<option value="unanswered">Unanswered</option>
-                <option value="answered">Answered</option>
+				<option value="answered">Answered</option>
 			</select>
 			<button id="newPostBtn" class="login-popup-btn" type="button">New Post</button>
 		</div>
-        <div class="forum-container">
-            <h2>Community Forum</h2>
+		<div class="forum-container">
+			<h2>Community Forum</h2>
 			<div class="post" data-category="pests">
 				<div class="post-badges">
 					<span class="badge">Pests</span>
 					<span class="status">Unanswered</span>
 				</div>
-                <h3>How to prevent blight in tomatoes?</h3>
-				<p class="post-meta">Posted by <strong>User123</strong> · <span>Sep 20, 2024</span> · <span class="counts">12 views · 2 comments</span></p>
-                <p>I've been struggling with blight in my tomato plants. Any tips on prevention?</p>
-                <div class="comments">
-                    <h4>Comments:</h4>
-                    <div class="comment">
-                        <p><strong>FarmerJoe:</strong> Make sure to water at the base of the plant and avoid overhead watering.</p>
+				<h3>How to prevent blight in tomatoes?</h3>
+				<p class="post-meta">Posted by <strong>User123</strong> · <span>Sep 20, 2024</span> · <span
+						class="counts">12 views · 2 comments</span></p>
+				<p>I've been struggling with blight in my tomato plants. Any tips on prevention?</p>
+				<div class="comments">
+					<h4>Comments:</h4>
+					<div class="comment">
+						<p><strong>FarmerJoe:</strong> Make sure to water at the base of the plant and avoid overhead
+							watering.</p>
 						<button class="reply-btn" type="button">Reply</button>
 						<form class="reply-form is-hidden">
 							<textarea rows="2" placeholder="Write a reply..."></textarea>
@@ -60,9 +63,9 @@
 								<button type="button" class="reply-cancel">Cancel</button>
 							</div>
 						</form>
-                    </div>
-                    <div class="comment">   
-                        <p><strong>GreenThumb:</strong> Rotate your crops and use resistant varieties if possible.</p>
+					</div>
+					<div class="comment">
+						<p><strong>GreenThumb:</strong> Rotate your crops and use resistant varieties if possible.</p>
 						<button class="reply-btn" type="button">Reply</button>
 						<form class="reply-form is-hidden">
 							<textarea rows="2" placeholder="Write a reply..."></textarea>
@@ -71,21 +74,22 @@
 								<button type="button" class="reply-cancel">Cancel</button>
 							</div>
 						</form>
-                    </div>
-                </div>
-            </div>
+					</div>
+				</div>
+			</div>
 			<div class="post" data-category="fertilizers">
 				<div class="post-badges">
 					<span class="badge">Fertilizers</span>
 					<span class="status">Answered</span>
 				</div>
-                <h3>Best fertilizers for maize?</h3>
-				<p class="post-meta">Posted by <strong>AgriExpert</strong> · <span>Sep 18, 2024</span> · <span class="counts">34 views · 2 comments</span></p>
-                <p>What are the best fertilizers to use for maize to ensure healthy growth?</p>
-                <div class="comments">
-                    <h4>Comments:</h4>
-                    <div class="comment">
-                        <p><strong>CropMaster69:</strong> A balanced NPK fertilizer works well for    maize.</p>
+				<h3>Best fertilizers for maize?</h3>
+				<p class="post-meta">Posted by <strong>AgriExpert</strong> · <span>Sep 18, 2024</span> · <span
+						class="counts">34 views · 2 comments</span></p>
+				<p>What are the best fertilizers to use for maize to ensure healthy growth?</p>
+				<div class="comments">
+					<h4>Comments:</h4>
+					<div class="comment">
+						<p><strong>CropMaster69:</strong> A balanced NPK fertilizer works well for maize.</p>
 						<button class="reply-btn" type="button">Reply</button>
 						<form class="reply-form is-hidden">
 							<textarea rows="2" placeholder="Write a reply..."></textarea>
@@ -94,9 +98,10 @@
 								<button type="button" class="reply-cancel">Cancel</button>
 							</div>
 						</form>
-                    </div>
-                    <div class="comment">   
-                        <p><strong>SoilSage:</strong> Don't forget to test your soil first to determine nutrient needs.</p>
+					</div>
+					<div class="comment">
+						<p><strong>SoilSage:</strong> Don't forget to test your soil first to determine nutrient needs.
+						</p>
 						<button class="reply-btn" type="button">Reply</button>
 						<form class="reply-form is-hidden">
 							<textarea rows="2" placeholder="Write a reply..."></textarea>
@@ -105,11 +110,11 @@
 								<button type="button" class="reply-cancel">Cancel</button>
 							</div>
 						</form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
 
 	<div class="guide-modal" id="forumPostModal" role="dialog" aria-modal="true" aria-hidden="true">
 		<div class="guide-modal-content">
@@ -131,7 +136,8 @@
 					</label>
 					<label>
 						Body
-						<textarea id="newPostBody" rows="5" required placeholder="Describe your question or topic..."></textarea>
+						<textarea id="newPostBody" rows="5" required
+							placeholder="Describe your question or topic..."></textarea>
 					</label>
 					<label>
 						Image (optional)
@@ -145,9 +151,42 @@
 			</div>
 		</div>
 	</div>
-    <footer> 
-    </footer>
+
+	<div class="auth-modal" id="authModal" role="dialog" aria-modal="true" aria-hidden="true">
+		<div class="auth-modal-content">
+			<div class="auth-modal-header">
+				<div class="auth-modal-title" id="authModalTitle">Login</div>
+				<button class="auth-modal-close" id="authModalClose" aria-label="Close">×</button>
+			</div>
+			<div class="auth-modal-body">
+				<div class="auth-tabs">
+					<button class="auth-tab active" data-tab="login">Login</button>
+					<button class="auth-tab" data-tab="register">Register</button>
+				</div>
+				<div class="auth-forms">
+					<form id="loginForm" class="auth-form active">
+						<label>Username<input type="text" id="loginUsername" required></label>
+						<label>Password<input type="password" id="loginPassword" required></label>
+						<div class="auth-error" id="loginError"></div>
+						<button type="submit">Login</button>
+					</form>
+					<form id="registerForm" class="auth-form">
+						<label>Username<input type="text" id="registerUsername" required minlength="3"></label>
+						<label>Email<input type="email" id="registerEmail" required></label>
+						<label>Password<input type="password" id="registerPassword" required minlength="6"></label>
+						<label>Confirm Password<input type="password" id="registerConfirmPassword" required
+								minlength="6"></label>
+						<div class="auth-error" id="registerError"></div>
+						<button type="submit">Register</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<footer>
+	</footer>
 </body>
-	<script src="js/index.js" defer></script>
-    <script src="js/forum.js" defer></script>
+<script src="js/index.js" type="module" defer></script>
+
 </html>

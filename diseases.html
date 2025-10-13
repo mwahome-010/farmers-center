@@ -1,6 +1,6 @@
 <!--
-	card like catalogue of crop diseases and treatment methods in rows of 3. With image on top of each card. Clicking on a card should open a popup with more information about the disease. It has a close button to close the popup.
-	centered search-bar on top
+        card like catalogue of crop diseases and treatment methods in rows of 3. With image on top of each card. Clicking on a card should open a popup with more information about the disease. It has a close button to close the popup.
+        centered search-bar on top
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -35,14 +35,15 @@
 				<img src="images/disease-cards/blight.jpg" alt="Blight">
 				<h2>Causes</h2>
 				<p>The disease is caused by a fungus called Alternaria alternata and is spread by the wind.</p>
-				<p>Blight is a fungal disease that affects the leaves of plants. It is caused by a fungus called Alternaria alternata.</p>
+				<p>Blight is a fungal disease that affects the leaves of plants. It is caused by a fungus called
+					Alternaria alternata.</p>
 				<h2>Treatment Methods</h2>
 				<p>Use a fungicide to treat the disease.</p>
 				<h2>Prevention Methods</h2>
 				<p>Use a fungicide to prevent the disease.</p>
 				<h2>Symptoms</h2>
 				<p>The leaves of the plant will turn brown and die.</p>
-				
+
 			</div>
 			<div class="guide-card">
 				<h3>Rust</h3>
@@ -68,14 +69,6 @@
 				<h3>Yellow Virus</h3>
 				<img src="images/disease-cards/yellow-virus.jpg" alt="Stem Rot">
 			</div>
-			<div class="guide-card">
-				<h3>Root Rot</h3>
-				<img src="images/disease-cards/root-rot.jpg" alt="Root Rot">
-			</div>
-			<div class="guide-card">
-				<h3>Stem Rot</h3>
-				<img src="images/disease-cards/stem-rot.jpg" alt="Stem Rot">
-			</div>
 		</div>
 	</main>
 
@@ -93,7 +86,39 @@
 		</div>
 	</div>
 
+	<div class="auth-modal" id="authModal" role="dialog" aria-modal="true" aria-hidden="true">
+		<div class="auth-modal-content">
+			<div class="auth-modal-header">
+				<div class="auth-modal-title" id="authModalTitle">Login</div>
+				<button class="auth-modal-close" id="authModalClose" aria-label="Close">×</button>
+			</div>
+			<div class="auth-modal-body">
+				<div class="auth-tabs">
+					<button class="auth-tab active" data-tab="login">Login</button>
+					<button class="auth-tab" data-tab="register">Register</button>
+				</div>
+				<div class="auth-forms">
+					<form id="loginForm" class="auth-form active">
+						<label>Username<input type="text" id="loginUsername" required></label>
+						<label>Password<input type="password" id="loginPassword" required></label>
+						<div class="auth-error" id="loginError"></div>
+						<button type="submit">Login</button>
+					</form>
+					<form id="registerForm" class="auth-form">
+						<label>Username<input type="text" id="registerUsername" required minlength="3"></label>
+						<label>Email<input type="email" id="registerEmail" required></label>
+						<label>Password<input type="password" id="registerPassword" required minlength="6"></label>
+						<label>Confirm Password<input type="password" id="registerConfirmPassword" required
+								minlength="6"></label>
+						<div class="auth-error" id="registerError"></div>
+						<button type="submit">Register</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
 
-	<script src="js/cards.js" defer></script>
+	<script src="js/index.js" type="module" defer></script>
 </body>
+
 </html>
