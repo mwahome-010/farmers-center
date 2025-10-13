@@ -539,3 +539,117 @@ main {
 .is-hidden {
   display: none !important;
 }
+
+/* Forum: New Post modal polish */
+#forumPostModal .guide-modal-content {
+  max-width: 720px;
+}
+
+#forumPostModal .guide-modal-header {
+  height: auto;
+  padding: 10px 16px;
+}
+
+#forumPostModal .guide-modal-title {
+  font-size: 1.2em;
+}
+
+#forumPostModal .guide-modal-body {
+  padding: 16px 16px 18px 16px;
+}
+
+#forumPostModal #newPostForm {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+#forumPostModal #newPostForm label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.95em;
+  color: hsl(146, 38%, 10%);
+}
+
+#forumPostModal #newPostForm input[type="text"],
+#forumPostModal #newPostForm select,
+#forumPostModal #newPostForm textarea,
+#forumPostModal #newPostForm input[type="file"] {
+  width: 100%;
+  border: 1px solid hsl(140, 22%, 85%);
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.98em;
+  color: hsl(146, 38%, 8%);
+}
+
+#forumPostModal #newPostForm textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.45;
+}
+
+#forumPostModal #newPostForm input[type="text"]:focus,
+#forumPostModal #newPostForm select:focus,
+#forumPostModal #newPostForm textarea:focus {
+  outline: none;
+  border-color: hsl(140, 62%, 39%);
+  box-shadow: 0 0 0 3px hsla(140, 62%, 39%, 0.15);
+}
+
+#forumPostModal .image-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#forumPostModal .image-preview button {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid hsl(146, 38%, 20%);
+  background: hsl(140, 62%, 96%);
+  color: hsl(146, 57%, 14%);
+  cursor: pointer;
+}
+
+#forumPostModal .image-preview button:hover {
+  background: hsl(140, 62%, 93%);
+}
+
+#forumPostModal .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+#forumPostModal .form-actions button[type="submit"] {
+  background: hsl(140, 62%, 39%);
+  color: #ffffff;
+  border: 1px solid hsl(140, 62%, 39%);
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+#forumPostModal .form-actions button[type="submit"]:hover {
+  background: hsl(143, 61%, 24%);
+  border-color: hsl(143, 61%, 24%);
+}
+
+#forumPostModal .form-actions button[type="button"] {
+  background: #fff;
+  color: hsl(146, 57%, 14%);
+  border: 1px solid hsl(146, 38%, 25%);
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+#forumPostModal .form-actions button[type="button"]:hover {
+  background: hsl(140, 62%, 96%);
+}
