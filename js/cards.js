@@ -73,11 +73,11 @@ document.addEventListener('DOMContentLoaded', function () {
             content.appendChild(detailsClone);
 
             var opt = {
-                margin:       10,
-                filename:     (title || 'guide') + '.pdf',
-                image:        { type: 'jpeg', quality: 0.95 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                margin: 10,
+                filename: (title || 'guide') + '.pdf',
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             if (window.html2pdf) {
                 window.html2pdf().set(opt).from(content).save();

@@ -22,10 +22,10 @@ class AuthSystem {
         if (savedUser) {
             this.currentUser = JSON.parse(savedUser);
         }
-        
+
         // Initialize modal controls
         this.initModal();
-        
+
         // Update UI based on auth state
         this.updateUI();
     }
