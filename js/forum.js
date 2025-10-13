@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', function () {
         modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
     }
-    // Require authentication before opening new post modal
     if (newPostBtn) newPostBtn.addEventListener('click', function () {
         auth.requireAuth(openModal);
     });
@@ -40,7 +39,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (form) form.addEventListener('submit', function (e) {
         e.preventDefault();
 
-        // Re-validate authentication at submission time to prevent DOM manipulation bypass
         if (!auth.isLoggedIn()) {
             alert('You must be logged in to create a post.');
             closeModal();
@@ -122,7 +120,6 @@ document.addEventListener('DOMContentLoaded', function () {
             rf.addEventListener('submit', function (e) {
                 e.preventDefault();
 
-                // Re-validate authentication at submission time
                 if (!auth.isLoggedIn()) {
                     alert('You must be logged in to reply.');
                     rf.classList.add('is-hidden');
@@ -164,7 +161,6 @@ document.addEventListener('DOMContentLoaded', function () {
             rf.addEventListener('submit', function (e) {
                 e.preventDefault();
 
-                // Re-validate authentication at submission time
                 if (!auth.isLoggedIn()) {
                     alert('You must be logged in to reply.');
                     rf.classList.add('is-hidden');

@@ -343,7 +343,6 @@ class AuthSystem {
     }
 }
 
-// Add CSS animations
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {
@@ -369,7 +368,6 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Create and export auth instance
 const auth = new AuthSystem();
 
 export default auth;

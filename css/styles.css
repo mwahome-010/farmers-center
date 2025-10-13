@@ -339,6 +339,50 @@ main {
   transition: background-color 160ms ease, transform 120ms ease;
 }
 
+.guide-modal-download {
+  position: absolute;
+  top: 6px;
+  right: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 10px 0 8px;
+  border-radius: 8px;
+  border: 1px solid hsl(140, 62%, 39%);
+  background: linear-gradient(180deg, hsl(140, 62%, 44%) 0%, hsl(140, 62%, 39%) 100%);
+  color: #ffffff;
+  font-size: 0.9em;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.12);
+  transition: transform 120ms ease, box-shadow 160ms ease, filter 160ms ease;
+}
+
+.guide-modal-download:hover {
+  filter: brightness(1.03);
+  box-shadow: 0 2px 6px hsla(0, 0%, 0%, 0.14);
+}
+
+.guide-modal-download:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.guide-modal-download:focus-visible {
+  outline: 2px solid hsl(148, 60%, 58%);
+  outline-offset: 2px;
+}
+
+.guide-modal-download::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  background-image: url('/images/ui-icons/download-16.png');
+}
+
 .guide-modal-close:hover {
   background: hsl(140, 62%, 93%);
 }
