@@ -10,7 +10,7 @@ body {
   justify-content: center;
   align-items: center;
   /* min-height: 100vh; */
-  color: hsl(146, 38%, 6%);
+  color: hsl(140, 62%, 6%);
   /*  background: whitesmoke; */
   /*  background-image: url(''); */
   /*  background-size: cover; */
@@ -28,7 +28,7 @@ header {
   z-index: 99;
   background-color: hsl(140, 62%, 40%);
   height: 64px;
-  border-bottom: hsl(146, 38%, 6%) solid 1px;
+  border-bottom: hsl(140, 62%, 6%) solid 1px;
 }
 
 .logo-link {
@@ -76,7 +76,7 @@ header {
   bottom: -4px;
   width: 100%;
   height: 2px;
-  background: hsl(146, 38%, 6%);
+  background: hsl(140, 62%, 6%);
   border-radius: 5px;
   transform: scaleX(0);
   transition: transform 0.3s;
@@ -89,13 +89,13 @@ header {
 .login-popup-btn {
   width: 80px;
   height: 40px;
-  background: hsla(146, 38%, 6%, 0.55);
-  border: 1px solid hsl(146, 38%, 6%);
+  background: hsla(140, 62%, 6%, 0.55);
+  border: 1px solid hsl(140, 62%, 6%);
   outline: none;
   border-radius: 6px;
   cursor: pointer;
   font-size: 1.1em;
-  color: white;
+  color: hsl(140, 62%, 100%);
   font-weight: 500;
   margin-left: 40px;
   transition: 0.2s;
@@ -104,11 +104,11 @@ header {
 }
 
 .login-popup-btn:hover {
-  background: hsla(146, 38%, 6%, 0.64);
+  background: hsla(140, 62%, 6%, 0.64);
 }
 
 .login-popup-btn:active {
-  background: hsla(146, 38%, 6%, 0.76);
+  background: hsla(140, 62%, 6%, 0.76);
 }
 
 main {
@@ -116,9 +116,8 @@ main {
 }
 
 .upload-container {
-  top: 50%;
-  padding: 16px;
-  width: 100%;
+  transform: translateX(50%);
+  transform: translateY(50%);
   max-width: 640px;
   min-height: 300px;
 }
@@ -132,17 +131,17 @@ main {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  border: 1px solid hsl(140, 62%, 39%);
+  border: 1px solid hsl(140, 62%, 40%);
   border-radius: 12px;
   background: hsl(140, 62%, 96%);
-  box-shadow: 1px 1px 32px 2px hsla(143, 61%, 24%, 0.45);
+  box-shadow: 1px 1px 32px 2px hsla(140, 62%, 24%, 0.45);
   transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .upload-area:hover,
 .upload-area:focus-within {
   background: hsl(140, 62%, 93%);
-  box-shadow: 1px 1px 32px 2px hsla(143, 61%, 24%, 0.66);
+  box-shadow: 1px 1px 32px 2px hsla(140, 62%, 24%, 0.66);
 }
 
 .upload-area h2 {
@@ -154,7 +153,7 @@ main {
 .upload-area input {
   appearance: none;
   background: hsla(140, 62%, 39%, 0.31);
-  border: 1px solid hsla(146, 38%, 6%, 0.47);
+  border: 1px solid hsla(140, 62%, 6%, 0.47);
   border-radius: 8px;
   padding: 12px 16px;
   font-size: 0.95em;
@@ -165,7 +164,7 @@ main {
   background: hsl(140, 62%, 39%);
   width: 80%;
   height: 40px;
-  border: 1px solid hsla(146, 38%, 6%, 0.47);
+  border: 1px solid hsla(140, 62%, 6%, 0.47);
   border-radius: 8px;
   color: #ffffff;
   cursor: pointer;
@@ -178,12 +177,12 @@ main {
 }
 
 .analyze-image-btn:hover {
-  background: hsl(143, 61%, 24%);
+  background: hsl(140, 62%, 24%);
   color: #ffffff;
 }
 
 .analyze-image-btn:active {
-  background: hsl(146, 57%, 14%);
+  background: hsl(140, 62%, 14%);
 }
 
 .search-container {
@@ -196,7 +195,7 @@ main {
 .search-container input {
   width: 70%;
   height: 30px;
-  border: 1px solid hsl(146, 38%, 6%);
+  border: 1px solid hsl(140, 62%, 6%);
   border-radius: 6px;
   padding: 10px;
   font-size: 1.1em;
@@ -217,7 +216,7 @@ main {
 .disease-card {
   width: 300px;
   height: 300px;
-  border: 1px solid hsl(146, 38%, 6%);
+  border: 1px solid hsl(140, 62%, 6%);
   border-radius: 6px;
   padding: 10px;
   font-size: 1.1em;
@@ -239,14 +238,14 @@ main {
   position: relative;
   width: 280px;
   height: 320px;
-  border: 2px solid hsl(147, 50%, 22%);
+  border: 2px solid hsl(140, 62%, 22%);
   border-radius: 16px;
   font-size: 1.1em;
   font-weight: 500;
   text-align: center;
   cursor: pointer;
   overflow: hidden;
-  box-shadow: 2px 2px 12px hsla(143, 61%, 24%, 0.43);
+  box-shadow: 2px 2px 12px hsla(140, 62%, 24%, 0.43);
   transition: transform 0.2s ease, box-shadow 0.3s ease;
 }
 
@@ -255,8 +254,8 @@ main {
   top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  color: hsl(146, 57%, 14%);
-  background: hsla(140, 36%, 50%, 0.73);
+  color: hsl(140, 62%, 14%);
+  background: hsla(140, 62%, 50%, 0.73);
   padding: 5px 10px;
   border-radius: 5px;
 }
@@ -272,7 +271,7 @@ main {
 }
 
 .guide-card:hover {
-  box-shadow: 4px 4px 20px hsl(143, 61%, 24%);
+  box-shadow: 4px 4px 20px hsl(140, 62%, 24%);
   transform: scale(1.02);
   transition: transform 0.2s ease, box-shadow 0.3s ease;
 }
@@ -320,14 +319,14 @@ main {
   align-items: center;
   padding: 2px 12px;
   background: linear-gradient(180deg, hsl(140, 62%, 98%) 0%, hsl(140, 62%, 95%) 100%);
-  border-bottom: 1px solid hsl(140, 36%, 93%);
+  border-bottom: 1px solid hsl(140, 62%, 93%);
   text-align: center;
 }
 
 .guide-modal-title {
   font-size: 1.25em;
   font-weight: 600;
-  color: hsl(146, 57%, 14%);
+  color: hsl(140, 62%, 14%);
   display: flex;
   justify-content: center; 
   align-self: center;
@@ -343,7 +342,7 @@ main {
   font-size: 1.5em;
   line-height: 1;
   cursor: pointer;
-  color: hsl(147, 50%, 22%);
+  color: hsl(140, 62%, 22%);
   width: 36px;
   height: 36px;
   border-radius: 8px;
@@ -369,13 +368,13 @@ main {
   font-size: 0.9em;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.12);
+  box-shadow: 0 1px 3px hsla(140, 62%, 0%, 0.12);
   transition: transform 120ms ease, box-shadow 160ms ease, filter 160ms ease;
 }
 
 .guide-modal-download:hover {
   filter: brightness(1.03);
-  box-shadow: 0 2px 6px hsla(0, 0%, 0%, 0.14);
+  box-shadow: 0 2px 6px hsla(140, 62%, 0%, 0.14);
 }
 
 .guide-modal-download:active {
@@ -383,7 +382,7 @@ main {
 }
 
 .guide-modal-download:focus-visible {
-  outline: 2px solid hsl(148, 60%, 58%);
+  outline: 2px solid hsl(140, 62%, 58%);
   outline-offset: 2px;
 }
 
@@ -431,23 +430,23 @@ main {
 
 #guideModalDetails h2 {
   font-size: 1.05em;
-  color: hsl(143, 61%, 24%);
+  color: hsl(140, 62%, 24%);
   background: hsl(140, 62%, 96%);
-  border: 1px solid hsl(140, 36%, 93%);
+  border: 1px solid hsl(140, 62%, 93%);
   padding: 6px 10px;
   border-radius: 8px;
 }
 
 #guideModalDetails p {
   line-height: 1.55;
-  color: hsl(146, 38%, 9%);
+  color: hsl(140, 62%, 9%);
 }
 
 /* Animate content when modal opens */
 .guide-modal.open .guide-modal-content {
   opacity: 1;
   transform: translateY(0) scale(1);
-  box-shadow: 0 16px 36px hsla(0, 0%, 0%, 0.22);
+  box-shadow: 0 16px 36px hsla(140, 62%, 0%, 0.22);
 }
 
 @media (max-width: 768px) {
@@ -473,20 +472,20 @@ main {
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(146, 38%, 6%);
+  background: hsl(140, 62%, 6%);
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar {
   width: 8px;
-  background: hsl(146, 38%, 6%);
+  background: hsl(140, 62%, 6%);
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb {
   background-color: hsl(140, 62%, 39%);
   border-radius: 5px;
-  border: 2px solid hsl(146, 38%, 6%);
+  border: 2px solid hsl(140, 62%, 6%);
 }
 
 /* Forum */
@@ -500,7 +499,7 @@ main {
 .forum-toolbar input,
 .forum-toolbar select {
   height: 36px;
-  border: 1px solid hsl(146, 38%, 6%);
+  border: 1px solid hsl(140, 62%, 6%);
   border-radius: 6px;
   padding: 6px 10px;
 }
@@ -514,11 +513,11 @@ main {
 }
 
 .post {
-  border: 1px solid hsl(140, 22%, 89%);
+  border: 1px solid hsl(140, 62%, 89%);
   border-radius: 10px;
   padding: 12px 14px;
-  background: #ffffff;
-  box-shadow: 0 1px 6px hsla(0, 0%, 0%, 0.06);
+  background: hsl(140, 62%, 100%);
+  box-shadow: 0 1px 6px hsla(140, 62%, 0%, 0.06);
 }
 
 .post-badges {
@@ -530,15 +529,15 @@ main {
 
 .badge {
   background: hsl(140, 62%, 93%);
-  color: hsl(143, 61%, 24%);
-  border: 1px solid hsl(147, 50%, 22%);
+  color: hsl(140, 62%, 24%);
+  border: 1px solid hsl(140, 62%, 22%);
   border-radius: 999px;
   padding: 2px 8px;
   font-size: 0.8em;
 }
 
 .status {
-  background: hsl(48, 100%, 90%);
+  background: hsl(140, 100%, 90%);
   color: hsl(48, 100%, 22%);
   border: 1px solid hsl(51, 54%, 51%);
   border-radius: 999px;
@@ -547,7 +546,7 @@ main {
 }
 
 .post-meta {
-  color: hsl(146, 11%, 31%);
+  color: hsl(140, 11%, 31%);
   font-size: 0.9em;
   margin-bottom: 6px;
 }
@@ -562,7 +561,7 @@ main {
 .comment {
   padding: 8px 10px;
   border-left: 3px solid hsl(140, 36%, 93%);
-  background: hsl(140, 62%, 98%);
+  background: hsl(140, 62%, 92%);
   border-radius: 6px;
 }
 
@@ -577,7 +576,7 @@ main {
 
 .reply-form textarea {
   width: 100%;
-  border: 1px solid hsl(146, 38%, 6%);
+  border: 1px solid hsl(140, 62%, 6%);
   border-radius: 6px;
   padding: 6px 8px;
 }
@@ -598,7 +597,6 @@ main {
   display: none !important;
 }
 
-/* Authentication Modal */
 .auth-modal {
   display: none;
   position: fixed;
@@ -607,7 +605,7 @@ main {
   top: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: hsla(140, 62%, 0%, 0.5);
   align-items: center;
   justify-content: center;
 }
@@ -617,11 +615,11 @@ main {
 }
 
 .auth-modal-content {
-  background-color: white;
+  background-color: hsl(140, 62%, 100%);
   border-radius: 12px;
   width: 90%;
   max-width: 400px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px hsla(140, 62%, 0%, 0.1);
 }
 
 .auth-modal-header {
@@ -642,7 +640,7 @@ main {
   background: none;
   border: none;
   font-size: 2em;
-  color: hsl(146, 38%, 6%);
+  color: hsl(140, 62%, 6%);
   cursor: pointer;
   padding: 0;
   width: 32px;
@@ -737,7 +735,7 @@ main {
 }
 
 .auth-error {
-  color: #d32f2f;
+  color: hsl(0, 62%, 51%);
   font-size: 0.9em;
   margin-bottom: 10px;
   min-height: 20px;
@@ -756,9 +754,9 @@ main {
 }
 
 .logout-btn {
-  background: hsla(146, 38%, 6%, 0.55);
-  border: 1px solid hsl(146, 38%, 6%);
-  color: white;
+  background: hsla(140, 62%, 6%, 0.55);
+  border: 1px solid hsl(140, 62%, 6%);
+  color: hsl(140, 62%, 100%);
   padding: 8px 16px;
   border-radius: 6px;
   cursor: pointer;
@@ -767,10 +765,9 @@ main {
 }
 
 .logout-btn:hover {
-  background: hsla(146, 38%, 6%, 0.64);
+  background: hsla(140, 62%, 6%, 0.64);
 }
 
-/* Forum: New Post modal polish */
 #forumPostModal .guide-modal-content {
   max-width: 720px;
 }
@@ -798,7 +795,7 @@ main {
   display: grid;
   gap: 6px;
   font-size: 0.95em;
-  color: hsl(146, 38%, 10%);
+  color: hsl(140, 62%, 10%);
 }
 
 #forumPostModal #newPostForm input[type="text"],
@@ -806,12 +803,12 @@ main {
 #forumPostModal #newPostForm textarea,
 #forumPostModal #newPostForm input[type="file"] {
   width: 100%;
-  border: 1px solid hsl(140, 22%, 85%);
-  background: #fff;
+  border: 1px solid hsl(140, 62%, 85%);
+  background: hsl(140, 62%, 100%);
   border-radius: 10px;
   padding: 10px 12px;
   font-size: 0.98em;
-  color: hsl(146, 38%, 8%);
+  color: hsl(140, 62%, 8%);
 }
 
 #forumPostModal #newPostForm textarea {
@@ -838,9 +835,9 @@ main {
   height: 32px;
   padding: 0 10px;
   border-radius: 8px;
-  border: 1px solid hsl(146, 38%, 20%);
+  border: 1px solid hsl(140, 62%, 20%);
   background: hsl(140, 62%, 96%);
-  color: hsl(146, 57%, 14%);
+  color: hsl(140, 57%, 14%);
   cursor: pointer;
 }
 
@@ -866,14 +863,14 @@ main {
 }
 
 #forumPostModal .form-actions button[type="submit"]:hover {
-  background: hsl(143, 61%, 24%);
-  border-color: hsl(143, 61%, 24%);
+  background: hsl(140, 62%, 24%);
+  border-color: hsl(140, 62%, 24%);
 }
 
 #forumPostModal .form-actions button[type="button"] {
-  background: #fff;
-  color: hsl(146, 57%, 14%);
-  border: 1px solid hsl(146, 38%, 25%);
+  background: hsl(140, 62%, 100%);
+  color: hsl(140, 62%, 14%);
+  border: 1px solid hsl(140, 62%, 25%);
   padding: 10px 16px;
   border-radius: 10px;
   cursor: pointer;
