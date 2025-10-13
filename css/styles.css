@@ -10,8 +10,8 @@ body {
   justify-content: center;
   align-items: center;
   /* min-height: 100vh; */
-  color: #07130d;
-  /*  background: #29b654; */
+  color: hsl(146, 38%, 6%);
+  /*  background: whitesmoke; */
   /*  background-image: url(''); */
   /*  background-size: cover; */
   /*  background-position: center; */
@@ -26,19 +26,17 @@ header {
   justify-content: space-between;
   align-items: center;
   z-index: 99;
-  background-color: #25a14a;
+  background-color: hsl(140, 62%, 39%);
   height: 64px;
-  border-bottom: #07130d solid 1px;
-  
+  border-bottom: hsl(146, 38%, 6%) solid 1px;
 }
 
 .logo {
   margin-left: 28px;
   font-size: 2em;
-  color: whitesmoke;
+  color: white;
   user-select: none;
 }
-
 
 .nav-bar {
   display: flex;
@@ -52,7 +50,7 @@ header {
   font-size: 1.1em;
   font-weight: 500;
   text-decoration: none;
-  color: wheat;
+  color: white;
   position: relative;
   margin-left: 30px;
 }
@@ -64,7 +62,7 @@ header {
   bottom: -4px;
   width: 100%;
   height: 2px;
-  background: #07130d;
+  background: hsl(146, 38%, 6%);
   border-radius: 5px;
   transform: scaleX(0);
   transition: transform 0.3s;
@@ -77,8 +75,8 @@ header {
 .login-popup-btn {
   width: 80px;
   height: 40px;
-  background: #07130d8c;
-  border: 1px solid #07130d;
+  background: hsla(146, 38%, 6%, 0.55);
+  border: 1px solid hsl(146, 38%, 6%);
   outline: none;
   border-radius: 6px;
   cursor: pointer;
@@ -92,11 +90,11 @@ header {
 }
 
 .login-popup-btn:hover {
-  background: #07130da2;
+  background: hsla(146, 38%, 6%, 0.64);
 }
 
 .login-popup-btn:active {
-  background: #07130dc2;
+  background: hsla(146, 38%, 6%, 0.76);
 }
 
 main {
@@ -120,17 +118,17 @@ main {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  border: 1px solid #25a14a;
+  border: 1px solid hsl(140, 62%, 39%);
   border-radius: 12px;
-  background: #f3faf6;
-  box-shadow: 1px 1px 32px 2px #17612d73;
+  background: hsl(140, 62%, 96%);
+  box-shadow: 1px 1px 32px 2px hsla(143, 61%, 24%, 0.45);
   transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .upload-area:hover,
 .upload-area:focus-within {
-  background: #eaf7ef;
-  box-shadow: 1px 1px 32px 2px #17612da9;
+  background: hsl(140, 62%, 93%);
+  box-shadow: 1px 1px 32px 2px hsla(143, 61%, 24%, 0.66);
 }
 
 .upload-area h2 {
@@ -141,8 +139,8 @@ main {
 
 .upload-area input {
   appearance: none;
-  background: #25a14a4f;
-  border: 1px solid #07130d79;
+  background: hsla(140, 62%, 39%, 0.31);
+  border: 1px solid hsla(146, 38%, 6%, 0.47);
   border-radius: 8px;
   padding: 12px 16px;
   font-size: 0.95em;
@@ -150,10 +148,10 @@ main {
 }
 
 .analyze-image-btn {
-  background: #25a14a;
+  background: hsl(140, 62%, 39%);
   width: 80%;
   height: 40px;
-  border: 1px solid #07130d79;
+  border: 1px solid hsla(146, 38%, 6%, 0.47);
   border-radius: 8px;
   color: #ffffff;
   cursor: pointer;
@@ -166,12 +164,12 @@ main {
 }
 
 .analyze-image-btn:hover {
-  background: #17612d;
+  background: hsl(143, 61%, 24%);
   color: #ffffff;
 }
 
 .analyze-image-btn:active {
-  background: #0e3a1b;
+  background: hsl(146, 57%, 14%);
 }
 
 .search-container {
@@ -184,7 +182,7 @@ main {
 .search-container input {
   width: 70%;
   height: 30px;
-  border: 1px solid #07130d;
+  border: 1px solid hsl(146, 38%, 6%);
   border-radius: 6px;
   padding: 10px;
   font-size: 1.1em;
@@ -205,7 +203,7 @@ main {
 .disease-card {
   width: 300px;
   height: 300px;
-  border: 1px solid #07130d;
+  border: 1px solid hsl(146, 38%, 6%);
   border-radius: 6px;
   padding: 10px;
   font-size: 1.1em;
@@ -227,14 +225,14 @@ main {
   position: relative;
   width: 280px;
   height: 320px;
-  border: 2px solid #1c5337;
+  border: 2px solid hsl(147, 50%, 22%);
   border-radius: 16px;
   font-size: 1.1em;
   font-weight: 500;
   text-align: center;
   cursor: pointer;
   overflow: hidden;
-  box-shadow: 2px 2px 12px #17612d6e;
+  box-shadow: 2px 2px 12px hsla(143, 61%, 24%, 0.43);
   transition: transform 0.2s ease, box-shadow 0.3s ease;
 }
 
@@ -243,11 +241,10 @@ main {
   top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  color: #0e3a1b;
-  background: #53a06ab9;
+  color: hsl(146, 57%, 14%);
+  background: hsla(140, 36%, 50%, 0.73);
   padding: 5px 10px;
   border-radius: 5px;
-
 }
 
 .guide-card h2,
@@ -261,7 +258,7 @@ main {
 }
 
 .guide-card:hover {
-  box-shadow: 4px 4px 20px #17612d;
+  box-shadow: 4px 4px 20px hsl(143, 61%, 24%);
   transform: scale(1.02);
   transition: transform 0.2s ease, box-shadow 0.3s ease;
 }
@@ -292,7 +289,7 @@ main {
   width: 100%;
   max-width: 720px;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 10px 30px hsla(0, 0%, 0%, 0.18);
   overflow: hidden;
   max-height: 90vh;
   overflow-y: auto;
@@ -308,16 +305,15 @@ main {
   justify-content: center;
   align-items: center;
   padding: 2px 12px;
-  background: linear-gradient(180deg, #f6fbf8 0%, #eef7f1 100%);
-  border-bottom: 1px solid #e6efe9;
+  background: linear-gradient(180deg, hsl(140, 62%, 98%) 0%, hsl(140, 62%, 95%) 100%);
+  border-bottom: 1px solid hsl(140, 36%, 93%);
   text-align: center;
-  
 }
 
 .guide-modal-title {
   font-size: 1.25em;
   font-weight: 600;
-  color: #0e3a1b;
+  color: hsl(146, 57%, 14%);
   display: flex;
   justify-content: center; 
   align-self: center;
@@ -333,7 +329,7 @@ main {
   font-size: 1.5em;
   line-height: 1;
   cursor: pointer;
-  color: #1c5337;
+  color: hsl(147, 50%, 22%);
   width: 36px;
   height: 36px;
   border-radius: 8px;
@@ -344,7 +340,7 @@ main {
 }
 
 .guide-modal-close:hover {
-  background: #eaf7ef;
+  background: hsl(140, 62%, 93%);
 }
 
 .guide-modal-close:active {
@@ -352,7 +348,7 @@ main {
 }
 
 .guide-modal-close:focus-visible {
-  outline: 2px solid #25a14a;
+  outline: 2px solid hsl(140, 62%, 39%);
   outline-offset: 2px;
 }
 
@@ -366,7 +362,7 @@ main {
   object-fit: cover;
   border-radius: 12px;
   margin-bottom: 16px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 18px hsla(0, 0%, 0%, 0.12);
 }
 
 /* Improve details typography inside modal */
@@ -377,25 +373,24 @@ main {
 
 #guideModalDetails h2 {
   font-size: 1.05em;
-  color: #17612d;
-  background: #f3faf6;
-  border: 1px solid #e6efe9;
+  color: hsl(143, 61%, 24%);
+  background: hsl(140, 62%, 96%);
+  border: 1px solid hsl(140, 36%, 93%);
   padding: 6px 10px;
   border-radius: 8px;
 }
 
 #guideModalDetails p {
   line-height: 1.55;
-  color: #0f2319;
+  color: hsl(146, 38%, 9%);
 }
 
 /* Animate content when modal opens */
 .guide-modal.open .guide-modal-content {
   opacity: 1;
   transform: translateY(0) scale(1);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 16px 36px hsla(0, 0%, 0%, 0.22);
 }
-
 
 @media (max-width: 768px) {
   .guide-modal-content {
@@ -420,20 +415,20 @@ main {
 }
 
 ::-webkit-scrollbar-track {
-  background: #07130d;
+  background: hsl(146, 38%, 6%);
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar {
   width: 8px;
-  background: #07130d;
+  background: hsl(146, 38%, 6%);
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #25a14a;
+  background-color: hsl(140, 62%, 39%);
   border-radius: 5px;
-  border: 2px solid #07130d;
+  border: 2px solid hsl(146, 38%, 6%);
 }
 
 /* Forum */
@@ -447,7 +442,7 @@ main {
 .forum-toolbar input,
 .forum-toolbar select {
   height: 36px;
-  border: 1px solid #07130d;
+  border: 1px solid hsl(146, 38%, 6%);
   border-radius: 6px;
   padding: 6px 10px;
 }
@@ -461,11 +456,11 @@ main {
 }
 
 .post {
-  border: 1px solid #e0e6e3;
+  border: 1px solid hsl(140, 22%, 89%);
   border-radius: 10px;
   padding: 12px 14px;
   background: #ffffff;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 6px hsla(0, 0%, 0%, 0.06);
 }
 
 .post-badges {
@@ -476,25 +471,25 @@ main {
 }
 
 .badge {
-  background: #eaf7ef;
-  color: #17612d;
-  border: 1px solid #1c5337;
+  background: hsl(140, 62%, 93%);
+  color: hsl(143, 61%, 24%);
+  border: 1px solid hsl(147, 50%, 22%);
   border-radius: 999px;
   padding: 2px 8px;
   font-size: 0.8em;
 }
 
 .status {
-  background: #fff4cc;
-  color: #715b00;
-  border: 1px solid #cbb135;
+  background: hsl(48, 100%, 90%);
+  color: hsl(48, 100%, 22%);
+  border: 1px solid hsl(51, 54%, 51%);
   border-radius: 999px;
   padding: 2px 8px;
   font-size: 0.8em;
 }
 
 .post-meta {
-  color: #4a5a52;
+  color: hsl(146, 11%, 31%);
   font-size: 0.9em;
   margin-bottom: 6px;
 }
@@ -508,8 +503,8 @@ main {
 
 .comment {
   padding: 8px 10px;
-  border-left: 3px solid #e6efe9;
-  background: #f9fcfa;
+  border-left: 3px solid hsl(140, 36%, 93%);
+  background: hsl(140, 62%, 98%);
   border-radius: 6px;
 }
 
@@ -524,7 +519,7 @@ main {
 
 .reply-form textarea {
   width: 100%;
-  border: 1px solid #07130d;
+  border: 1px solid hsl(146, 38%, 6%);
   border-radius: 6px;
   padding: 6px 8px;
 }

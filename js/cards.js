@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
         modalDetails.innerHTML = '';
         detailEls.forEach(function (el) {
             var clone = el.cloneNode(true);
-            clone.style.display = 'block';
+            clone.classList.add('modal-detail-item');
             modalDetails.appendChild(clone);
         });
 

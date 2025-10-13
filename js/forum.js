@@ -1,17 +1,14 @@
-//temporary
-
 document.addEventListener('DOMContentLoaded', function () {
     // Toolbar placeholders (non-functional filters/search for now)
     var searchInput = document.getElementById('forumSearch');
     var categoryFilter = document.getElementById('forumCategoryFilter');
     var sortSelect = document.getElementById('forumSort');
-    [searchInput, categoryFilter, sortSelect].forEach(function (el) {
-        if (!el) return;
+    [searchInput, categoryFilter, sortSelect].filter(Boolean).forEach(function (el) {
         el.addEventListener('input', function () { /* future filtering */ });
         el.addEventListener('change', function () { /* future sorting */ });
     });
 
-    // New Post modal open/close
+    // New Post
     var newPostBtn = document.getElementById('newPostBtn');
     var modal = document.getElementById('forumPostModal');
     var closeBtn = document.getElementById('forumPostModalClose');
@@ -48,8 +45,26 @@ document.addEventListener('DOMContentLoaded', function () {
         var post = document.createElement('div');
         post.className = 'post';
         post.setAttribute('data-category', category);
-        post.innerHTML = '\n\t\t\t\t<div class="post-badges">\n\t\t\t\t\t<span class="badge">' + category.charAt(0).toUpperCase() + category.slice(1) + '</span>\n\t\t\t\t\t<span class="status">Pending</span>\n\t\t\t\t</div>\n\t\t\t\t<h3>' + title.replace(/</g, '&lt;') + '</h3>\n\t\t\t\t<p class="post-meta">Posted by <strong>You</strong> · <span>just now</span> · <span class="counts">0 views · 0 comments</span></p>\n\t\t\t\t' + (imageUrl ? '<img src="' + imageUrl + '" alt="uploaded image" style="max-width:100%;border-radius:8px;margin:6px 0;" />' : '') + '\n\t\t\t\t<p>' + body.replace(/</g, '&lt;') + '</p>\n\t\t\t\t<div class="comments">\n\t\t\t\t\t<h4>Comments:</h4>\n\t\t\t\t</div>';
+        function escapeHTML(str) {
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+        post.innerHTML = '\n\t\t\t\t<div class="post-badges">\n\t\t\t\t\t<span class="badge">' + category.charAt(0).toUpperCase() + category.slice(1) + '</span>\n\t\t\t\t\t<span class="status">Pending</span>\n\t\t\t\t</div>\n\t\t\t\t<h3>' + escapeHTML(title) + '</h3>\n\t\t\t\t<p class="post-meta">Posted by <strong>You</strong> · <span>just now</span> · <span class="counts">0 views · 0 comments</span></p>\n\t\t\t\t' + (imageUrl ? '<img src="' + imageUrl + '" alt="uploaded image" style="max-width:100%;border-radius:8px;margin:6px 0;" />' : '') + '\n\t\t\t\t<p>' + escapeHTML(body) + '</p>\n\t\t\t\t<div class="comments">\n\t\t\t\t\t<h4>Comments:</h4>\n\t\t\t\t</div>';
         if (container && container.appendChild) container.appendChild(post);
+
+        if (imageUrl) {
+            var img = post.querySelector('img[src="' + imageUrl + '"]');
+            if (img) {
+                img.addEventListener('load', function () {
+                    URL.revokeObjectURL(imageUrl);
+                });
+            }
+        }
+
         closeModal();
         form.reset();
         ensurePostReplyControls(post);
@@ -109,12 +124,13 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
         root.querySelectorAll('.reply-cancel').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var form = btn.closest('.reply-form');
-                if (form) form.classList.add('is-hidden');
-            });
-        });
-        root.querySelectorAll('.reply-form').forEach(function (rf) {
+                var comment = document.createElement('div');
+                comment.className = 'comment';
+                comment.innerHTML = '<p><strong>You:</strong> ' + text.replace(/</g, '&lt;') + '</p>';
+                var commentsContainer = rf.closest('.comments');
+                if (commentsContainer) commentsContainer.appendChild(comment);
+                textarea.value = '';
+                rf.classList.add('is-hidden');
             rf.addEventListener('submit', function (e) {
                 e.preventDefault();
                 var textarea = rf.querySelector('textarea');
