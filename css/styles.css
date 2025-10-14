@@ -30,6 +30,12 @@ header {
   height: 64px;
   border-bottom: hsl(140, 62%, 6%) solid 1px;
 }
+.logo-container {
+  display: inline-block;
+}
+ .nav-container {
+  display: inline-block;
+}
 
 .logo-link {
   display: flex;
@@ -37,19 +43,20 @@ header {
   align-items: center;
   text-decoration: none;
 }
+.logo-name-container {
+  display: inline-block;
+}
 
 .logo {
-  margin-left: 56px;
   font-size: 2em;
   color: black;
   user-select: none;
 }
 
 .logo-img {
-  position: absolute;
+  margin-left: 36px;
   height: 44px;
   width: 44px;
-  left: 12px;
 }
 
 .nav-bar {
