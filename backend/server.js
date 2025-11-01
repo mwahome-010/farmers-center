@@ -1,4 +1,4 @@
-// server.js - Backend API for Farmer's Center
+
 const express = require('express');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
@@ -9,9 +9,14 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(cors({
-    origin: 'http://localhost:8080', // Your frontend URL
+    origin: function (origin, callback) {
+        if (!origin || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true
 }));
 app.use(express.json());
@@ -20,13 +25,12 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: false, // Set to true if using HTTPS
+        secure: false,
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        maxAge: 24 * 60 * 60 * 1000
     }
 }));
 
-// Database connection pool
 const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'farmers_app',
@@ -37,7 +41,6 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
-// Test database connection
 pool.getConnection()
     .then(conn => {
         console.log('✓ Connected to MariaDB database');
@@ -47,7 +50,6 @@ pool.getConnection()
         console.error('✗ Database connection failed:', err);
     });
 
-// Middleware to check if user is authenticated
 const isAuthenticated = (req, res, next) => {
     if (req.session.userId) {
         next();
@@ -56,13 +58,11 @@ const isAuthenticated = (req, res, next) => {
     }
 };
 
-// Routes
 
-// Register new user
 app.post('/api/register', async (req, res) => {
     const { username, email, password } = req.body;
 
-    // Validation
+
     if (!username || !email || !password) {
         return res.status(400).json({ error: 'All fields are required' });
     }
@@ -76,7 +76,7 @@ app.post('/api/register', async (req, res) => {
     }
 
     try {
-        // Check if username or email already exists
+    
         const [existing] = await pool.query(
             'SELECT id FROM users WHERE username = ? OR email = ?',
             [username, email]
@@ -86,17 +86,17 @@ app.post('/api/register', async (req, res) => {
             return res.status(409).json({ error: 'Username or email already exists' });
         }
 
-        // Hash password
+    
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
-        // Insert new user
+    
         const [result] = await pool.query(
             'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
             [username, email, passwordHash]
         );
 
-        // Create session
+    
         req.session.userId = result.insertId;
         req.session.username = username;
 
@@ -112,7 +112,6 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// Login user
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
 
@@ -121,7 +120,7 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-        // Get user from database
+    
         const [users] = await pool.query(
             'SELECT id, username, password_hash FROM users WHERE username = ?',
             [username]
@@ -133,14 +132,14 @@ app.post('/api/login', async (req, res) => {
 
         const user = users[0];
 
-        // Verify password
+    
         const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
         if (!isValidPassword) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
-        // Create session
+    
         req.session.userId = user.id;
         req.session.username = user.username;
 
@@ -156,7 +155,6 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// Logout user
 app.post('/api/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
@@ -167,7 +165,6 @@ app.post('/api/logout', (req, res) => {
     });
 });
 
-// Check authentication status
 app.get('/api/auth/status', (req, res) => {
     if (req.session.userId) {
         res.json({
@@ -182,7 +179,6 @@ app.get('/api/auth/status', (req, res) => {
     }
 });
 
-// Protected route example
 app.get('/api/profile', isAuthenticated, async (req, res) => {
     try {
         const [users] = await pool.query(
@@ -202,18 +198,15 @@ app.get('/api/profile', isAuthenticated, async (req, res) => {
     }
 });
 
-// Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Start server
 app.listen(PORT, () => {
     console.log(`✓ Server running on http://localhost:${PORT}`);
     console.log(`✓ API available at http://localhost:${PORT}/api`);
 });
 
-// Graceful shutdown
 process.on('SIGINT', async () => {
     console.log('\nShutting down gracefully...');
     await pool.end();
