@@ -1,33 +1,48 @@
-// Authentication System using localStorage
-
-// Simple hash function for password storage (client-side only - NOT PRODUCTION READY)
-// This provides minimal obfuscation but is NOT secure. Server-side auth is required for production.
-async function simpleHash(str) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(str);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
 class AuthSystem {
     constructor() {
         this.currentUser = null;
+        this.sessionToken = null;
         this.init();
     }
 
-    init() {
-        // Check if user is already logged in
-        const savedUser = localStorage.getItem('currentUser');
-        if (savedUser) {
-            this.currentUser = JSON.parse(savedUser);
+    async init() {
+        const savedToken = localStorage.getItem('sessionToken');
+        if (savedToken) {
+            this.sessionToken = savedToken;
+            await this.verifySession();
         }
 
-        // Initialize modal controls
         this.initModal();
-
-        // Update UI based on auth state
         this.updateUI();
+    }
+
+    async verifySession() {
+        try {
+            const response = await fetch('/api/auth/verify', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ session_token: this.sessionToken })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                this.currentUser = {
+                    username: data.username,
+                    email: data.email
+                };
+            } else {
+                localStorage.removeItem('sessionToken');
+                this.sessionToken = null;
+                this.currentUser = null;
+            }
+        } catch (error) {
+            console.error('Session verification failed:', error);
+            localStorage.removeItem('sessionToken');
+            this.sessionToken = null;
+            this.currentUser = null;
+        }
     }
 
     initModal() {
@@ -131,40 +146,41 @@ class AuthSystem {
     async handleLogin() {
         const username = document.getElementById('loginUsername').value.trim();
         const password = document.getElementById('loginPassword').value;
-        const errorEl = document.getElementById('loginError');
 
         if (!username || !password) {
             this.showError('loginError', 'Please fill in all fields');
             return;
         }
 
-        // Get users from localStorage
-        const users = this.getUsers();
-        const user = users.find(u => u.username === username);
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password })
+            });
 
-        if (!user) {
-            this.showError('loginError', 'User not found');
-            return;
+            const data = await response.json();
+
+            if (response.ok) {
+                this.currentUser = {
+                    username: data.username,
+                    email: data.email
+                };
+                this.sessionToken = data.session_token;
+                localStorage.setItem('sessionToken', data.session_token);
+                
+                this.closeModal();
+                this.updateUI();
+                this.showSuccessMessage(`Welcome back, ${data.username}!`);
+            } else {
+                this.showError('loginError', data.error || 'Login failed');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            this.showError('loginError', 'An error occurred. Please try again.');
         }
-
-        // Hash password and compare
-        const hashedPassword = await simpleHash(password);
-        if (user.passwordHash !== hashedPassword) {
-            this.showError('loginError', 'Incorrect password');
-            return;
-        }
-
-        // Successful login
-        this.currentUser = {
-            username: user.username,
-            email: user.email,
-            loginTime: new Date().toISOString()
-        };
-
-        localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
-        this.closeModal();
-        this.updateUI();
-        this.showSuccessMessage(`Welcome back, ${user.username}!`);
     }
 
     async handleRegister() {
@@ -173,7 +189,6 @@ class AuthSystem {
         const password = document.getElementById('registerPassword').value;
         const confirmPassword = document.getElementById('registerConfirmPassword').value;
 
-        // Validation
         if (!username || !email || !password || !confirmPassword) {
             this.showError('registerError', 'Please fill in all fields');
             return;
@@ -194,48 +209,53 @@ class AuthSystem {
             return;
         }
 
-        // Check if user already exists
-        const users = this.getUsers();
-        if (users.find(u => u.username === username)) {
-            this.showError('registerError', 'Username already exists');
-            return;
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, email, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                this.currentUser = {
+                    username: data.username,
+                    email: data.email
+                };
+                this.sessionToken = data.session_token;
+                localStorage.setItem('sessionToken', data.session_token);
+                
+                this.closeModal();
+                this.updateUI();
+                this.showSuccessMessage(`Account created! Welcome, ${username}!`);
+            } else {
+                this.showError('registerError', data.error || 'Registration failed');
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            this.showError('registerError', 'An error occurred. Please try again.');
         }
-
-        if (users.find(u => u.email === email)) {
-            this.showError('registerError', 'Email already registered');
-            return;
-        }
-
-        // Hash password before storing
-        const passwordHash = await simpleHash(password);
-
-        // Register new user
-        const newUser = {
-            username,
-            email,
-            passwordHash,
-            registeredAt: new Date().toISOString()
-        };
-
-        users.push(newUser);
-        localStorage.setItem('users', JSON.stringify(users));
-
-        // Auto login after registration
-        this.currentUser = {
-            username: newUser.username,
-            email: newUser.email,
-            loginTime: new Date().toISOString()
-        };
-
-        localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
-        this.closeModal();
-        this.updateUI();
-        this.showSuccessMessage(`Account created! Welcome, ${username}!`);
     }
 
-    logout() {
+    async logout() {
+        try {
+            await fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ session_token: this.sessionToken })
+            });
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+
         this.currentUser = null;
-        localStorage.removeItem('currentUser');
+        this.sessionToken = null;
+        localStorage.removeItem('sessionToken');
         this.updateUI();
         this.showSuccessMessage('Logged out successfully');
     }
@@ -246,14 +266,12 @@ class AuthSystem {
 
         if (!navBar) return;
 
-        // Remove existing user info if any
         const existingUserInfo = navBar.querySelector('.user-info');
         if (existingUserInfo) {
             existingUserInfo.remove();
         }
 
         if (this.currentUser) {
-            // User is logged in - hide login button, show user info
             if (loginBtn) {
                 loginBtn.style.display = 'none';
             }
@@ -270,16 +288,10 @@ class AuthSystem {
             const logoutBtn = userInfo.querySelector('.logout-btn');
             logoutBtn.addEventListener('click', () => this.logout());
         } else {
-            // User is logged out - show login button
             if (loginBtn) {
                 loginBtn.style.display = 'block';
             }
         }
-    }
-
-    getUsers() {
-        const users = localStorage.getItem('users');
-        return users ? JSON.parse(users) : [];
     }
 
     showError(elementId, message) {
@@ -302,7 +314,6 @@ class AuthSystem {
     }
 
     showSuccessMessage(message) {
-        // Create a temporary success message
         const messageEl = document.createElement('div');
         messageEl.style.cssText = `
             position: fixed;
