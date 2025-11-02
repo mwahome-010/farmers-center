@@ -1,26 +1,23 @@
 const API_BASE_URL = 'http://localhost:3000/api';
 
+let authReadyPromise = null;
+let authInitialized  = false;
 let currentUser = null;
-let authInitialized = false;
 
 async function init() {
-    if (authInitialized) return;
+    if (authInitialized) return authReadyPromise;
     authInitialized = true;
 
+    authReadyPromise = (async () => {
+        await checkAuthStatus();
 
-    await checkAuthStatus();
+        setupModalHandlers();
+        setupFormHandlers();
+        setupLoginButtons();
+        updateUI();
+    })();
 
-
-    setupModalHandlers();
-
-
-    setupFormHandlers();
-
-
-    setupLoginButtons();
-
-
-    updateUI();
+    return authReadyPromise;
 }
 
 async function checkAuthStatus() {
@@ -34,8 +31,10 @@ async function checkAuthStatus() {
         
         if (data.authenticated && data.user) {
             currentUser = data.user;
+            console.log('User logged in:', currentUser); 
         } else {
             currentUser = null;
+            console.log('User not logged in');
         }
     } catch (error) {
         console.error('Error checking auth status:', error);
@@ -54,15 +53,15 @@ async function register(username, email, password) {
             body: JSON.stringify({ username, email, password })
         });
 
-    
+
         let data;
         try {
             data = await response.json();
         } catch (jsonError) {
             console.error('JSON parse error:', jsonError);
-            return { 
-                success: false, 
-                error: `Server error (${response.status}). Please check if the backend is running.` 
+            return {
+                success: false,
+                error: `Server error (${response.status}). Please check if the backend is running.`
             };
         }
 
@@ -75,18 +74,18 @@ async function register(username, email, password) {
         }
     } catch (error) {
         console.error('Registration error:', error);
-        
-    
+
+
         if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-            return { 
-                success: false, 
-                error: 'Cannot connect to server. Please ensure the backend is running on http://localhost:3000' 
+            return {
+                success: false,
+                error: `Cannot connect to server.`
             };
         }
-        
-        return { 
-            success: false, 
-            error: `Network error: ${error.message}. Please try again.` 
+
+        return {
+            success: false,
+            error: `Network error: ${error.message}. Please try again.`
         };
     }
 }
@@ -102,15 +101,15 @@ async function login(username, password) {
             body: JSON.stringify({ username, password })
         });
 
-    
+
         let data;
         try {
             data = await response.json();
         } catch (jsonError) {
             console.error('JSON parse error:', jsonError);
-            return { 
-                success: false, 
-                error: `Server error (${response.status}). Please check if the backend is running.` 
+            return {
+                success: false,
+                error: `Server error (${response.status}).`
             };
         }
 
@@ -123,18 +122,18 @@ async function login(username, password) {
         }
     } catch (error) {
         console.error('Login error:', error);
-        
-    
+
+
         if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-            return { 
-                success: false, 
-                error: 'Cannot connect to server. Please ensure the backend is running on http://localhost:3000' 
+            return {
+                success: false,
+                error: `Cannot connect to server.`
             };
         }
-        
-        return { 
-            success: false, 
-            error: `Network error: ${error.message}. Please try again.` 
+
+        return {
+            success: false,
+            error: `Network error: ${error.message}. Please try again.`
         };
     }
 }
@@ -157,7 +156,7 @@ async function logout() {
         }
     } catch (error) {
         console.error('Logout error:', error);
-    
+
         currentUser = null;
         updateUI();
         return { success: false, error: 'Network error during logout' };
@@ -194,8 +193,8 @@ function setupModalHandlers() {
     loginBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             if (isLoggedIn()) {
-            
-            
+
+
                 if (confirm('Do you want to logout?')) {
                     logout();
                 }
@@ -223,12 +222,12 @@ function setupFormHandlers() {
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
             const errorDiv = document.getElementById('loginError');
 
-        
+
             if (errorDiv) errorDiv.textContent = '';
 
             if (!username || !password) {
@@ -236,7 +235,7 @@ function setupFormHandlers() {
                 return;
             }
 
-        
+
             const submitBtn = loginForm.querySelector('button[type="submit"]');
             const originalText = submitBtn ? submitBtn.textContent : 'Login';
             if (submitBtn) {
@@ -253,7 +252,7 @@ function setupFormHandlers() {
                 if (errorDiv) errorDiv.textContent = result.error || 'Login failed';
             }
 
-        
+
             if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalText;
@@ -265,17 +264,17 @@ function setupFormHandlers() {
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const username = document.getElementById('registerUsername').value.trim();
             const email = document.getElementById('registerEmail').value.trim();
             const password = document.getElementById('registerPassword').value;
             const confirmPassword = document.getElementById('registerConfirmPassword').value;
             const errorDiv = document.getElementById('registerError');
 
-        
+
             if (errorDiv) errorDiv.textContent = '';
 
-        
+
             if (!username || !email || !password || !confirmPassword) {
                 if (errorDiv) errorDiv.textContent = 'All fields are required';
                 return;
@@ -296,7 +295,7 @@ function setupFormHandlers() {
                 return;
             }
 
-        
+
             const submitBtn = registerForm.querySelector('button[type="submit"]');
             const originalText = submitBtn ? submitBtn.textContent : 'Register';
             if (submitBtn) {
@@ -313,7 +312,7 @@ function setupFormHandlers() {
                 if (errorDiv) errorDiv.textContent = result.error || 'Registration failed';
             }
 
-        
+
             if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalText;
@@ -342,14 +341,14 @@ function closeModal() {
         modal.classList.remove('open');
         modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
-        
-    
+
+
         const loginForm = document.getElementById('loginForm');
         const registerForm = document.getElementById('registerForm');
         if (loginForm) loginForm.reset();
         if (registerForm) registerForm.reset();
-        
-    
+
+
         const loginError = document.getElementById('loginError');
         const registerError = document.getElementById('registerError');
         if (loginError) loginError.textContent = '';
@@ -371,7 +370,7 @@ function switchTab(tab) {
     });
 
     forms.forEach(f => {
-        if ((tab === 'login' && f.id === 'loginForm') || 
+        if ((tab === 'login' && f.id === 'loginForm') ||
             (tab === 'register' && f.id === 'registerForm')) {
             f.classList.add('active');
         } else {
@@ -385,8 +384,9 @@ function switchTab(tab) {
 }
 
 function updateUI() {
+    console.log('Updating UI with currentUser:', currentUser);
     const loginBtns = document.querySelectorAll('.login-popup-btn');
-    
+
     loginBtns.forEach(btn => {
         if (isLoggedIn()) {
             btn.textContent = currentUser ? `Logout (${currentUser.username})` : 'Logout';
@@ -414,10 +414,17 @@ function requireAuth(callback) {
     }
 }
 
+// Initialize immediately but wait for it to complete
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', () => {
+        init().catch(err => console.error('Auth init failed:', err));
+    });
 } else {
-    init();
+    init().catch(err => console.error('Auth init failed:', err));
+}
+
+export function waitForAuth() {
+    return authReadyPromise || init();
 }
 
 export default {
@@ -430,6 +437,6 @@ export default {
     openModal,
     closeModal,
     checkAuthStatus,
-    init
+    init,
+    waitForAuth
 };
-

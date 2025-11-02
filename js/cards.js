@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
     }
 
-    // PDF download
+    /* PDF download */
     if (downloadBtn) {
         downloadBtn.addEventListener('click', function () {
             if (!modal) return;

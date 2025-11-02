@@ -1,187 +1,459 @@
 import auth from './auth.js';
 
-document.addEventListener('DOMContentLoaded', function () {
-    // Toolbar placeholders (non-functional filters/search for now)
-    var searchInput = document.getElementById('forumSearch');
-    var categoryFilter = document.getElementById('forumCategoryFilter');
-    var sortSelect = document.getElementById('forumSort');
-    [searchInput, categoryFilter, sortSelect].filter(Boolean).forEach(function (el) {
-        el.addEventListener('input', function () { /* future filtering */ });
-        el.addEventListener('change', function () { /* future sorting */ });
+let allPosts = [];
+let currentFilters = { category: 'all', sort: 'newest', search: '' };
+
+document.addEventListener('DOMContentLoaded', async function () {
+    await auth.waitForAuth();
+    
+    await loadPosts();
+    setupEventListeners();
+});
+
+async function loadPosts() {
+    try {
+        const params = new URLSearchParams(currentFilters);
+        const response = await fetch(`http://localhost:3000/api/forum/posts?${params}`, {
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            allPosts = data.posts;
+            renderPosts(allPosts);
+        }
+    } catch (error) {
+        console.error('Error loading posts:', error);
+    }
+}
+
+function renderPosts(posts) {
+    const container = document.querySelector('.forum-container');
+    const existingPosts = container.querySelectorAll('.post');
+
+    existingPosts.forEach(post => post.remove());
+
+    if (posts.length === 0) {
+        const noResults = document.createElement('p');
+        noResults.textContent = 'No posts found.';
+        noResults.style.textAlign = 'center';
+        noResults.style.padding = '20px';
+        container.appendChild(noResults);
+        return;
+    }
+
+    posts.forEach(post => {
+        const postEl = createPostElement(post);
+        container.appendChild(postEl);
+    });
+}
+
+function createPostElement(post) {
+    const postDiv = document.createElement('div');
+    postDiv.className = 'post';
+    postDiv.setAttribute('data-category', post.category_name);
+    postDiv.setAttribute('data-post-id', post.id);
+
+    const timeAgo = getTimeAgo(new Date(post.created_at));
+
+    postDiv.innerHTML = `
+        <div class="post-badges">
+            <span class="badge">${capitalize(post.category_name)}</span>
+            <span class="status">${capitalize(post.status)}</span>
+        </div>
+        <h3>${escapeHTML(post.title)}</h3>
+        <p class="post-meta">Posted by <strong>${escapeHTML(post.username)}</strong> · <span>${timeAgo}</span> · <span class="counts">${post.views} views · ${post.comment_count} comments</span></p>
+        ${post.image_path ? `<img src="${post.image_path}" alt="Post image" style="max-width:100%;border-radius:8px;margin:6px 0;" />` : ''}
+        <p>${escapeHTML(post.body)}</p>
+        <div class="comments" data-post-id="${post.id}">
+            <h4>Comments:</h4>
+            <div class="comments-list"></div>
+        </div>
+    `;
+
+
+    loadComments(post.id);
+
+    return postDiv;
+}
+
+async function loadComments(postId) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/forum/posts/${postId}`, {
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.comments) {
+            const commentsContainer = document.querySelector(`.comments[data-post-id="${postId}"] .comments-list`);
+            if (commentsContainer) {
+                commentsContainer.innerHTML = '';
+                data.comments.forEach(comment => {
+                    const commentEl = createCommentElement(comment);
+                    commentsContainer.appendChild(commentEl);
+                });
+
+
+                ensurePostReplyControls(postId);
+                wireReplyHandlers();
+            }
+        }
+    } catch (error) {
+        console.error('Error loading comments:', error);
+    }
+}
+
+function createCommentElement(comment) {
+    const commentDiv = document.createElement('div');
+    commentDiv.className = 'comment';
+    commentDiv.setAttribute('data-comment-id', comment.id);
+
+    commentDiv.innerHTML = `
+        <p><strong>${escapeHTML(comment.username)}:</strong> ${escapeHTML(comment.content)}</p>
+        <button class="reply-btn" type="button">Reply</button>
+        <form class="reply-form is-hidden" data-parent-id="${comment.id}">
+            <textarea rows="2" placeholder="Write a reply..." required></textarea>
+            <div class="reply-actions">
+                <button type="submit">Post</button>
+                <button type="button" class="reply-cancel">Cancel</button>
+            </div>
+        </form>
+    `;
+
+    return commentDiv;
+}
+
+function ensurePostReplyControls(postId) {
+    const commentsDiv = document.querySelector(`.comments[data-post-id="${postId}"]`);
+    if (!commentsDiv || commentsDiv.querySelector('.post-reply-controls')) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'post-reply-controls';
+    wrapper.innerHTML = `
+        <div class="reply-actions">
+            <button type="button" class="reply-btn-post">Reply to post</button>
+        </div>
+        <form class="reply-form-post is-hidden" data-post-id="${postId}">
+            <textarea rows="2" placeholder="Write a reply to the post..." required></textarea>
+            <div class="reply-actions">
+                <button type="submit">Post</button>
+                <button type="button" class="reply-cancel-post">Cancel</button>
+            </div>
+        </form>
+    `;
+    commentsDiv.appendChild(wrapper);
+}
+
+function setupEventListeners() {
+
+    const searchInput = document.getElementById('forumSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(function (e) {
+            currentFilters.search = e.target.value;
+            loadPosts();
+        }, 500));
+    }
+
+
+    const categoryFilter = document.getElementById('forumCategoryFilter');
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', function (e) {
+            currentFilters.category = e.target.value;
+            loadPosts();
+        });
+    }
+
+
+    const sortSelect = document.getElementById('forumSort');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function (e) {
+            currentFilters.sort = e.target.value;
+            loadPosts();
+        });
+    }
+
+
+    const newPostBtn = document.getElementById('newPostBtn');
+    const modal = document.getElementById('forumPostModal');
+    const closeBtn = document.getElementById('forumPostModalClose');
+    const cancelBtn = document.getElementById('newPostCancel');
+
+    if (newPostBtn) {
+        newPostBtn.addEventListener('click', function () {
+            auth.requireAuth(openModal);
+        });
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    if (modal) {
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) closeModal();
+        });
+    }
+
+
+    const form = document.getElementById('newPostForm');
+    if (form) {
+        form.addEventListener('submit', handleNewPost);
+    }
+}
+
+function wireReplyHandlers() {
+
+    document.querySelectorAll('.reply-btn-post').forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true));
     });
 
-    // New Post
-    var newPostBtn = document.getElementById('newPostBtn');
-    var modal = document.getElementById('forumPostModal');
-    var closeBtn = document.getElementById('forumPostModalClose');
-    var cancelBtn = document.getElementById('newPostCancel');
-    function openModal() {
-        if (!modal) return;
+    document.querySelectorAll('.reply-btn-post').forEach(btn => {
+        btn.addEventListener('click', function () {
+            auth.requireAuth(function () {
+                const form = btn.closest('.post-reply-controls').querySelector('.reply-form-post');
+                if (form) form.classList.toggle('is-hidden');
+            });
+        });
+    });
+
+
+    document.querySelectorAll('.reply-cancel-post').forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true));
+    });
+
+    document.querySelectorAll('.reply-cancel-post').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const form = btn.closest('.reply-form-post');
+            if (form) form.classList.add('is-hidden');
+        });
+    });
+
+
+    document.querySelectorAll('.reply-form-post').forEach(form => {
+        form.replaceWith(form.cloneNode(true));
+    });
+
+    document.querySelectorAll('.reply-form-post').forEach(form => {
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            if (!auth.isLoggedIn()) {
+                alert('You must be logged in to reply.');
+                form.classList.add('is-hidden');
+                auth.openModal();
+                return;
+            }
+
+            const textarea = form.querySelector('textarea');
+            const content = textarea.value.trim();
+            if (!content) return;
+
+            const postId = form.getAttribute('data-post-id');
+
+            try {
+                const response = await fetch('http://localhost:3000/api/forum/comments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ post_id: postId, content })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    textarea.value = '';
+                    form.classList.add('is-hidden');
+                    await loadComments(postId);
+                } else {
+                    alert(data.error || 'Failed to post comment');
+                }
+            } catch (error) {
+                console.error('Error posting comment:', error);
+                alert('Failed to post comment');
+            }
+        });
+    });
+
+
+    document.querySelectorAll('.comment .reply-btn').forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true));
+    });
+
+    document.querySelectorAll('.comment .reply-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            auth.requireAuth(function () {
+                const form = btn.parentElement.querySelector('.reply-form');
+                if (form) form.classList.toggle('is-hidden');
+            });
+        });
+    });
+
+
+    document.querySelectorAll('.comment .reply-cancel').forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true));
+    });
+
+    document.querySelectorAll('.comment .reply-cancel').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const form = btn.closest('.reply-form');
+            if (form) form.classList.add('is-hidden');
+        });
+    });
+
+
+    document.querySelectorAll('.comment .reply-form').forEach(form => {
+        form.replaceWith(form.cloneNode(true));
+    });
+
+    document.querySelectorAll('.comment .reply-form').forEach(form => {
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            if (!auth.isLoggedIn()) {
+                alert('You must be logged in to reply.');
+                form.classList.add('is-hidden');
+                auth.openModal();
+                return;
+            }
+
+            const textarea = form.querySelector('textarea');
+            const content = textarea.value.trim();
+            if (!content) return;
+
+            const parentCommentId = form.getAttribute('data-parent-id');
+            const postId = form.closest('.comments').getAttribute('data-post-id');
+
+            try {
+                const response = await fetch('http://localhost:3000/api/forum/comments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        post_id: postId,
+                        content,
+                        parent_comment_id: parentCommentId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    textarea.value = '';
+                    form.classList.add('is-hidden');
+                    await loadComments(postId);
+                } else {
+                    alert(data.error || 'Failed to post reply');
+                }
+            } catch (error) {
+                console.error('Error posting reply:', error);
+                alert('Failed to post reply');
+            }
+        });
+    });
+}
+
+async function handleNewPost(e) {
+    e.preventDefault();
+
+    if (!auth.isLoggedIn()) {
+        alert('You must be logged in to create a post.');
+        closeModal();
+        auth.openModal();
+        return;
+    }
+
+    const title = document.getElementById('newPostTitle').value.trim();
+    const category = document.getElementById('newPostCategory').value;
+    const body = document.getElementById('newPostBody').value.trim();
+    const imageInput = document.getElementById('newPostImageFile');
+
+    if (!title || !body) return;
+
+    try {
+        const response = await fetch('http://localhost:3000/api/forum/posts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ title, category, body })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            closeModal();
+            e.target.reset();
+            await loadPosts();
+        } else {
+            alert(data.error || 'Failed to create post');
+        }
+    } catch (error) {
+        console.error('Error creating post:', error);
+        alert('Failed to create post');
+    }
+}
+
+function openModal() {
+    const modal = document.getElementById('forumPostModal');
+    if (modal) {
         modal.classList.add('open');
         modal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
     }
-    function closeModal() {
-        if (!modal) return;
+}
+
+function closeModal() {
+    const modal = document.getElementById('forumPostModal');
+    if (modal) {
         modal.classList.remove('open');
         modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
+
+        const form = document.getElementById('newPostForm');
+        if (form) form.reset();
     }
-    if (newPostBtn) newPostBtn.addEventListener('click', function () {
-        auth.requireAuth(openModal);
-    });
-    if (closeBtn) closeBtn.addEventListener('click', closeModal);
-    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
-    if (modal) modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal && modal.classList.contains('open')) closeModal(); });
+}
 
-    var form = document.getElementById('newPostForm');
-    if (form) form.addEventListener('submit', function (e) {
-        e.preventDefault();
+function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
 
-        if (!auth.isLoggedIn()) {
-            alert('You must be logged in to create a post.');
-            closeModal();
-            auth.openModal();
-            return;
-        }
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
-        var title = document.getElementById('newPostTitle').value.trim();
-        var category = document.getElementById('newPostCategory').value;
-        var body = document.getElementById('newPostBody').value.trim();
-        var imageInput = document.getElementById('newPostImageFile');
-        var imageFile = imageInput && imageInput.files && imageInput.files[0] ? imageInput.files[0] : null;
-        var imageUrl = imageFile ? URL.createObjectURL(imageFile) : '';
-        if (!title || !body) return;
-        var container = document.querySelector('.forum-container');
-        var post = document.createElement('div');
-        post.className = 'post';
-        post.setAttribute('data-category', category);
-        function escapeHTML(str) {
-            return str
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-        var currentUser = auth.getCurrentUser();
-        var username = currentUser ? currentUser.username : 'Anonymous';
-        post.innerHTML = '\n\t\t\t\t<div class="post-badges">\n\t\t\t\t\t<span class="badge">' + category.charAt(0).toUpperCase() + category.slice(1) + '</span>\n\t\t\t\t\t<span class="status">Pending</span>\n\t\t\t\t</div>\n\t\t\t\t<h3>' + escapeHTML(title) + '</h3>\n\t\t\t\t<p class="post-meta">Posted by <strong>' + username + '</strong> · <span>just now</span> · <span class="counts">0 views · 0 comments</span></p>\n\t\t\t\t' + (imageUrl ? '<img src="' + imageUrl + '" alt="uploaded image" style="max-width:100%;border-radius:8px;margin:6px 0;" />' : '') + '\n\t\t\t\t<p>' + escapeHTML(body) + '</p>\n\t\t\t\t<div class="comments">\n\t\t\t\t\t<h4>Comments:</h4>\n\t\t\t\t</div>';
-        if (container && container.appendChild) container.appendChild(post);
+function getTimeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
 
-        if (imageUrl) {
-            var img = post.querySelector('img[src="' + imageUrl + '"]');
-            if (img) {
-                img.addEventListener('load', function () {
-                    URL.revokeObjectURL(imageUrl);
-                });
-            }
-        }
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + ' years ago';
 
-        closeModal();
-        form.reset();
-        ensurePostReplyControls(post);
-        wireReplySection(post);
-    });
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + ' months ago';
 
-    function ensurePostReplyControls(scope) {
-        var posts = scope.classList && scope.classList.contains('post') ? [scope] : scope.querySelectorAll('.post');
-        posts.forEach(function (post) {
-            var comments = post.querySelector('.comments');
-            if (!comments) return;
-            if (comments.querySelector('.post-reply-controls')) return;
-            var wrapper = document.createElement('div');
-            wrapper.className = 'post-reply-controls';
-            wrapper.innerHTML = '\n\t\t\t\t<div class="reply-actions">\n\t\t\t\t\t<button type="button" class="reply-btn-post">Reply to post</button>\n\t\t\t\t</div>\n\t\t\t\t<form class="reply-form-post is-hidden">\n\t\t\t\t\t<textarea rows="2" placeholder="Write a reply to the post..."></textarea>\n\t\t\t\t\t<div class="reply-actions">\n\t\t\t\t\t\t<button type="submit">Post</button>\n\t\t\t\t\t\t<button type="button" class="reply-cancel-post">Cancel</button>\n\t\t\t\t\t</div>\n\t\t\t\t</form>';
-            comments.appendChild(wrapper);
-        });
-    }
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + ' days ago';
 
-    function wireReplySection(root) {
-        // post-level reply
-        ensurePostReplyControls(root);
-        root.querySelectorAll('.reply-btn-post').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                auth.requireAuth(function () {
-                    var form = btn.closest('.post-reply-controls').querySelector('.reply-form-post');
-                    if (!form) return;
-                    form.classList.toggle('is-hidden');
-                });
-            });
-        });
-        root.querySelectorAll('.reply-cancel-post').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var form = btn.closest('.reply-form-post');
-                if (form) form.classList.add('is-hidden');
-            });
-        });
-        root.querySelectorAll('.reply-form-post').forEach(function (rf) {
-            rf.addEventListener('submit', function (e) {
-                e.preventDefault();
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + ' hours ago';
 
-                if (!auth.isLoggedIn()) {
-                    alert('You must be logged in to reply.');
-                    rf.classList.add('is-hidden');
-                    auth.openModal();
-                    return;
-                }
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + ' minutes ago';
 
-                var textarea = rf.querySelector('textarea');
-                var text = textarea ? textarea.value.trim() : '';
-                if (!text) return;
-                var currentUser = auth.getCurrentUser();
-                var username = currentUser ? currentUser.username : 'Anonymous';
-                var comment = document.createElement('div');
-                comment.className = 'comment';
-                comment.innerHTML = '<p><strong>' + username + ':</strong> ' + text.replace(/</g, '&lt;') + '</p>';
-                var commentsContainer = rf.closest('.comments');
-                if (commentsContainer) commentsContainer.appendChild(comment);
-                textarea.value = '';
-                rf.classList.add('is-hidden');
-            });
-        });
+    return 'just now';
+}
 
-        root.querySelectorAll('.reply-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                auth.requireAuth(function () {
-                    var form = btn.parentElement.querySelector('.reply-form');
-                    if (!form) return;
-                    form.classList.toggle('is-hidden');
-                });
-            });
-        });
-        root.querySelectorAll('.reply-cancel').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var form = btn.closest('.reply-form');
-                if (form) form.classList.add('is-hidden');
-            });
-        });
-        root.querySelectorAll('.reply-form').forEach(function (rf) {
-            rf.addEventListener('submit', function (e) {
-                e.preventDefault();
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
 
-                if (!auth.isLoggedIn()) {
-                    alert('You must be logged in to reply.');
-                    rf.classList.add('is-hidden');
-                    auth.openModal();
-                    return;
-                }
-
-                var textarea = rf.querySelector('textarea');
-                var text = textarea ? textarea.value.trim() : '';
-                if (!text) return;
-                var currentUser = auth.getCurrentUser();
-                var username = currentUser ? currentUser.username : 'Anonymous';
-                var comment = document.createElement('div');
-                comment.className = 'comment';
-                comment.innerHTML = '<p><strong>' + username + ':</strong> ' + text.replace(/</g, '&lt;') + '</p>';
-                rf.parentElement.parentElement.appendChild(comment);
-                textarea.value = '';
-                rf.classList.add('is-hidden');
-            });
-        });
-    }
-    wireReplySection(document);
-});
 export default {};

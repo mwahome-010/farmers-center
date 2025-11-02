@@ -33,13 +33,48 @@
 		</div>
 	</header>
 
-    <main>
+	<main>
 
-    </main>
+	</main>
 
-    <footer>
+	<div class="auth-modal" id="authModal" role="dialog" aria-modal="true" aria-hidden="true">
+		<div class="auth-modal-content">
+			<div class="auth-modal-header">
+				<div class="auth-modal-title" id="authModalTitle">Login</div>
+				<button class="auth-modal-close" id="authModalClose" aria-label="Close">
+					×
+				</button>
+			</div>
+			<div class="auth-modal-body">
+				<div class="auth-tabs">
+					<button class="auth-tab active" data-tab="login">Login</button>
+					<button class="auth-tab" data-tab="register">Register</button>
+				</div>
+				<div class="auth-forms">
+					<form id="loginForm" class="auth-form active">
+						<label>Username<input type="text" id="loginUsername" required /></label>
+						<label>Password<input type="password" id="loginPassword" required /></label>
+						<div class="auth-error" id="loginError"></div>
+						<button type="submit">Login</button>
+					</form>
+					<form id="registerForm" class="auth-form">
+						<label>Username<input type="text" id="registerUsername" required minlength="3" /></label>
+						<label>Email<input type="email" id="registerEmail" required /></label>
+						<label>Password<input type="password" id="registerPassword" required minlength="6" /></label>
+						<label>Confirm Password<input type="password" id="registerConfirmPassword" required
+								minlength="6" /></label>
+						<div class="auth-error" id="registerError"></div>
+						<button type="submit">Register</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
 
-    </footer>
+	<footer>
+
+	</footer>
 	<script src="js/index.js" type="module" defer></script>
 </body>
+
 </html>
