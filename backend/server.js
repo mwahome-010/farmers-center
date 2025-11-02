@@ -7,7 +7,7 @@ const session = require('express-session');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 app.use(cors({
     origin: function (origin, callback) {
@@ -21,10 +21,10 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { 
+    cookie: {
         secure: false,
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000
@@ -32,10 +32,10 @@ app.use(session({
 }));
 
 const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'farmers_app',
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME || 'farmers_center',
+    database: process.env.DB_NAME,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
@@ -43,11 +43,11 @@ const pool = mysql.createPool({
 
 pool.getConnection()
     .then(conn => {
-        console.log('✓ Connected to MariaDB database');
+        console.log('Connected to MariaDB database');
         conn.release();
     })
     .catch(err => {
-        console.error('✗ Database connection failed:', err);
+        console.error('Database connection failed!!!:', err);
     });
 
 const isAuthenticated = (req, res, next) => {
@@ -68,15 +68,15 @@ app.post('/api/register', async (req, res) => {
     }
 
     if (username.length < 3) {
-        return res.status(400).json({ error: 'Username must be at least 3 characters' });
+        return res.status(400).json({ error: 'Username must have least 3 characters' });
     }
 
     if (password.length < 6) {
-        return res.status(400).json({ error: 'Password must be at least 6 characters' });
+        return res.status(400).json({ error: 'Password must have least 6 characters' });
     }
 
     try {
-    
+
         const [existing] = await pool.query(
             'SELECT id FROM users WHERE username = ? OR email = ?',
             [username, email]
@@ -86,17 +86,17 @@ app.post('/api/register', async (req, res) => {
             return res.status(409).json({ error: 'Username or email already exists' });
         }
 
-    
+
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    
+
         const [result] = await pool.query(
             'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
             [username, email, passwordHash]
         );
 
-    
+
         req.session.userId = result.insertId;
         req.session.username = username;
 
@@ -120,7 +120,7 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-    
+
         const [users] = await pool.query(
             'SELECT id, username, password_hash FROM users WHERE username = ?',
             [username]
@@ -132,14 +132,12 @@ app.post('/api/login', async (req, res) => {
 
         const user = users[0];
 
-    
         const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
         if (!isValidPassword) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
-    
         req.session.userId = user.id;
         req.session.username = user.username;
 
@@ -208,7 +206,7 @@ app.listen(PORT, () => {
 });
 
 process.on('SIGINT', async () => {
-    console.log('\nShutting down gracefully...');
+    console.log('\nShutting down...');
     await pool.end();
     process.exit(0);
 });

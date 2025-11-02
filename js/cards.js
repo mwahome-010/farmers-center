@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.style.overflow = '';
     }
 
-    document.querySelectorAll('.guide-card').forEach(function (card) {
+    document.querySelectorAll('.disease-guide-card').forEach(function (card) {
         card.addEventListener('click', function () {
             openModalFromCard(card);
         });
