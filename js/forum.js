@@ -30,13 +30,14 @@ async function loadPosts() {
 
 function renderPosts(posts) {
     const container = document.querySelector('.forum-container');
-    const existingPosts = container.querySelectorAll('.post');
+    const existingItems = container.querySelectorAll('.post, .no-results');
 
-    existingPosts.forEach(post => post.remove());
+    existingItems.forEach(item => item.remove());
 
     if (posts.length === 0) {
         const noResults = document.createElement('p');
         noResults.textContent = 'No posts found.';
+        noResults.className = 'no-results';
         noResults.style.textAlign = 'center';
         noResults.style.padding = '20px';
         container.appendChild(noResults);
