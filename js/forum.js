@@ -2,6 +2,7 @@ import auth from './auth.js';
 
 let allPosts = [];
 let currentFilters = { category: 'all', sort: 'newest', search: '' };
+let replyHandlersWired = false;
 
 document.addEventListener('DOMContentLoaded', async function () {
     await auth.waitForAuth();
@@ -113,14 +114,6 @@ function createCommentElement(comment) {
 
     commentDiv.innerHTML = `
         <p><strong>${escapeHTML(comment.username)}:</strong> ${escapeHTML(comment.content)}</p>
-        <button class="reply-btn" type="button">Reply</button>
-        <form class="reply-form is-hidden" data-parent-id="${comment.id}">
-            <textarea rows="2" placeholder="Write a reply..." required></textarea>
-            <div class="reply-actions">
-                <button type="submit">Post</button>
-                <button type="button" class="reply-cancel">Cancel</button>
-            </div>
-        </form>
     `;
 
     return commentDiv;
@@ -204,152 +197,66 @@ function setupEventListeners() {
 
 function wireReplyHandlers() {
 
-    document.querySelectorAll('.reply-btn-post').forEach(btn => {
-        btn.replaceWith(btn.cloneNode(true));
-    });
+    if (replyHandlersWired) return;
+    replyHandlersWired = true;
 
-    document.querySelectorAll('.reply-btn-post').forEach(btn => {
-        btn.addEventListener('click', function () {
+    document.addEventListener('click', function (e) {
+        const replyBtn = e.target.closest('.reply-btn-post');
+        if (replyBtn) {
             auth.requireAuth(function () {
-                const form = btn.closest('.post-reply-controls').querySelector('.reply-form-post');
+                const form = replyBtn.closest('.post-reply-controls').querySelector('.reply-form-post');
                 if (form) form.classList.toggle('is-hidden');
             });
-        });
-    });
+            return;
+        }
 
-
-    document.querySelectorAll('.reply-cancel-post').forEach(btn => {
-        btn.replaceWith(btn.cloneNode(true));
-    });
-
-    document.querySelectorAll('.reply-cancel-post').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const form = btn.closest('.reply-form-post');
+        const cancelBtn = e.target.closest('.reply-cancel-post');
+        if (cancelBtn) {
+            const form = cancelBtn.closest('.reply-form-post');
             if (form) form.classList.add('is-hidden');
-        });
+            return;
+        }
     });
 
+    document.addEventListener('submit', async function (e) {
+        const form = e.target.closest('.reply-form-post');
+        if (!form) return;
+        e.preventDefault();
 
-    document.querySelectorAll('.reply-form-post').forEach(form => {
-        form.replaceWith(form.cloneNode(true));
-    });
+        if (!auth.isLoggedIn()) {
+            alert('You must be logged in to reply.');
+            form.classList.add('is-hidden');
+            auth.openModal();
+            return;
+        }
 
-    document.querySelectorAll('.reply-form-post').forEach(form => {
-        form.addEventListener('submit', async function (e) {
-            e.preventDefault();
+        const textarea = form.querySelector('textarea');
+        const content = textarea.value.trim();
+        if (!content) return;
 
-            if (!auth.isLoggedIn()) {
-                alert('You must be logged in to reply.');
-                form.classList.add('is-hidden');
-                auth.openModal();
-                return;
-            }
+        const postId = form.getAttribute('data-post-id');
 
-            const textarea = form.querySelector('textarea');
-            const content = textarea.value.trim();
-            if (!content) return;
-
-            const postId = form.getAttribute('data-post-id');
-
-            try {
-                const response = await fetch('http://localhost:3000/api/forum/comments', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ post_id: postId, content })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    textarea.value = '';
-                    form.classList.add('is-hidden');
-                    await loadComments(postId);
-                } else {
-                    alert(data.error || 'Failed to post comment');
-                }
-            } catch (error) {
-                console.error('Error posting comment:', error);
-                alert('Failed to post comment');
-            }
-        });
-    });
-
-
-    document.querySelectorAll('.comment .reply-btn').forEach(btn => {
-        btn.replaceWith(btn.cloneNode(true));
-    });
-
-    document.querySelectorAll('.comment .reply-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            auth.requireAuth(function () {
-                const form = btn.parentElement.querySelector('.reply-form');
-                if (form) form.classList.toggle('is-hidden');
+        try {
+            const response = await fetch('http://localhost:3000/api/forum/comments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ post_id: postId, content })
             });
-        });
-    });
 
+            const data = await response.json();
 
-    document.querySelectorAll('.comment .reply-cancel').forEach(btn => {
-        btn.replaceWith(btn.cloneNode(true));
-    });
-
-    document.querySelectorAll('.comment .reply-cancel').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const form = btn.closest('.reply-form');
-            if (form) form.classList.add('is-hidden');
-        });
-    });
-
-
-    document.querySelectorAll('.comment .reply-form').forEach(form => {
-        form.replaceWith(form.cloneNode(true));
-    });
-
-    document.querySelectorAll('.comment .reply-form').forEach(form => {
-        form.addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            if (!auth.isLoggedIn()) {
-                alert('You must be logged in to reply.');
+            if (data.success) {
+                textarea.value = '';
                 form.classList.add('is-hidden');
-                auth.openModal();
-                return;
+                await loadComments(postId);
+            } else {
+                alert(data.error || 'Failed to post comment');
             }
-
-            const textarea = form.querySelector('textarea');
-            const content = textarea.value.trim();
-            if (!content) return;
-
-            const parentCommentId = form.getAttribute('data-parent-id');
-            const postId = form.closest('.comments').getAttribute('data-post-id');
-
-            try {
-                const response = await fetch('http://localhost:3000/api/forum/comments', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                        post_id: postId,
-                        content,
-                        parent_comment_id: parentCommentId
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    textarea.value = '';
-                    form.classList.add('is-hidden');
-                    await loadComments(postId);
-                } else {
-                    alert(data.error || 'Failed to post reply');
-                }
-            } catch (error) {
-                console.error('Error posting reply:', error);
-                alert('Failed to post reply');
-            }
-        });
+        } catch (error) {
+            console.error('Error posting comment:', error);
+            alert('Failed to post comment');
+        }
     });
 }
 

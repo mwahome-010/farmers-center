@@ -610,6 +610,64 @@ main {
   margin-top: 6px;
 }
 
+/* Forum reply controls - buttons */
+.reply-btn-post {
+  background: hsl(140, 62%, 44%);
+  color: #fff;
+  border: 1px solid hsl(140, 62%, 30%);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.05s ease;
+}
+
+.reply-btn-post:hover {
+  background: hsl(140, 62%, 34%);
+}
+
+.reply-btn-post:active {
+  transform: translateY(1px);
+}
+
+.reply-form-post textarea {
+  width: 100%;
+  resize: vertical;
+  border-radius: 8px;
+  border: 1px solid #cdd6cf;
+  padding: 8px 10px;
+}
+
+.reply-form-post .reply-actions button[type="submit"] {
+  background: hsl(140, 62%, 39%);
+  color: #ffffff;
+  border: 1px solid hsl(140, 62%, 32%);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.reply-form-post .reply-actions button[type="submit"]:hover {
+  background: hsl(140, 62%, 30%);
+}
+
+.reply-form-post .reply-actions .reply-cancel-post {
+  background: #ffffff;
+  color: hsl(140, 62%, 18%);
+  border: 1px solid hsl(140, 10%, 70%);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.reply-form-post .reply-actions .reply-cancel-post:hover {
+  background: hsl(140, 20%, 96%);
+}
+
 .form-actions {
   display: flex;
   gap: 8px;
