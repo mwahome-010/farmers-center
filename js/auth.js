@@ -414,7 +414,6 @@ function requireAuth(callback) {
     }
 }
 
-// Initialize immediately but wait for it to complete
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         init().catch(err => console.error('Auth init failed:', err));
