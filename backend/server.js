@@ -3,10 +3,48 @@ const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const session = require('express-session');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT;
+
+const uploadsDir = path.join(__dirname, '..', 'images', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadsDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'post-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+        return cb(null, true);
+    } else {
+        cb(new Error('Only image files are allowed!'));
+    }
+};
+
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB limit
+    },
+    fileFilter: fileFilter
+});
 
 app.use(cors({
     origin: function (origin, callback) {
@@ -25,6 +63,31 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+app.use('/images', express.static(path.join(__dirname, '..', 'images')));
+
+app.use('/css', express.static(path.join(__dirname, '..', 'css')));
+app.use('/js', express.static(path.join(__dirname, '..', 'js')));
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'index.html'));
+});
+
+app.get('/forum.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'forum.html'));
+});
+
+app.get('/guides.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'guides.html'));
+});
+
+app.get('/diseases.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'diseases.html'));
+});
+
+app.get('/about.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'about.html'));
+});
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
@@ -65,10 +128,8 @@ const isAuthenticated = (req, res, next) => {
     }
 };
 
-
 app.post('/api/register', async (req, res) => {
     const { username, email, password } = req.body;
-
 
     if (!username || !email || !password) {
         return res.status(400).json({ error: 'All fields are required' });
@@ -83,7 +144,6 @@ app.post('/api/register', async (req, res) => {
     }
 
     try {
-
         const [existing] = await pool.query(
             'SELECT id FROM users WHERE username = ? OR email = ?',
             [username, email]
@@ -93,16 +153,13 @@ app.post('/api/register', async (req, res) => {
             return res.status(409).json({ error: 'Username or email already exists' });
         }
 
-
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(password, saltRounds);
-
 
         const [result] = await pool.query(
             'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
             [username, email, passwordHash]
         );
-
 
         req.session.userId = result.insertId;
         req.session.username = username;
@@ -127,7 +184,6 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-
         const [users] = await pool.query(
             'SELECT id, username, password_hash FROM users WHERE username = ?',
             [username]
@@ -138,7 +194,6 @@ app.post('/api/login', async (req, res) => {
         }
 
         const user = users[0];
-
         const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
         if (!isValidPassword) {
@@ -207,17 +262,6 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.listen(PORT, () => {
-    console.log(`✓ Server running on http://localhost:${PORT}`);
-    console.log(`✓ API available at http://localhost:${PORT}/api`);
-});
-
-process.on('SIGINT', async () => {
-    console.log('\nShutting down...');
-    await pool.end();
-    process.exit(0);
-});
-
 app.get('/api/forum/posts', async (req, res) => {
     const { category, sort, search } = req.query;
     
@@ -259,7 +303,6 @@ app.get('/api/forum/posts', async (req, res) => {
         
         query += ' GROUP BY p.id';
         
-        //Sort
         switch (sort) {
             case 'newest':
                 query += ' ORDER BY p.created_at DESC';
@@ -283,12 +326,10 @@ app.get('/api/forum/posts', async (req, res) => {
     }
 });
 
-//Get single post with comments
 app.get('/api/forum/posts/:id', async (req, res) => {
     const postId = req.params.id;
     
     try {
-        //Get post details
         const [posts] = await pool.query(`
             SELECT 
                 p.*,
@@ -304,7 +345,6 @@ app.get('/api/forum/posts/:id', async (req, res) => {
             return res.status(404).json({ error: 'Post not found' });
         }
         
-        //Get comments
         const [comments] = await pool.query(`
             SELECT 
                 c.*,
@@ -315,7 +355,6 @@ app.get('/api/forum/posts/:id', async (req, res) => {
             ORDER BY c.created_at ASC
         `, [postId]);
         
-        //Increment view count
         await pool.query('UPDATE posts SET views = views + 1 WHERE id = ?', [postId]);
         
         res.json({ 
@@ -330,31 +369,64 @@ app.get('/api/forum/posts/:id', async (req, res) => {
     }
 });
 
-app.post('/api/forum/posts', isAuthenticated, async (req, res) => {
-    const { title, category, body, image_path } = req.body;
+// Updated post creation endpoint with file upload
+app.post('/api/forum/posts', isAuthenticated, (req, res, next) => {
+    upload.single('image')(req, res, (err) => {
+        if (err instanceof multer.MulterError) {
+            console.error('Multer error:', err);
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({ error: 'File size must be less than 5MB' });
+            }
+            return res.status(400).json({ error: `Upload error: ${err.message}` });
+        } else if (err) {
+            console.error('Upload error:', err);
+            return res.status(400).json({ error: err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
+    console.log('Post creation request received');
+    console.log('Body:', req.body);
+    console.log('File:', req.file);
+    
+    const { title, category, body } = req.body;
     const userId = req.session.userId;
     
     if (!title || !category || !body) {
+        // Clean up uploaded file if validation fails
+        if (req.file) {
+            fs.unlinkSync(req.file.path);
+        }
         return res.status(400).json({ error: 'Title, category, and body are required' });
     }
     
     try {
-            const [categories] = await pool.query(
+        const [categories] = await pool.query(
             'SELECT id FROM categories WHERE name = ?',
             [category]
         );
         
         if (categories.length === 0) {
+            if (req.file) {
+                fs.unlinkSync(req.file.path);
+            }
             return res.status(400).json({ error: 'Invalid category' });
         }
         
         const categoryId = categories[0].id;
         
+        // Store relative path to image if uploaded
+        const imagePath = req.file ? `/images/uploads/${req.file.filename}` : null;
+        
+        console.log('Image path to store:', imagePath);
+        
         const [result] = await pool.query(
             `INSERT INTO posts (user_id, category_id, title, body, image_path, status) 
              VALUES (?, ?, ?, ?, ?, 'unanswered')`,
-            [userId, categoryId, title, body, image_path || null]
+            [userId, categoryId, title, body, imagePath]
         );
+        
+        console.log('Post created with ID:', result.insertId);
         
         const [posts] = await pool.query(`
             SELECT 
@@ -375,6 +447,10 @@ app.post('/api/forum/posts', isAuthenticated, async (req, res) => {
         
     } catch (error) {
         console.error('Error creating post:', error);
+        // Clean up uploaded file on error
+        if (req.file) {
+            fs.unlinkSync(req.file.path);
+        }
         res.status(500).json({ error: 'Failed to create post' });
     }
 });
@@ -430,4 +506,15 @@ app.get('/api/forum/categories', async (req, res) => {
         console.error('Error fetching categories:', error);
         res.status(500).json({ error: 'Failed to fetch categories' });
     }
+});
+
+app.listen(PORT, () => {
+    console.log(`✓ Server running on http://localhost:${PORT}`);
+    console.log(`✓ API available at http://localhost:${PORT}/api`);
+});
+
+process.on('SIGINT', async () => {
+    console.log('\nShutting down...');
+    await pool.end();
+    process.exit(0);
 });

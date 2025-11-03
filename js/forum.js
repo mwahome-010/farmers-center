@@ -3,6 +3,7 @@ import auth from './auth.js';
 let allPosts = [];
 let currentFilters = { category: 'all', sort: 'newest', search: '' };
 let replyHandlersWired = false;
+let selectedImageFile = null;
 
 document.addEventListener('DOMContentLoaded', async function () {
     await auth.waitForAuth();
@@ -74,7 +75,6 @@ function createPostElement(post) {
         </div>
     `;
 
-
     loadComments(post.id);
 
     return postDiv;
@@ -96,7 +96,6 @@ async function loadComments(postId) {
                     const commentEl = createCommentElement(comment);
                     commentsContainer.appendChild(commentEl);
                 });
-
 
                 ensurePostReplyControls(postId);
                 wireReplyHandlers();
@@ -141,7 +140,6 @@ function ensurePostReplyControls(postId) {
 }
 
 function setupEventListeners() {
-
     const searchInput = document.getElementById('forumSearch');
     if (searchInput) {
         searchInput.addEventListener('input', debounce(function (e) {
@@ -149,7 +147,6 @@ function setupEventListeners() {
             loadPosts();
         }, 500));
     }
-
 
     const categoryFilter = document.getElementById('forumCategoryFilter');
     if (categoryFilter) {
@@ -159,7 +156,6 @@ function setupEventListeners() {
         });
     }
 
-
     const sortSelect = document.getElementById('forumSort');
     if (sortSelect) {
         sortSelect.addEventListener('change', function (e) {
@@ -167,7 +163,6 @@ function setupEventListeners() {
             loadPosts();
         });
     }
-
 
     const newPostBtn = document.getElementById('newPostBtn');
     const modal = document.getElementById('forumPostModal');
@@ -188,6 +183,38 @@ function setupEventListeners() {
         });
     }
 
+    // Image file input handler
+    const imageInput = document.getElementById('newPostImageFile');
+    if (imageInput) {
+        imageInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate file size (5MB max)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Image file size must be less than 5MB');
+                    e.target.value = '';
+                    selectedImageFile = null;
+                    updateImagePreview(null);
+                    return;
+                }
+                
+                // Validate file type
+                if (!file.type.match(/^image\/(jpeg|jpg|png|gif|webp)$/)) {
+                    alert('Only JPEG, PNG, GIF, and WebP images are allowed');
+                    e.target.value = '';
+                    selectedImageFile = null;
+                    updateImagePreview(null);
+                    return;
+                }
+                
+                selectedImageFile = file;
+                updateImagePreview(file);
+            } else {
+                selectedImageFile = null;
+                updateImagePreview(null);
+            }
+        });
+    }
 
     const form = document.getElementById('newPostForm');
     if (form) {
@@ -195,8 +222,44 @@ function setupEventListeners() {
     }
 }
 
-function wireReplyHandlers() {
+function updateImagePreview(file) {
+    let previewContainer = document.querySelector('.image-preview-container');
+    
+    if (!previewContainer) {
+        previewContainer = document.createElement('div');
+        previewContainer.className = 'image-preview-container';
+        const imageInput = document.getElementById('newPostImageFile');
+        if (imageInput && imageInput.parentElement) {
+            imageInput.parentElement.appendChild(previewContainer);
+        }
+    }
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewContainer.innerHTML = `
+                <div class="image-preview">
+                    <img src="${e.target.result}" alt="Preview" style="max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 8px;">
+                    <button type="button" class="remove-image-btn" onclick="removeImagePreview()">Remove</button>
+                </div>
+            `;
+        };
+        reader.readAsDataURL(file);
+    } else {
+        previewContainer.innerHTML = '';
+    }
+}
 
+window.removeImagePreview = function() {
+    selectedImageFile = null;
+    const imageInput = document.getElementById('newPostImageFile');
+    if (imageInput) {
+        imageInput.value = '';
+    }
+    updateImagePreview(null);
+};
+
+function wireReplyHandlers() {
     if (replyHandlersWired) return;
     replyHandlersWired = true;
 
@@ -278,11 +341,24 @@ async function handleNewPost(e) {
     if (!title || !body) return;
 
     try {
+        // Use FormData for file upload
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('category', category);
+        formData.append('body', body);
+        
+        // Get the actual file from the input element
+        if (imageInput && imageInput.files && imageInput.files[0]) {
+            formData.append('image', imageInput.files[0]);
+            console.log('Uploading file:', imageInput.files[0].name, 'Size:', imageInput.files[0].size);
+        } else {
+            console.log('No file selected');
+        }
+
         const response = await fetch('http://localhost:3000/api/forum/posts', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ title, category, body })
+            body: formData // Don't set Content-Type header, browser will set it with boundary
         });
 
         const data = await response.json();
@@ -290,6 +366,8 @@ async function handleNewPost(e) {
         if (data.success) {
             closeModal();
             e.target.reset();
+            selectedImageFile = null;
+            updateImagePreview(null);
             await loadPosts();
         } else {
             alert(data.error || 'Failed to create post');
@@ -318,6 +396,9 @@ function closeModal() {
 
         const form = document.getElementById('newPostForm');
         if (form) form.reset();
+        
+        selectedImageFile = null;
+        updateImagePreview(null);
     }
 }
 

@@ -52,7 +52,7 @@
 		</div>
 		<div class="forum-container">
 			<h2>Community Forum</h2>
-			
+
 		</div>
 	</main>
 
@@ -63,7 +63,7 @@
 				<button class="guide-modal-close" id="forumPostModalClose" aria-label="Close">×</button>
 			</div>
 			<div class="guide-modal-body">
-				<form id="newPostForm">
+				<form id="newPostForm" enctype="multipart/form-data">
 					<label>Title<input type="text" id="newPostTitle" required></label>
 					<label>
 						Category
@@ -80,8 +80,9 @@
 							placeholder="Describe your question or topic..."></textarea>
 					</label>
 					<label>
-						Image (optional)
-						<input type="file" id="newPostImageFile" accept="image/*">
+						Image (optional - Max 5MB)
+						<input type="file" id="newPostImageFile"
+							accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
 					</label>
 					<div class="form-actions">
 						<button type="submit">Post</button>

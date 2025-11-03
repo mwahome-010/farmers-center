@@ -2,3 +2,8 @@ improved-guides.html
 .env
 .vscode
 .todo
+.config
+api_key.py
+/node_modules/
+/backend/node_modules/
+npm-debug.log*
