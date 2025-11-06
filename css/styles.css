@@ -31,11 +31,7 @@ header {
   border-bottom: hsl(140, 62%, 6%) solid 2px;
 }
 
-.logo-container {
-  display: inline-block;
-}
-
-.nav-container {
+.logo-container, .nav-container {
   display: inline-block;
 }
 
@@ -58,8 +54,8 @@ header {
 
 .logo-img {
   margin-left: 36px;
-  height: 44px;
-  width: 44px;
+  height: 60px;
+  width: 60px;
 }
 
 .nav-bar {
