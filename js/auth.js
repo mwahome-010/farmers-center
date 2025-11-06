@@ -394,6 +394,17 @@ function updateUI() {
             btn.textContent = 'Login';
         }
     });
+
+    dispatchAuthChanged();
+}
+
+function dispatchAuthChanged() {
+    try {
+        const event = new CustomEvent('auth:changed', { detail: { user: currentUser } });
+        window.dispatchEvent(event);
+    } catch (e) {
+        console.log(e);
+    }
 }
 
 function isLoggedIn() {

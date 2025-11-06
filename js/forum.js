@@ -10,6 +10,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     
     await loadPosts();
     setupEventListeners();
+
+    /* refresh page on login/logout */
+    window.addEventListener('auth:changed', () => {
+        loadPosts();
+    });
 });
 
 async function loadPosts() {
