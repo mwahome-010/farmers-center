@@ -30,7 +30,7 @@ const fileFilter = (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
-    
+
     if (mimetype && extname) {
         return cb(null, true);
     } else {
@@ -41,17 +41,17 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
     storage: storage,
     limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB limit
+        fileSize: 5 * 1024 * 1024 /* 5MB limit */
     },
     fileFilter: fileFilter
 });
 
 app.use(cors({
     origin: function (origin, callback) {
-        if (!origin) 
+        if (!origin)
             return callback(null, true);
-        
-        if (origin.startsWith('http://localhost:') || 
+
+        if (origin.startsWith('http://localhost:') ||
             origin.startsWith('http://127.0.0.1:')) {
             callback(null, true);
         } else {
@@ -97,7 +97,7 @@ app.use(session({
         secure: false,
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000,
-        sameSite: 'lax'        
+        sameSite: 'lax'
     }
 }));
 
@@ -264,11 +264,12 @@ app.get('/api/health', (req, res) => {
 
 app.get('/api/forum/posts', async (req, res) => {
     const { category, sort, search } = req.query;
-    
+
     try {
         let query = `
             SELECT 
                 p.id,
+                p.user_id,
                 p.title,
                 p.body,
                 p.image_path,
@@ -283,26 +284,26 @@ app.get('/api/forum/posts', async (req, res) => {
             JOIN categories c ON p.category_id = c.id
             LEFT JOIN comments cm ON p.id = cm.post_id
         `;
-        
+
         const conditions = [];
         const params = [];
-        
+
         if (category && category !== 'all') {
             conditions.push('c.name = ?');
             params.push(category);
         }
-        
+
         if (search) {
             conditions.push('(p.title LIKE ? OR p.body LIKE ?)');
             params.push(`%${search}%`, `%${search}%`);
         }
-        
+
         if (conditions.length > 0) {
             query += ' WHERE ' + conditions.join(' AND ');
         }
-        
+
         query += ' GROUP BY p.id';
-        
+
         switch (sort) {
             case 'newest':
                 query += ' ORDER BY p.created_at DESC';
@@ -316,10 +317,10 @@ app.get('/api/forum/posts', async (req, res) => {
             default:
                 query += ' ORDER BY p.created_at DESC';
         }
-        
+
         const [posts] = await pool.query(query, params);
         res.json({ success: true, posts });
-        
+
     } catch (error) {
         console.error('Error fetching posts:', error);
         res.status(500).json({ error: 'Failed to fetch posts' });
@@ -328,7 +329,7 @@ app.get('/api/forum/posts', async (req, res) => {
 
 app.get('/api/forum/posts/:id', async (req, res) => {
     const postId = req.params.id;
-    
+
     try {
         const [posts] = await pool.query(`
             SELECT 
@@ -340,11 +341,11 @@ app.get('/api/forum/posts/:id', async (req, res) => {
             JOIN categories c ON p.category_id = c.id
             WHERE p.id = ?
         `, [postId]);
-        
+
         if (posts.length === 0) {
             return res.status(404).json({ error: 'Post not found' });
         }
-        
+
         const [comments] = await pool.query(`
             SELECT 
                 c.*,
@@ -354,22 +355,21 @@ app.get('/api/forum/posts/:id', async (req, res) => {
             WHERE c.post_id = ?
             ORDER BY c.created_at ASC
         `, [postId]);
-        
+
         await pool.query('UPDATE posts SET views = views + 1 WHERE id = ?', [postId]);
-        
-        res.json({ 
-            success: true, 
-            post: posts[0], 
-            comments 
+
+        res.json({
+            success: true,
+            post: posts[0],
+            comments
         });
-        
+
     } catch (error) {
         console.error('Error fetching post:', error);
         res.status(500).json({ error: 'Failed to fetch post' });
     }
 });
 
-// Updated post creation endpoint with file upload
 app.post('/api/forum/posts', isAuthenticated, (req, res, next) => {
     upload.single('image')(req, res, (err) => {
         if (err instanceof multer.MulterError) {
@@ -388,46 +388,45 @@ app.post('/api/forum/posts', isAuthenticated, (req, res, next) => {
     console.log('Post creation request received');
     console.log('Body:', req.body);
     console.log('File:', req.file);
-    
+
     const { title, category, body } = req.body;
     const userId = req.session.userId;
-    
+
     if (!title || !category || !body) {
-        // Clean up uploaded file if validation fails
+        /* Clean up uploaded file if validation fails */
         if (req.file) {
             fs.unlinkSync(req.file.path);
         }
         return res.status(400).json({ error: 'Title, category, and body are required' });
     }
-    
+
     try {
         const [categories] = await pool.query(
             'SELECT id FROM categories WHERE name = ?',
             [category]
         );
-        
+
         if (categories.length === 0) {
             if (req.file) {
                 fs.unlinkSync(req.file.path);
             }
             return res.status(400).json({ error: 'Invalid category' });
         }
-        
+
         const categoryId = categories[0].id;
-        
-        // Store relative path to image if uploaded
+
         const imagePath = req.file ? `/images/uploads/${req.file.filename}` : null;
-        
+
         console.log('Image path to store:', imagePath);
-        
+
         const [result] = await pool.query(
             `INSERT INTO posts (user_id, category_id, title, body, image_path, status) 
              VALUES (?, ?, ?, ?, ?, 'unanswered')`,
             [userId, categoryId, title, body, imagePath]
         );
-        
+
         console.log('Post created with ID:', result.insertId);
-        
+
         const [posts] = await pool.query(`
             SELECT 
                 p.*,
@@ -438,13 +437,13 @@ app.post('/api/forum/posts', isAuthenticated, (req, res, next) => {
             JOIN categories c ON p.category_id = c.id
             WHERE p.id = ?
         `, [result.insertId]);
-        
-        res.status(201).json({ 
-            success: true, 
+
+        res.status(201).json({
+            success: true,
             message: 'Post created successfully',
             post: posts[0]
         });
-        
+
     } catch (error) {
         console.error('Error creating post:', error);
         // Clean up uploaded file on error
@@ -458,25 +457,25 @@ app.post('/api/forum/posts', isAuthenticated, (req, res, next) => {
 app.post('/api/forum/comments', isAuthenticated, async (req, res) => {
     const { post_id, content, parent_comment_id } = req.body;
     const userId = req.session.userId;
-    
+
     if (!post_id || !content) {
         return res.status(400).json({ error: 'Post ID and content are required' });
     }
-    
+
     try {
         const [result] = await pool.query(
             `INSERT INTO comments (post_id, user_id, parent_comment_id, content) 
              VALUES (?, ?, ?, ?)`,
             [post_id, userId, parent_comment_id || null, content]
         );
-        
+
         await pool.query(
             `UPDATE posts 
              SET status = 'answered' 
              WHERE id = ? AND status = 'unanswered'`,
             [post_id]
         );
-        
+
         const [comments] = await pool.query(`
             SELECT 
                 c.*,
@@ -485,16 +484,95 @@ app.post('/api/forum/comments', isAuthenticated, async (req, res) => {
             JOIN users u ON c.user_id = u.id
             WHERE c.id = ?
         `, [result.insertId]);
-        
-        res.status(201).json({ 
-            success: true, 
+
+        res.status(201).json({
+            success: true,
             message: 'Comment added successfully',
             comment: comments[0]
         });
-        
+
     } catch (error) {
         console.error('Error creating comment:', error);
         res.status(500).json({ error: 'Failed to create comment' });
+    }
+});
+
+
+// Delete a post (only by the post owner)
+app.delete('/api/forum/posts/:id', isAuthenticated, async (req, res) => {
+    const postId = req.params.id;
+    const userId = req.session.userId;
+
+    try {
+        const [posts] = await pool.query(
+            'SELECT id, user_id, image_path FROM posts WHERE id = ?',
+            [postId]
+        );
+
+        if (posts.length === 0) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        if (posts[0].user_id !== userId) {
+            return res.status(403).json({ error: 'You can only delete your own posts' });
+        }
+
+        // Delete associated image if it exists
+        const imagePath = posts[0].image_path;
+        if (imagePath) {
+            const fullPath = path.join(__dirname, '..', imagePath);
+            if (fs.existsSync(fullPath)) {
+                fs.unlinkSync(fullPath);
+            }
+        }
+
+        await pool.query('DELETE FROM comments WHERE post_id = ?', [postId]);
+
+        await pool.query('DELETE FROM posts WHERE id = ?', [postId]);
+
+        res.json({
+            success: true,
+            message: 'Post deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        res.status(500).json({ error: 'Failed to delete post' });
+    }
+});
+
+/* Delete a comment (only by the comment owner) */
+app.delete('/api/forum/comments/:id', isAuthenticated, async (req, res) => {
+    const commentId = req.params.id;
+    const userId = req.session.userId;
+
+    try {
+        const [comments] = await pool.query(
+            'SELECT id, user_id, post_id FROM comments WHERE id = ?',
+            [commentId]
+        );
+
+        if (comments.length === 0) {
+            return res.status(404).json({ error: 'Comment not found' });
+        }
+
+        if (comments[0].user_id !== userId) {
+            return res.status(403).json({ error: 'You can only delete your own comments' });
+        }
+
+        const postId = comments[0].post_id;
+
+        await pool.query('DELETE FROM comments WHERE id = ?', [commentId]);
+
+        res.json({
+            success: true,
+            message: 'Comment deleted successfully',
+            postId: postId
+        });
+
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        res.status(500).json({ error: 'Failed to delete comment' });
     }
 });
 

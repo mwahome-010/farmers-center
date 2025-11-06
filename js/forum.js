@@ -59,11 +59,16 @@ function createPostElement(post) {
     postDiv.setAttribute('data-post-id', post.id);
 
     const timeAgo = getTimeAgo(new Date(post.created_at));
+    const currentUser = auth.getCurrentUser();
+    const isOwner = currentUser && currentUser.id === post.user_id;
 
     postDiv.innerHTML = `
-        <div class="post-badges">
-            <span class="badge">${capitalize(post.category_name)}</span>
-            <span class="status">${capitalize(post.status)}</span>
+        <div class="post-header">
+            <div class="post-badges">
+                <span class="badge">${capitalize(post.category_name)}</span>
+                <span class="status">${capitalize(post.status)}</span>
+            </div>
+            ${isOwner ? `<button class="delete-post-btn" data-post-id="${post.id}" title="Delete post">×</button>` : ''}
         </div>
         <h3>${escapeHTML(post.title)}</h3>
         <p class="post-meta">Posted by <strong>${escapeHTML(post.username)}</strong> · <span>${timeAgo}</span> · <span class="counts">${post.views} views · ${post.comment_count} comments</span></p>
@@ -111,8 +116,14 @@ function createCommentElement(comment) {
     commentDiv.className = 'comment';
     commentDiv.setAttribute('data-comment-id', comment.id);
 
+    const currentUser = auth.getCurrentUser();
+    const isOwner = currentUser && currentUser.id === comment.user_id;
+
     commentDiv.innerHTML = `
-        <p><strong>${escapeHTML(comment.username)}:</strong> ${escapeHTML(comment.content)}</p>
+        <div class="comment-header">
+            <p><strong>${escapeHTML(comment.username)}:</strong> ${escapeHTML(comment.content)}</p>
+            ${isOwner ? `<button class="delete-comment-btn" data-comment-id="${comment.id}" title="Delete comment">×</button>` : ''}
+        </div>
     `;
 
     return commentDiv;
@@ -183,13 +194,11 @@ function setupEventListeners() {
         });
     }
 
-    // Image file input handler
     const imageInput = document.getElementById('newPostImageFile');
     if (imageInput) {
         imageInput.addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (file) {
-                // Validate file size (5MB max)
                 if (file.size > 5 * 1024 * 1024) {
                     alert('Image file size must be less than 5MB');
                     e.target.value = '';
@@ -198,7 +207,6 @@ function setupEventListeners() {
                     return;
                 }
                 
-                // Validate file type
                 if (!file.type.match(/^image\/(jpeg|jpg|png|gif|webp)$/)) {
                     alert('Only JPEG, PNG, GIF, and WebP images are allowed');
                     e.target.value = '';
@@ -219,6 +227,76 @@ function setupEventListeners() {
     const form = document.getElementById('newPostForm');
     if (form) {
         form.addEventListener('submit', handleNewPost);
+    }
+
+    document.addEventListener('click', async function (e) {
+        const deletePostBtn = e.target.closest('.delete-post-btn');
+        if (deletePostBtn) {
+            const postId = deletePostBtn.getAttribute('data-post-id');
+            if (confirm('Are you sure you want to delete this post? This will also delete all comments.')) {
+                await deletePost(postId);
+            }
+            return;
+        }
+
+        const deleteCommentBtn = e.target.closest('.delete-comment-btn');
+        if (deleteCommentBtn) {
+            const commentId = deleteCommentBtn.getAttribute('data-comment-id');
+            if (confirm('Are you sure you want to delete this comment?')) {
+                await deleteComment(commentId);
+            }
+            return;
+        }
+    });
+}
+
+async function deletePost(postId) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/forum/posts/${postId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const postElement = document.querySelector(`.post[data-post-id="${postId}"]`);
+            if (postElement) {
+                postElement.remove();
+            }
+            await loadPosts();
+        } else {
+            alert(data.error || 'Failed to delete post');
+        }
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        alert('Failed to delete post');
+    }
+}
+
+async function deleteComment(commentId) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/forum/comments/${commentId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const commentElement = document.querySelector(`.comment[data-comment-id="${commentId}"]`);
+            if (commentElement) {
+                commentElement.remove();
+            }
+            if (data.postId) {
+                await loadComments(data.postId);
+            }
+        } else {
+            alert(data.error || 'Failed to delete comment');
+        }
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        alert('Failed to delete comment');
     }
 }
 
@@ -341,24 +419,19 @@ async function handleNewPost(e) {
     if (!title || !body) return;
 
     try {
-        // Use FormData for file upload
         const formData = new FormData();
         formData.append('title', title);
         formData.append('category', category);
         formData.append('body', body);
         
-        // Get the actual file from the input element
         if (imageInput && imageInput.files && imageInput.files[0]) {
             formData.append('image', imageInput.files[0]);
-            console.log('Uploading file:', imageInput.files[0].name, 'Size:', imageInput.files[0].size);
-        } else {
-            console.log('No file selected');
         }
 
         const response = await fetch('http://localhost:3000/api/forum/posts', {
             method: 'POST',
             credentials: 'include',
-            body: formData // Don't set Content-Type header, browser will set it with boundary
+            body: formData
         });
 
         const data = await response.json();
