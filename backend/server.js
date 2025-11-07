@@ -576,6 +576,78 @@ app.delete('/api/forum/comments/:id', isAuthenticated, async (req, res) => {
     }
 });
 
+/* User account deletion */
+app.delete('/api/user/account', isAuthenticated, async (req, res) => {
+    const userId = req.session.userId;
+    const { password } = req.body;
+
+    if (!password) {
+        return res.status(400).json({ error: 'Password confirmation is required' });
+    }
+
+    try {
+        //Verify password before deletion
+        const [users] = await pool.query(
+            'SELECT id, password_hash FROM users WHERE id = ?',
+            [userId]
+        );
+
+        if (users.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const user = users[0];
+        const isValidPassword = await bcrypt.compare(password, user.password_hash);
+
+        if (!isValidPassword) {
+            return res.status(401).json({ error: 'Invalid password' });
+        }
+
+        //Get all posts with images from this user
+        const [posts] = await pool.query(
+            'SELECT image_path FROM posts WHERE user_id = ? AND image_path IS NOT NULL',
+            [userId]
+        );
+
+        //Delete associated images from filesystem
+        posts.forEach(post => {
+            if (post.image_path) {
+                const fullPath = path.join(__dirname, '..', post.image_path);
+                if (fs.existsSync(fullPath)) {
+                    try {
+                        fs.unlinkSync(fullPath);
+                    } catch (err) {
+                        console.error('Error deleting image:', err);
+                    }
+                }
+            }
+        });
+
+        /* Delete comments first, before account */
+        await pool.query('DELETE FROM comments WHERE user_id = ?', [userId]);
+        
+        await pool.query('DELETE FROM posts WHERE user_id = ?', [userId]);
+        
+        await pool.query('DELETE FROM users WHERE id = ?', [userId]);
+
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('Session destruction error:', err);
+            }
+        });
+
+        res.clearCookie('connect.sid');
+        res.json({
+            success: true,
+            message: 'Account deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('Error deleting account:', error);
+        res.status(500).json({ error: 'Failed to delete account' });
+    }
+});
+
 app.get('/api/forum/categories', async (req, res) => {
     try {
         const [categories] = await pool.query('SELECT * FROM categories ORDER BY name');

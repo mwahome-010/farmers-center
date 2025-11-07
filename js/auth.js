@@ -437,6 +437,7 @@ export default {
     register,
     login,
     logout,
+    deleteAccount,
     isLoggedIn,
     getCurrentUser,
     requireAuth,
@@ -444,7 +445,8 @@ export default {
     closeModal,
     checkAuthStatus,
     init,
-    waitForAuth
+    waitForAuth,
+    showDeleteAccountModal
 };
 
 function renderUserControls() {
@@ -466,6 +468,8 @@ function renderUserControls() {
             <div class="user-dropdown" role="menu" aria-hidden="true">
                 <button type="button" class="user-dropdown-item" data-action="account" role="menuitem">Account overview</button>
                 <button type="button" class="user-dropdown-item" data-action="change-username" role="menuitem">Change username</button>
+                <hr class="user-dropdown-sep" />
+                <button type="button" class="user-dropdown-item danger" data-action="delete-account" role="menuitem">Delete account</button>
                 <hr class="user-dropdown-sep" />
                 <button type="button" class="user-dropdown-item danger" data-action="logout" role="menuitem">Logout</button>
             </div>
@@ -493,6 +497,7 @@ function renderLoginButtons() {
 }
 
 let userMenuHandlersBound = false;
+
 function ensureUserMenuHandlers() {
     if (userMenuHandlersBound) return;
     userMenuHandlersBound = true;
@@ -520,6 +525,8 @@ function ensureUserMenuHandlers() {
             const action = item.getAttribute('data-action');
             if (action === 'logout') {
                 await logout();
+            } else if (action === 'delete-account') {
+                showDeleteAccountModal();
             } else if (action === 'account') {
                 window.dispatchEvent(new CustomEvent('auth:menu', { detail: { action: 'account' } }));
             } else if (action === 'change-username') {
@@ -536,5 +543,150 @@ function ensureUserMenuHandlers() {
                 m.classList.remove('open');
             }
         });
+    });
+}
+
+async function deleteAccount(password) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/user/account`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ password })
+        });
+
+        let data;
+        try {
+            data = await response.json();
+        } catch (jsonError) {
+            console.error('JSON parse error:', jsonError);
+            return {
+                success: false,
+                error: `Server error (${response.status}).`
+            };
+        }
+
+        if (response.ok && data.success) {
+            currentUser = null;
+            updateUI();
+            return { success: true, message: data.message };
+        } else {
+            return { success: false, error: data.error || 'Account deletion failed' };
+        }
+    } catch (error) {
+        console.error('Account deletion error:', error);
+        return {
+            success: false,
+            error: `Network error: ${error.message}. Please try again.`
+        };
+    }
+}
+
+// Show delete account modal
+function showDeleteAccountModal() {
+    const existingModal = document.getElementById('deleteAccountModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    const modal = document.createElement('div');
+    modal.id = 'deleteAccountModal';
+    modal.className = 'auth-modal open';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-hidden', 'false');
+
+    modal.innerHTML = `
+        <div class="auth-modal-content">
+            <div class="auth-modal-header">
+                <div class="auth-modal-title">Delete Account</div>
+                <button class="auth-modal-close" id="deleteAccountClose" aria-label="Close">×</button>
+            </div>
+            <div class="auth-modal-body">
+                <div style="background: hsl(0, 62%, 95%); border: 1px solid hsl(0, 62%, 75%); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                    <p style="color: hsl(0, 62%, 35%); font-weight: 600; margin-bottom: 8px;">⚠️ Warning: This action cannot be undone!</p>
+                    <p style="color: hsl(0, 62%, 25%); font-size: 0.9em; line-height: 1.4;">
+                        Deleting your account will permanently remove:
+                    </p>
+                    <ul style="color: hsl(0, 62%, 25%); font-size: 0.9em; margin: 8px 0 0 20px; line-height: 1.5;">
+                        <li>Your profile information</li>
+                        <li>All your forum posts</li>
+                        <li>All your comments</li>
+                        <li>All uploaded images</li>
+                    </ul>
+                </div>
+                <form id="deleteAccountForm">
+                    <label style="display: block; margin-bottom: 15px; font-weight: 500; color: hsl(146, 38%, 6%);">
+                        Confirm your password to delete your account:
+                        <input type="password" id="deleteAccountPassword" required style="display: block; width: 100%; margin-top: 5px; padding: 10px; border: 1px solid hsl(140, 62%, 80%); border-radius: 6px; font-size: 1em;">
+                    </label>
+                    <div class="auth-error" id="deleteAccountError"></div>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button type="button" id="deleteAccountCancel" style="padding: 10px 20px; background: hsl(140, 62%, 96%); border: 1px solid hsl(140, 62%, 75%); border-radius: 6px; cursor: pointer; font-weight: 500;">
+                            Cancel
+                        </button>
+                        <button type="submit" style="padding: 10px 20px; background: hsl(0, 62%, 51%); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">
+                            Delete Account
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+
+    // Setup event listeners
+    const closeBtn = document.getElementById('deleteAccountClose');
+    const cancelBtn = document.getElementById('deleteAccountCancel');
+    const form = document.getElementById('deleteAccountForm');
+
+    const closeModal = () => {
+        modal.remove();
+        document.body.style.overflow = '';
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const password = document.getElementById('deleteAccountPassword').value;
+        const errorDiv = document.getElementById('deleteAccountError');
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        errorDiv.textContent = '';
+
+        if (!password) {
+            errorDiv.textContent = 'Password is required';
+            return;
+        }
+
+        // Double confirmation
+        if (!confirm('Are you absolutely sure? This action CANNOT be undone!')) {
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Deleting...';
+
+        const result = await deleteAccount(password);
+
+        if (result.success) {
+            closeModal();
+            alert('Your account has been deleted successfully.');
+            window.location.href = '/';
+        } else {
+            errorDiv.textContent = result.error || 'Account deletion failed';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Delete Account';
+        }
     });
 }
