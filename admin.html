@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Farmer's Center</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, hsl(140, 62%, 44%) 0%, hsl(140, 62%, 34%) 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px hsla(140, 62%, 0%, 0.15);
+        }
+
+        .admin-header h1 {
+            margin-bottom: 8px;
+        }
+
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid hsl(140, 62%, 85%);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px hsla(140, 62%, 0%, 0.08);
+        }
+
+        .stat-card h3 {
+            color: hsl(140, 62%, 24%);
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: hsl(140, 62%, 39%);
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid hsl(140, 62%, 85%);
+        }
+
+        .admin-tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: hsl(140, 62%, 24%);
+            transition: all 0.2s;
+        }
+
+        .admin-tab.active {
+            color: hsl(140, 62%, 39%);
+            border-bottom-color: hsl(140, 62%, 39%);
+        }
+
+        .admin-tab:hover:not(.active) {
+            background: hsl(140, 62%, 96%);
+        }
+
+        .admin-panel {
+            display: none;
+            background: white;
+            border: 1px solid hsl(140, 62%, 85%);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px hsla(140, 62%, 0%, 0.08);
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .admin-table th,
+        .admin-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid hsl(140, 62%, 90%);
+        }
+
+        .admin-table th {
+            background: hsl(140, 62%, 96%);
+            font-weight: 600;
+            color: hsl(140, 62%, 24%);
+        }
+
+        .admin-table tr:hover {
+            background: hsl(140, 62%, 98%);
+        }
+
+        .admin-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .admin-badge.admin {
+            background: hsl(48, 100%, 90%);
+            color: hsl(48, 100%, 22%);
+            border: 1px solid hsl(48, 100%, 70%);
+        }
+
+        .admin-badge.user {
+            background: hsl(140, 62%, 93%);
+            color: hsl(140, 62%, 24%);
+            border: 1px solid hsl(140, 62%, 75%);
+        }
+
+        .admin-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .admin-btn.delete {
+            background: hsl(0, 62%, 95%);
+            color: hsl(0, 62%, 35%);
+            border-color: hsl(0, 62%, 75%);
+        }
+
+        .admin-btn.delete:hover {
+            background: hsl(0, 62%, 90%);
+            border-color: hsl(0, 62%, 60%);
+        }
+
+        .admin-btn.view {
+            background: hsl(140, 62%, 96%);
+            color: hsl(140, 62%, 24%);
+            border-color: hsl(140, 62%, 75%);
+        }
+
+        .admin-btn.view:hover {
+            background: hsl(140, 62%, 93%);
+        }
+
+        .no-access {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .no-access h2 {
+            color: hsl(0, 62%, 35%);
+            margin-bottom: 12px;
+        }
+
+        .search-filter {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .search-filter input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid hsl(140, 62%, 85%);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo-container">
+            <a class="logo-link" href="index.html">
+                <div class="logo-image-container">
+                    <img class="logo-img" src="/images/logo/logo.png">
+                </div>
+                <div class="logo-name-container">
+                    <h2 class="logo">Farmer's Center</h2>
+                </div>
+            </a>
+        </div>
+        <div class="nav-container">
+            <nav class="nav-bar">
+                <a href="index.html">Home</a>
+                <a href="guides.html">Guides</a>
+                <a href="diseases.html">Diseases</a>
+                <a href="forum.html">Forum</a>
+                <a href="about.html">About</a>
+                <button class="login-popup-btn">Login</button>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="admin-container" id="adminContainer">
+            <div class="no-access">
+                <h2>🔒 Access Denied</h2>
+                <p>You need administrator privileges to access this page.</p>
+            </div>
+        </div>
+    </main>
+
+    <div class="auth-modal" id="authModal" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="auth-modal-content">
+            <div class="auth-modal-header">
+                <div class="auth-modal-title" id="authModalTitle">Login</div>
+                <button class="auth-modal-close" id="authModalClose" aria-label="Close">×</button>
+            </div>
+            <div class="auth-modal-body">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" data-tab="login">Login</button>
+                    <button class="auth-tab" data-tab="register">Register</button>
+                </div>
+                <div class="auth-forms">
+                    <form id="loginForm" class="auth-form active">
+                        <label>Username<input type="text" id="loginUsername" required></label>
+                        <label>Password<input type="password" id="loginPassword" required></label>
+                        <div class="auth-error" id="loginError"></div>
+                        <button type="submit">Login</button>
+                    </form>
+                    <form id="registerForm" class="auth-form">
+                        <label>Username<input type="text" id="registerUsername" required minlength="3"></label>
+                        <label>Email<input type="email" id="registerEmail" required></label>
+                        <label>Password<input type="password" id="registerPassword" required minlength="6"></label>
+                        <label>Confirm Password<input type="password" id="registerConfirmPassword" required
+                                minlength="6"></label>
+                        <div class="auth-error" id="registerError"></div>
+                        <button type="submit">Register</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/index.js" type="module" defer></script>
+    <script src="js/admin.js" type="module" defer></script>
+</body>
+
+</html>

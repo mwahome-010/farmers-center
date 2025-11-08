@@ -7,7 +7,7 @@ let selectedImageFile = null;
 
 document.addEventListener('DOMContentLoaded', async function () {
     await auth.waitForAuth();
-    
+
     await loadPosts();
     setupEventListeners();
 
@@ -66,6 +66,8 @@ function createPostElement(post) {
     const timeAgo = getTimeAgo(new Date(post.created_at));
     const currentUser = auth.getCurrentUser();
     const isOwner = currentUser && currentUser.id === post.user_id;
+    const isAdmin = currentUser && currentUser.isAdmin;
+    const canDelete = isOwner || isAdmin;
 
     postDiv.innerHTML = `
         <div class="post-header">
@@ -73,7 +75,11 @@ function createPostElement(post) {
                 <span class="badge">${capitalize(post.category_name)}</span>
                 <span class="status">${capitalize(post.status)}</span>
             </div>
-            ${isOwner ? `<button class="delete-post-btn" data-post-id="${post.id}" title="Delete post">×</button>` : ''}
+            ${canDelete ? `
+                <button class="delete-post-btn" data-post-id="${post.id}" data-is-admin="${isAdmin}" title="${isAdmin ? 'Delete post (Admin)' : 'Delete post'}">
+                    ×
+                </button>
+            ` : ''}
         </div>
         <h3>${escapeHTML(post.title)}</h3>
         <p class="post-meta">Posted by <strong>${escapeHTML(post.username)}</strong> · <span>${timeAgo}</span> · <span class="counts">${post.views} views · ${post.comment_count} comments</span></p>
@@ -123,11 +129,17 @@ function createCommentElement(comment) {
 
     const currentUser = auth.getCurrentUser();
     const isOwner = currentUser && currentUser.id === comment.user_id;
+    const isAdmin = currentUser && currentUser.isAdmin;
+    const canDelete = isOwner || isAdmin;
 
     commentDiv.innerHTML = `
         <div class="comment-header">
             <p><strong>${escapeHTML(comment.username)}:</strong> ${escapeHTML(comment.content)}</p>
-            ${isOwner ? `<button class="delete-comment-btn" data-comment-id="${comment.id}" title="Delete comment">×</button>` : ''}
+            ${canDelete ? `
+                <button class="delete-comment-btn" data-comment-id="${comment.id}" data-is-admin="${isAdmin}" title="${isAdmin ? 'Delete comment (Admin)' : 'Delete comment'}">
+                    ×
+                </button>
+            ` : ''}
         </div>
     `;
 
@@ -211,7 +223,7 @@ function setupEventListeners() {
                     updateImagePreview(null);
                     return;
                 }
-                
+
                 if (!file.type.match(/^image\/(jpeg|jpg|png|gif|webp)$/)) {
                     alert('Only JPEG, PNG, GIF, and WebP images are allowed');
                     e.target.value = '';
@@ -219,7 +231,7 @@ function setupEventListeners() {
                     updateImagePreview(null);
                     return;
                 }
-                
+
                 selectedImageFile = file;
                 updateImagePreview(file);
             } else {
@@ -238,8 +250,14 @@ function setupEventListeners() {
         const deletePostBtn = e.target.closest('.delete-post-btn');
         if (deletePostBtn) {
             const postId = deletePostBtn.getAttribute('data-post-id');
-            if (confirm('Are you sure you want to delete this post? This will also delete all comments.')) {
-                await deletePost(postId);
+            const isAdmin = deletePostBtn.getAttribute('data-is-admin') === 'true';
+
+            const confirmMsg = isAdmin
+                ? 'Are you sure you want to delete this post as an admin? This will also delete all comments.'
+                : 'Are you sure you want to delete this post? This will also delete all comments.';
+
+            if (confirm(confirmMsg)) {
+                await deletePost(postId, isAdmin);
             }
             return;
         }
@@ -247,17 +265,27 @@ function setupEventListeners() {
         const deleteCommentBtn = e.target.closest('.delete-comment-btn');
         if (deleteCommentBtn) {
             const commentId = deleteCommentBtn.getAttribute('data-comment-id');
-            if (confirm('Are you sure you want to delete this comment?')) {
-                await deleteComment(commentId);
+            const isAdmin = deleteCommentBtn.getAttribute('data-is-admin') === 'true';
+
+            const confirmMsg = isAdmin
+                ? 'Are you sure you want to delete this comment as an admin?'
+                : 'Are you sure you want to delete this comment?';
+
+            if (confirm(confirmMsg)) {
+                await deleteComment(commentId, isAdmin);
             }
             return;
         }
     });
 }
 
-async function deletePost(postId) {
+async function deletePost(postId, isAdmin = false) {
     try {
-        const response = await fetch(`http://localhost:3000/api/forum/posts/${postId}`, {
+        const endpoint = isAdmin
+            ? `http://localhost:3000/api/admin/posts/${postId}`
+            : `http://localhost:3000/api/forum/posts/${postId}`;
+
+        const response = await fetch(endpoint, {
             method: 'DELETE',
             credentials: 'include'
         });
@@ -279,9 +307,13 @@ async function deletePost(postId) {
     }
 }
 
-async function deleteComment(commentId) {
+async function deleteComment(commentId, isAdmin = false) {
     try {
-        const response = await fetch(`http://localhost:3000/api/forum/comments/${commentId}`, {
+        const endpoint = isAdmin
+            ? `http://localhost:3000/api/admin/comments/${commentId}`
+            : `http://localhost:3000/api/forum/comments/${commentId}`;
+
+        const response = await fetch(endpoint, {
             method: 'DELETE',
             credentials: 'include'
         });
@@ -307,7 +339,7 @@ async function deleteComment(commentId) {
 
 function updateImagePreview(file) {
     let previewContainer = document.querySelector('.image-preview-container');
-    
+
     if (!previewContainer) {
         previewContainer = document.createElement('div');
         previewContainer.className = 'image-preview-container';
@@ -316,10 +348,10 @@ function updateImagePreview(file) {
             imageInput.parentElement.appendChild(previewContainer);
         }
     }
-    
+
     if (file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             previewContainer.innerHTML = `
                 <div class="image-preview">
                     <img src="${e.target.result}" alt="Preview" style="max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 8px;">
@@ -333,7 +365,7 @@ function updateImagePreview(file) {
     }
 }
 
-window.removeImagePreview = function() {
+window.removeImagePreview = function () {
     selectedImageFile = null;
     const imageInput = document.getElementById('newPostImageFile');
     if (imageInput) {
@@ -428,7 +460,7 @@ async function handleNewPost(e) {
         formData.append('title', title);
         formData.append('category', category);
         formData.append('body', body);
-        
+
         if (imageInput && imageInput.files && imageInput.files[0]) {
             formData.append('image', imageInput.files[0]);
         }
@@ -474,7 +506,7 @@ function closeModal() {
 
         const form = document.getElementById('newPostForm');
         if (form) form.reset();
-        
+
         selectedImageFile = null;
         updateImagePreview(null);
     }

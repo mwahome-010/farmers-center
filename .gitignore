@@ -6,3 +6,4 @@ improved-guides.html
 api_key.py
 node_modules/
 uploads/
+*.sql

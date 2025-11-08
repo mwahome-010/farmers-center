@@ -128,6 +128,28 @@ const isAuthenticated = (req, res, next) => {
     }
 };
 
+const isAdmin = async (req, res, next) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    try {
+        const [users] = await pool.query(
+            'SELECT is_admin FROM users WHERE id = ?',
+            [req.session.userId]
+        );
+
+        if (users.length === 0 || !users[0].is_admin) {
+            return res.status(403).json({ error: 'Admin access required' });
+        }
+
+        next();
+    } catch (error) {
+        console.error('Admin check error:', error);
+        res.status(500).json({ error: 'Authorization check failed' });
+    }
+};
+
 app.post('/api/register', async (req, res) => {
     const { username, email, password } = req.body;
 
@@ -225,15 +247,30 @@ app.post('/api/logout', (req, res) => {
     });
 });
 
-app.get('/api/auth/status', (req, res) => {
+app.get('/api/auth/status', async (req, res) => {
     if (req.session.userId) {
-        res.json({
-            authenticated: true,
-            user: {
-                id: req.session.userId,
-                username: req.session.username
+        try {
+            const [users] = await pool.query(
+                'SELECT id, username, is_admin FROM users WHERE id = ?',
+                [req.session.userId]
+            );
+
+            if (users.length > 0) {
+                res.json({
+                    authenticated: true,
+                    user: {
+                        id: users[0].id,
+                        username: users[0].username,
+                        isAdmin: users[0].is_admin
+                    }
+                });
+            } else {
+                res.json({ authenticated: false });
             }
-        });
+        } catch (error) {
+            console.error('Auth status error:', error);
+            res.json({ authenticated: false });
+        }
     } else {
         res.json({ authenticated: false });
     }
@@ -625,9 +662,9 @@ app.delete('/api/user/account', isAuthenticated, async (req, res) => {
 
         /* Delete comments first, before account */
         await pool.query('DELETE FROM comments WHERE user_id = ?', [userId]);
-        
+
         await pool.query('DELETE FROM posts WHERE user_id = ?', [userId]);
-        
+
         await pool.query('DELETE FROM users WHERE id = ?', [userId]);
 
         req.session.destroy((err) => {
@@ -655,6 +692,139 @@ app.get('/api/forum/categories', async (req, res) => {
     } catch (error) {
         console.error('Error fetching categories:', error);
         res.status(500).json({ error: 'Failed to fetch categories' });
+    }
+});
+
+app.get('/api/admin/users', isAdmin, async (req, res) => {
+    try {
+        const [users] = await pool.query(`
+            SELECT 
+                u.id,
+                u.username,
+                u.email,
+                u.is_admin,
+                u.created_at,
+                COUNT(DISTINCT p.id) as post_count,
+                COUNT(DISTINCT c.id) as comment_count
+            FROM users u
+            LEFT JOIN posts p ON u.id = p.user_id
+            LEFT JOIN comments c ON u.id = c.user_id
+            GROUP BY u.id
+            ORDER BY u.created_at DESC
+        `);
+
+        res.json({ success: true, users });
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
+});
+
+app.delete('/api/admin/comments/:id', isAdmin, async (req, res) => {
+    const commentId = req.params.id;
+
+    try {
+        const [comments] = await pool.query(
+            'SELECT id, post_id FROM comments WHERE id = ?',
+            [commentId]
+        );
+
+        if (comments.length === 0) {
+            return res.status(404).json({ error: 'Comment not found' });
+        }
+
+        const postId = comments[0].post_id;
+
+        await pool.query('DELETE FROM comments WHERE id = ?', [commentId]);
+
+        res.json({
+            success: true,
+            message: 'Comment deleted successfully by admin',
+            postId: postId
+        });
+
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        res.status(500).json({ error: 'Failed to delete comment' });
+    }
+});
+
+app.delete('/api/admin/users/:id', isAdmin, async (req, res) => {
+    const userId = parseInt(req.params.id);
+
+    // Prevent admin from deleting themselves
+    if (userId === req.session.userId) {
+        return res.status(400).json({ error: 'You cannot delete your own account via admin panel' });
+    }
+
+    try {
+        const [users] = await pool.query(
+            'SELECT id FROM users WHERE id = ?',
+            [userId]
+        );
+
+        if (users.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Get all posts with images from this user
+        const [posts] = await pool.query(
+            'SELECT image_path FROM posts WHERE user_id = ? AND image_path IS NOT NULL',
+            [userId]
+        );
+
+        // Delete associated images storage
+        posts.forEach(post => {
+            if (post.image_path) {
+                const fullPath = path.join(__dirname, '..', post.image_path);
+                if (fs.existsSync(fullPath)) {
+                    try {
+                        fs.unlinkSync(fullPath);
+                    } catch (err) {
+                        console.error('Error deleting image:', err);
+                    }
+                }
+            }
+        });
+
+        await pool.query('DELETE FROM comments WHERE user_id = ?', [userId]);
+
+        await pool.query('DELETE FROM posts WHERE user_id = ?', [userId]);
+
+        await pool.query('DELETE FROM users WHERE id = ?', [userId]);
+
+        res.json({
+            success: true,
+            message: 'User deleted successfully by admin'
+        });
+
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ error: 'Failed to delete user' });
+    }
+});
+
+app.get('/api/admin/stats', isAdmin, async (req, res) => {
+    try {
+        const [userCount] = await pool.query('SELECT COUNT(*) as count FROM users');
+        const [postCount] = await pool.query('SELECT COUNT(*) as count FROM posts');
+        const [commentCount] = await pool.query('SELECT COUNT(*) as count FROM comments');
+        const [recentUsers] = await pool.query(
+            'SELECT username, created_at FROM users ORDER BY created_at DESC LIMIT 5'
+        );
+
+        res.json({
+            success: true,
+            stats: {
+                totalUsers: userCount[0].count,
+                totalPosts: postCount[0].count,
+                totalComments: commentCount[0].count,
+                recentUsers: recentUsers
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching stats:', error);
+        res.status(500).json({ error: 'Failed to fetch stats' });
     }
 });
 

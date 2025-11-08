@@ -31,7 +31,8 @@ header {
   border-bottom: hsl(140, 62%, 6%) solid 2px;
 }
 
-.logo-container, .nav-container {
+.logo-container,
+.nav-container {
   display: inline-block;
 }
 
@@ -185,7 +186,7 @@ header {
 
 .user-dropdown-sep {
   border: none;
-  border-top: 1px solid rgba(0,0,0,0.08);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
   margin: 6px 0;
 }
 
@@ -654,23 +655,23 @@ main {
 }
 
 .new-post-btn {
-    background-color: hsl(140, 62%, 44%);
-    color: white;
-    border: 1px solid hsl(140, 62%, 0%);
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: background-color 0.3s;
+  background-color: hsl(140, 62%, 44%);
+  color: white;
+  border: 1px solid hsl(140, 62%, 0%);
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s;
 }
 
 .new-post-btn:hover {
-    background-color: hsl(140, 62%, 24%);
+  background-color: hsl(140, 62%, 24%);
 }
 
 .new-post-btn:active {
-    transform: scale(0.98);
+  transform: scale(0.98);
 }
 
 .forum-container {
@@ -1245,4 +1246,17 @@ main {
 
 #forumPostModal #newPostForm input[type="file"]::file-selector-button:hover {
   background: hsl(140, 62%, 87%);
+}
+
+.user-dropdown-item.admin-item {
+  background: linear-gradient(135deg, hsl(140, 62%, 96%) 0%, hsl(140, 62%, 93%) 100%);
+  border: 1px solid hsl(140, 62%, 85%);
+  color: hsl(140, 62%, 24%);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.user-dropdown-item.admin-item:hover {
+  background: linear-gradient(135deg, hsl(140, 62%, 93%) 0%, hsl(140, 62%, 90%) 100%);
+  border-color: hsl(140, 62%, 75%);
 }

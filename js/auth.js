@@ -1,7 +1,7 @@
 const API_BASE_URL = 'http://localhost:3000/api';
 
 let authReadyPromise = null;
-let authInitialized  = false;
+let authInitialized = false;
 let currentUser = null;
 
 async function init() {
@@ -28,10 +28,10 @@ async function checkAuthStatus() {
         });
 
         const data = await response.json();
-        
+
         if (data.authenticated && data.user) {
             currentUser = data.user;
-            console.log('User logged in:', currentUser); 
+            console.log('User logged in:', currentUser);
         } else {
             currentUser = null;
             console.log('User not logged in');
@@ -458,6 +458,7 @@ function renderUserControls() {
         if (existing) return;
 
         const initial = (currentUser && currentUser.username ? currentUser.username.charAt(0) : '?').toUpperCase();
+        const isAdmin = currentUser && currentUser.isAdmin;
 
         const wrapper = document.createElement('div');
         wrapper.className = 'user-menu';
@@ -466,6 +467,12 @@ function renderUserControls() {
                 <span class="avatar-initial">${initial}</span>
             </button>
             <div class="user-dropdown" role="menu" aria-hidden="true">
+                ${isAdmin ? `
+                    <button type="button" class="user-dropdown-item admin-item" data-action="admin-panel" role="menuitem">
+                        🛡️ Admin Panel
+                    </button>
+                    <hr class="user-dropdown-sep" />
+                ` : ''}
                 <button type="button" class="user-dropdown-item" data-action="account" role="menuitem">Account overview</button>
                 <button type="button" class="user-dropdown-item" data-action="change-username" role="menuitem">Change username</button>
                 <hr class="user-dropdown-sep" />
@@ -531,6 +538,8 @@ function ensureUserMenuHandlers() {
                 window.dispatchEvent(new CustomEvent('auth:menu', { detail: { action: 'account' } }));
             } else if (action === 'change-username') {
                 window.dispatchEvent(new CustomEvent('auth:menu', { detail: { action: 'change-username' } }));
+            } else if (action === 'admin-panel') {
+                window.location.href = '/admin.html';
             }
             // Close any open menu
             document.querySelectorAll('.user-menu.open').forEach(m => m.classList.remove('open'));
