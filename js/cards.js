@@ -20,16 +20,193 @@ document.addEventListener('DOMContentLoaded', function () {
             modalImage.alt = '';
         }
 
-        modalDetails.innerHTML = '';
-        detailEls.forEach(function (el) {
-            var clone = el.cloneNode(true);
-            clone.classList.add('modal-detail-item');
-            modalDetails.appendChild(clone);
-        });
+        // Build structured content from card data
+        modalDetails.innerHTML = buildStructuredContent(detailEls);
 
         modal.classList.add('open');
         modal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
+
+        // Set up tab switching after modal is open
+        setupTabs();
+    }
+
+    function buildStructuredContent(detailEls) {
+        // Extract data from card elements
+        let data = {
+            causedBy: '',
+            affects: '',
+            symptoms: '',
+            causes: '',
+            treatment: '',
+            prevention: ''
+        };
+
+        let currentSection = '';
+        detailEls.forEach(function (el) {
+            if (el.tagName === 'H2') {
+                currentSection = el.textContent.toLowerCase().trim();
+            } else if (el.tagName === 'P') {
+                const text = el.textContent.trim();
+                if (currentSection.includes('cause')) {
+                    data.causes += `<p>${text}</p>`;
+                    // Try to extract pathogen name for "Caused By"
+                    if (text.toLowerCase().includes('caused by') && !data.causedBy) {
+                        const match = text.match(/caused by\s+(?:a\s+)?(?:fungus|bacteria|virus)?\s*(?:called\s+)?([^.]+)/i);
+                        if (match) {
+                            data.causedBy = match[1].trim();
+                        }
+                    }
+                } else if (currentSection.includes('symptom')) {
+                    data.symptoms += `<p>${text}</p>`;
+                } else if (currentSection.includes('treatment')) {
+                    data.treatment += `<p>${text}</p>`;
+                } else if (currentSection.includes('prevention')) {
+                    data.prevention += `<p>${text}</p>`;
+                } else if (currentSection.includes('planting')) {
+                    data.planting = (data.planting || '') + `<p>${text}</p>`;
+                } else if (currentSection.includes('care')) {
+                    data.care = (data.care || '') + `<p>${text}</p>`;
+                }
+            }
+        });
+
+        // Determine if this is a disease or guide card
+        const isDisease = data.symptoms || data.treatment;
+        const isGuide = data.planting || data.care;
+
+        if (isDisease) {
+            return buildDiseaseContent(data);
+        } else if (isGuide) {
+            return buildGuideContent(data);
+        } else {
+            // Fallback to simple display
+            return buildFallbackContent(detailEls);
+        }
+    }
+
+    function buildDiseaseContent(data) {
+        return `
+            <div class="quick-facts-section">
+                <div class="quick-facts-grid">
+                    ${data.causedBy ? `
+                    <div class="fact-item">
+                        <div class="fact-icon">🦠</div>
+                        <div class="fact-content">
+                            <div class="fact-label">Caused By</div>
+                            <div class="fact-value">${data.causedBy}</div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+
+            <div class="info-tabs">
+                <button class="tab-btn active" data-tab="symptoms">Symptoms</button>
+                <button class="tab-btn" data-tab="causes">Causes</button>
+                <button class="tab-btn" data-tab="treatment">Treatment</button>
+                <button class="tab-btn" data-tab="prevention">Prevention</button>
+            </div>
+
+            <div class="tab-contents">
+                <div id="symptomsTab" class="tab-content active">
+                    <div class="info-section">
+                        <h3>🔍 What to Look For</h3>
+                        ${data.symptoms || '<p>No symptom information available.</p>'}
+                    </div>
+                </div>
+
+                <div id="causesTab" class="tab-content">
+                    <div class="info-section">
+                        <h3>🦠 Disease Origin</h3>
+                        ${data.causes || '<p>No cause information available.</p>'}
+                    </div>
+                </div>
+
+                <div id="treatmentTab" class="tab-content">
+                    <div class="info-section">
+                        <h3>💊 Treatment Methods</h3>
+                        ${data.treatment || '<p>No treatment information available.</p>'}
+                    </div>
+                </div>
+
+                <div id="preventionTab" class="tab-content">
+                    <div class="info-section">
+                        <h3>🛡️ Prevention Strategies</h3>
+                        ${data.prevention || '<p>No prevention information available.</p>'}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function buildGuideContent(data) {
+        return `
+            <div class="info-tabs">
+                <button class="tab-btn active" data-tab="planting">Planting</button>
+                <button class="tab-btn" data-tab="care">Care</button>
+            </div>
+
+            <div class="tab-contents">
+                <div id="plantingTab" class="tab-content active">
+                    <div class="info-section">
+                        <h3>🌱 Planting Suggestions</h3>
+                        ${data.planting || '<p>No planting information available.</p>'}
+                    </div>
+                </div>
+
+                <div id="careTab" class="tab-content">
+                    <div class="info-section">
+                        <h3>🌿 Care Instructions</h3>
+                        ${data.care || '<p>No care information available.</p>'}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function buildFallbackContent(detailEls) {
+        let content = '<div class="info-section">';
+        detailEls.forEach(function (el) {
+            var clone = el.cloneNode(true);
+            clone.classList.add('modal-detail-item');
+            content += clone.outerHTML;
+        });
+        content += '</div>';
+        return content;
+    }
+
+    function setupTabs() {
+        // Remove any existing listeners
+        var tabs = modal.querySelectorAll('.tab-btn');
+        tabs.forEach(function (tab) {
+            var newTab = tab.cloneNode(true);
+            tab.parentNode.replaceChild(newTab, tab);
+        });
+
+        // Add new listeners
+        modal.querySelectorAll('.tab-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                switchTab(this.getAttribute('data-tab'));
+            });
+        });
+    }
+
+    function switchTab(tabName) {
+        // Remove active class from all tabs and contents
+        modal.querySelectorAll('.tab-btn').forEach(function (btn) {
+            btn.classList.remove('active');
+        });
+        modal.querySelectorAll('.tab-content').forEach(function (content) {
+            content.classList.remove('active');
+        });
+
+        // Add active class to selected tab and content
+        var selectedTab = modal.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+        var selectedContent = modal.querySelector(`#${tabName}Tab`);
+
+        if (selectedTab) selectedTab.classList.add('active');
+        if (selectedContent) selectedContent.classList.add('active');
     }
 
     function closeModal() {
@@ -46,8 +223,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
     if (modal) {
-        modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
-        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+        modal.addEventListener('click', function (e) { 
+            if (e.target === modal) closeModal(); 
+        });
+        document.addEventListener('keydown', function (e) { 
+            if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); 
+        });
     }
 
     /* PDF download */
@@ -66,11 +247,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 imgClone.style.borderRadius = '8px';
                 imgClone.style.margin = '8px 0';
             }
-            var detailsClone = modalDetails ? modalDetails.cloneNode(true) : document.createElement('div');
-            detailsClone.querySelectorAll('button').forEach(function (b) { b.remove(); });
+            
+            // Clone all tab contents for PDF
+            var allContent = document.createElement('div');
+            modal.querySelectorAll('.tab-content').forEach(function(tab) {
+                var tabClone = tab.cloneNode(true);
+                tabClone.style.display = 'block';
+                allContent.appendChild(tabClone);
+            });
+            
+            allContent.querySelectorAll('button').forEach(function (b) { b.remove(); });
             content.appendChild(heading);
             if (imgClone) content.appendChild(imgClone);
-            content.appendChild(detailsClone);
+            content.appendChild(allContent);
 
             var opt = {
                 margin: 10,
