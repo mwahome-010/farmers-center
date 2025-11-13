@@ -5,6 +5,8 @@ const API_BASE_URL = 'http://localhost:3000/api';
 let currentTab = 'users';
 let allUsers = [];
 let allPosts = [];
+let allDiseases = [];
+let allGuides = [];
 
 document.addEventListener('DOMContentLoaded', async function () {
     await auth.waitForAuth();
@@ -45,7 +47,7 @@ async function initAdminPanel() {
     container.innerHTML = `
         <div class="admin-header">
             <h1>🛡️ Admin Dashboard</h1>
-            <p>Manage users, posts, and comments</p>
+            <p>Manage users, posts, diseases, and guides</p>
         </div>
 
         <div class="admin-stats" id="adminStats">
@@ -58,14 +60,20 @@ async function initAdminPanel() {
                 <div class="stat-value" id="statPosts">-</div>
             </div>
             <div class="stat-card">
-                <h3>Total Comments</h3>
-                <div class="stat-value" id="statComments">-</div>
+                <h3>Total Diseases</h3>
+                <div class="stat-value" id="statDiseases">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Guides</h3>
+                <div class="stat-value" id="statGuides">-</div>
             </div>
         </div>
 
         <div class="admin-tabs">
             <button class="admin-tab active" data-tab="users">Users</button>
             <button class="admin-tab" data-tab="posts">Posts</button>
+            <button class="admin-tab" data-tab="diseases">Diseases</button>
+            <button class="admin-tab" data-tab="guides">Guides</button>
         </div>
 
         <div class="admin-panel active" id="usersPanel">
@@ -81,12 +89,30 @@ async function initAdminPanel() {
             </div>
             <div id="postsTable"></div>
         </div>
+
+        <div class="admin-panel" id="diseasesPanel">
+            <div class="search-filter">
+                <input type="text" id="diseaseSearch" placeholder="Search diseases...">
+                <button class="admin-btn view" id="addDiseaseBtn">+ Add Disease</button>
+            </div>
+            <div id="diseasesTable"></div>
+        </div>
+
+        <div class="admin-panel" id="guidesPanel">
+            <div class="search-filter">
+                <input type="text" id="guideSearch" placeholder="Search guides...">
+                <button class="admin-btn view" id="addGuideBtn">+ Add Guide</button>
+            </div>
+            <div id="guidesTable"></div>
+        </div>
     `;
 
     setupTabHandlers();
     await loadStats();
     await loadUsers();
     await loadPosts();
+    await loadDiseases();
+    await loadGuides();
 }
 
 function setupTabHandlers() {
@@ -110,6 +136,30 @@ function setupTabHandlers() {
         postSearch.addEventListener('input', debounce((e) => {
             filterPosts(e.target.value);
         }, 300));
+    }
+    
+    const diseaseSearch = document.getElementById('diseaseSearch');
+    if (diseaseSearch) {
+        diseaseSearch.addEventListener('input', debounce((e) => {
+            filterDiseases(e.target.value);
+        }, 300));
+    }
+    
+    const guideSearch = document.getElementById('guideSearch');
+    if (guideSearch) {
+        guideSearch.addEventListener('input', debounce((e) => {
+            filterGuides(e.target.value);
+        }, 300));
+    }
+    
+    const addDiseaseBtn = document.getElementById('addDiseaseBtn');
+    if (addDiseaseBtn) {
+        addDiseaseBtn.addEventListener('click', () => showDiseaseModal());
+    }
+    
+    const addGuideBtn = document.getElementById('addGuideBtn');
+    if (addGuideBtn) {
+        addGuideBtn.addEventListener('click', () => showGuideModal());
     }
 }
 
@@ -139,10 +189,472 @@ async function loadStats() {
             document.getElementById('statPosts').textContent = data.stats.totalPosts;
             document.getElementById('statComments').textContent = data.stats.totalComments;
         }
+        
+        // Load disease and guide counts
+        const diseasesRes = await fetch(`${API_BASE_URL}/diseases`, { credentials: 'include' });
+        const diseasesData = await diseasesRes.json();
+        if (diseasesData.success) {
+            document.getElementById('statDiseases').textContent = diseasesData.diseases.length;
+        }
+        
+        const guidesRes = await fetch(`${API_BASE_URL}/guides`, { credentials: 'include' });
+        const guidesData = await guidesRes.json();
+        if (guidesData.success) {
+            document.getElementById('statGuides').textContent = guidesData.guides.length;
+        }
     } catch (error) {
         console.error('Error loading stats:', error);
     }
 }
+
+async function loadDiseases() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/diseases`, {
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            allDiseases = data.diseases;
+            renderDiseases(allDiseases);
+        }
+    } catch (error) {
+        console.error('Error loading diseases:', error);
+    }
+}
+
+function renderDiseases(diseases) {
+    const container = document.getElementById('diseasesTable');
+
+    if (diseases.length === 0) {
+        container.innerHTML = '<p style="text-align: center; padding: 20px;">No diseases found.</p>';
+        return;
+    }
+
+    container.innerHTML = `
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Caused By</th>
+                    <th>Image</th>
+                    <th>Created By</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${diseases.map(disease => `
+                    <tr>
+                        <td>${disease.id}</td>
+                        <td><strong>${escapeHTML(disease.name)}</strong></td>
+                        <td>${disease.caused_by ? escapeHTML(disease.caused_by) : '<em style="color: #999;">-</em>'}</td>
+                        <td>
+                            ${disease.image_path ? 
+                                `<img src="${disease.image_path}" alt="${escapeHTML(disease.name)}" style="max-width: 60px; max-height: 60px; object-fit: cover; border-radius: 4px;">` 
+                                : '<em style="color: #999;">No image</em>'}
+                        </td>
+                        <td>${disease.created_by_username || '<em style="color: #999;">System</em>'}</td>
+                        <td>${formatDate(disease.created_at)}</td>
+                        <td>
+                            <button class="admin-btn view" onclick="showDiseaseModal(${disease.id})">
+                                Edit
+                            </button>
+                            <button class="admin-btn delete" onclick="deleteDisease(${disease.id}, '${escapeHTML(disease.name)}')">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function filterDiseases(searchTerm) {
+    const filtered = allDiseases.filter(disease =>
+        disease.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (disease.caused_by && disease.caused_by.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+    renderDiseases(filtered);
+}
+
+function showDiseaseModal(diseaseId = null) {
+    const isEdit = diseaseId !== null;
+    const disease = isEdit ? allDiseases.find(d => d.id === diseaseId) : null;
+    
+    const existingModal = document.getElementById('diseaseModal');
+    if (existingModal) existingModal.remove();
+    
+    const modal = document.createElement('div');
+    modal.id = 'diseaseModal';
+    modal.className = 'admin-modal open';
+    modal.innerHTML = `
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <div class="admin-modal-title">${isEdit ? 'Edit' : 'Add'} Disease</div>
+                <button class="admin-modal-close" type="button" onclick="closeDiseaseModal()" aria-label="Close modal">×</button>
+            </div>
+            <div class="admin-modal-body">
+                <form id="diseaseForm" class="admin-form" enctype="multipart/form-data">
+                    <div class="admin-form-grid">
+                        <label class="admin-field">
+                            <span>Name *</span>
+                            <input type="text" id="diseaseName" value="${isEdit ? escapeHTML(disease.name) : ''}" required>
+                        </label>
+                        <label class="admin-field">
+                            <span>Caused By</span>
+                            <input type="text" id="diseaseCausedBy" value="${isEdit && disease.caused_by ? escapeHTML(disease.caused_by) : ''}">
+                        </label>
+                        <label class="admin-field">
+                            <span>Affects</span>
+                            <textarea id="diseaseAffects" rows="2" placeholder="Plants, livestock, etc.">${isEdit && disease.affects ? escapeHTML(disease.affects) : ''}</textarea>
+                        </label>
+                        <label class="admin-field">
+                            <span>Symptoms</span>
+                            <textarea id="diseaseSymptoms" rows="3" placeholder="Visible signs, indicators">${isEdit && disease.symptoms ? escapeHTML(disease.symptoms) : ''}</textarea>
+                        </label>
+                        <label class="admin-field">
+                            <span>Causes</span>
+                            <textarea id="diseaseCauses" rows="3" placeholder="Environmental or biological causes">${isEdit && disease.causes ? escapeHTML(disease.causes) : ''}</textarea>
+                        </label>
+                        <label class="admin-field">
+                            <span>Treatment</span>
+                            <textarea id="diseaseTreatment" rows="3" placeholder="Recommended treatment plan">${isEdit && disease.treatment ? escapeHTML(disease.treatment) : ''}</textarea>
+                        </label>
+                        <label class="admin-field">
+                            <span>Prevention</span>
+                            <textarea id="diseasePrevention" rows="3" placeholder="Preventive actions or tips">${isEdit && disease.prevention ? escapeHTML(disease.prevention) : ''}</textarea>
+                        </label>
+                    </div>
+                    <div class="admin-field">
+                        <span>Image (Max 5MB)</span>
+                        <input type="file" id="diseaseImage" accept="image/*">
+                        <p class="admin-form-help">Upload image: JPG, PNG, or webp.</p>
+                    </div>
+                    ${isEdit && disease.image_path ? `
+                        <div class="admin-form-preview">
+                            <strong>Current image preview</strong>
+                            <img src="${disease.image_path}" alt="${escapeHTML(disease.name)} image preview">
+                        </div>
+                    ` : ''}
+                    <div class="admin-error" id="diseaseError" style="display:none;"></div>
+                    <div class="admin-modal-actions">
+                        <button type="button" class="modal-btn secondary" onclick="closeDiseaseModal()">Cancel</button>
+                        <button type="submit" class="modal-btn primary">
+                            ${isEdit ? 'Update Disease' : 'Create Disease'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    const form = document.getElementById('diseaseForm');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await saveDiseaseForm(diseaseId);
+    });
+}
+
+async function saveDiseaseForm(diseaseId) {
+    const formData = new FormData();
+    formData.append('name', document.getElementById('diseaseName').value.trim());
+    formData.append('caused_by', document.getElementById('diseaseCausedBy').value.trim());
+    formData.append('affects', document.getElementById('diseaseAffects').value.trim());
+    formData.append('symptoms', document.getElementById('diseaseSymptoms').value.trim());
+    formData.append('causes', document.getElementById('diseaseCauses').value.trim());
+    formData.append('treatment', document.getElementById('diseaseTreatment').value.trim());
+    formData.append('prevention', document.getElementById('diseasePrevention').value.trim());
+    
+    const imageFile = document.getElementById('diseaseImage').files[0];
+    if (imageFile) {
+        formData.append('image', imageFile);
+    }
+    
+    const errorDiv = document.getElementById('diseaseError');
+    errorDiv.textContent = '';
+    errorDiv.style.display = 'none';
+    
+    try {
+        const url = diseaseId 
+            ? `${API_BASE_URL}/diseases/${diseaseId}`
+            : `${API_BASE_URL}/diseases`;
+        
+        const response = await fetch(url, {
+            method: diseaseId ? 'PUT' : 'POST',
+            credentials: 'include',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            closeDiseaseModal();
+            await loadDiseases();
+            await loadStats();
+            alert(data.message);
+        } else {
+            errorDiv.textContent = data.error;
+            errorDiv.style.display = data.error ? 'block' : 'none';
+        }
+    } catch (error) {
+        console.error('Error saving disease:', error);
+        errorDiv.textContent = 'Failed to save disease';
+        errorDiv.style.display = 'block';
+    }
+}
+
+window.closeDiseaseModal = function() {
+    const modal = document.getElementById('diseaseModal');
+    if (modal) modal.remove();
+};
+
+window.showDiseaseModal = showDiseaseModal;
+
+window.deleteDisease = async function(diseaseId, name) {
+    if (!confirm(`Are you sure you want to delete "${name}"?\n\nThis action cannot be undone!`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/diseases/${diseaseId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            await loadDiseases();
+            await loadStats();
+            alert('Disease deleted successfully');
+        } else {
+            alert(data.error || 'Failed to delete disease');
+        }
+    } catch (error) {
+        console.error('Error deleting disease:', error);
+        alert('Failed to delete disease');
+    }
+};
+
+// GUIDES MGT
+
+async function loadGuides() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/guides`, {
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            allGuides = data.guides;
+            renderGuides(allGuides);
+        }
+    } catch (error) {
+        console.error('Error loading guides:', error);
+    }
+}
+
+function renderGuides(guides) {
+    const container = document.getElementById('guidesTable');
+
+    if (guides.length === 0) {
+        container.innerHTML = '<p style="text-align: center; padding: 20px;">No guides found.</p>';
+        return;
+    }
+
+    container.innerHTML = `
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Image</th>
+                    <th>Created By</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${guides.map(guide => `
+                    <tr>
+                        <td>${guide.id}</td>
+                        <td><strong>${escapeHTML(guide.name)}</strong></td>
+                        <td>
+                            ${guide.image_path ? 
+                                `<img src="${guide.image_path}" alt="${escapeHTML(guide.name)}" style="max-width: 60px; max-height: 60px; object-fit: cover; border-radius: 4px;">` 
+                                : '<em style="color: #999;">No image</em>'}
+                        </td>
+                        <td>${guide.created_by_username || '<em style="color: #999;">System</em>'}</td>
+                        <td>${formatDate(guide.created_at)}</td>
+                        <td>
+                            <button class="admin-btn view" onclick="showGuideModal(${guide.id})">
+                                Edit
+                            </button>
+                            <button class="admin-btn delete" onclick="deleteGuide(${guide.id}, '${escapeHTML(guide.name)}')">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function filterGuides(searchTerm) {
+    const filtered = allGuides.filter(guide =>
+        guide.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    renderGuides(filtered);
+}
+
+function showGuideModal(guideId = null) {
+    const isEdit = guideId !== null;
+    const guide = isEdit ? allGuides.find(g => g.id === guideId) : null;
+    
+    const existingModal = document.getElementById('guideModal');
+    if (existingModal) existingModal.remove();
+    
+    const modal = document.createElement('div');
+    modal.id = 'guideModal';
+    modal.className = 'admin-modal open';
+    modal.innerHTML = `
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <div class="admin-modal-title">${isEdit ? 'Edit' : 'Add'} Guide</div>
+                <button class="admin-modal-close" type="button" onclick="closeGuideModal()" aria-label="Close modal">×</button>
+            </div>
+            <div class="admin-modal-body">
+                <form id="guideFormAdmin" class="admin-form" enctype="multipart/form-data">
+                    <div class="admin-form-grid">
+                        <label class="admin-field">
+                            <span>Name *</span>
+                            <input type="text" id="guideName" value="${isEdit ? escapeHTML(guide.name) : ''}" required>
+                        </label>
+                        <label class="admin-field">
+                            <span>Planting Suggestions</span>
+                            <textarea id="guidePlanting" rows="4" placeholder="Soil requirements, planting schedule, spacing">${isEdit && guide.planting_suggestions ? escapeHTML(guide.planting_suggestions) : ''}</textarea>
+                        </label>
+                        <label class="admin-field">
+                            <span>Care Instructions</span>
+                            <textarea id="guideCare" rows="4" placeholder="Watering, fertilizing, pest control tips">${isEdit && guide.care_instructions ? escapeHTML(guide.care_instructions) : ''}</textarea>
+                        </label>
+                    </div>
+                    <div class="admin-field">
+                        <span>Image (Max 5MB)</span>
+                        <input type="file" id="guideImage" accept="image/*">
+                        <p class="admin-form-help">Upload image (JPG, PNG, or webp).</p>
+                    </div>
+                    ${isEdit && guide.image_path ? `
+                        <div class="admin-form-preview">
+                            <strong>Current image preview</strong>
+                            <img src="${guide.image_path}" alt="${escapeHTML(guide.name)} image preview">
+                        </div>
+                    ` : ''}
+                    <div class="admin-error" id="guideError" style="display:none;"></div>
+                    <div class="admin-modal-actions">
+                        <button type="button" class="modal-btn secondary" onclick="closeGuideModal()">Cancel</button>
+                        <button type="submit" class="modal-btn primary">
+                            ${isEdit ? 'Update Guide' : 'Create Guide'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    const form = document.getElementById('guideFormAdmin');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await saveGuideForm(guideId);
+    });
+}
+
+async function saveGuideForm(guideId) {
+    const formData = new FormData();
+    formData.append('name', document.getElementById('guideName').value.trim());
+    formData.append('planting_suggestions', document.getElementById('guidePlanting').value.trim());
+    formData.append('care_instructions', document.getElementById('guideCare').value.trim());
+    
+    const imageFile = document.getElementById('guideImage').files[0];
+    if (imageFile) {
+        formData.append('image', imageFile);
+    }
+    
+    const errorDiv = document.getElementById('guideError');
+    errorDiv.textContent = '';
+    errorDiv.style.display = 'none';
+    
+    try {
+        const url = guideId 
+            ? `${API_BASE_URL}/guides/${guideId}`
+            : `${API_BASE_URL}/guides`;
+        
+        const response = await fetch(url, {
+            method: guideId ? 'PUT' : 'POST',
+            credentials: 'include',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            closeGuideModal();
+            await loadGuides();
+            await loadStats();
+            alert(data.message);
+        } else {
+            errorDiv.textContent = data.error;
+            errorDiv.style.display = data.error ? 'block' : 'none';
+        }
+    } catch (error) {
+        console.error('Error saving guide:', error);
+        errorDiv.textContent = 'Failed to save guide';
+        errorDiv.style.display = 'block';
+    }
+}
+
+window.closeGuideModal = function() {
+    const modal = document.getElementById('guideModal');
+    if (modal) modal.remove();
+};
+
+window.showGuideModal = showGuideModal;
+
+window.deleteGuide = async function(guideId, name) {
+    if (!confirm(`Are you sure you want to delete "${name}"?\n\nThis action cannot be undone!`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/guides/${guideId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            await loadGuides();
+            await loadStats();
+            alert('Guide deleted successfully');
+        } else {
+            alert(data.error || 'Failed to delete guide');
+        }
+    } catch (error) {
+        console.error('Error deleting guide:', error);
+        alert('Failed to delete guide');
+    }
+};
 
 async function loadUsers() {
     try {
@@ -297,31 +809,8 @@ function filterPosts(searchTerm) {
     renderPosts(filtered);
 }
 
-window.deleteUser = async function (userId, username) {
-    if (!confirm(`Are you sure you want to delete user "${username}"?\n\nThis will permanently delete:\n- Their account\n- All their posts\n- All their comments\n- All uploaded images\n\nThis action cannot be undone!`)) {
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
-            method: 'DELETE',
-            credentials: 'include'
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            alert('User deleted successfully');
-            await loadUsers();
-            await loadStats();
-            await loadPosts();
-        } else {
-            alert(data.error || 'Failed to delete user');
-        }
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        alert('Failed to delete user');
-    }
+window.deleteUser = function (userId, username) {
+    showDeleteUserModal(userId, username);
 };
 
 window.deletePost = async function (postId, title) {
@@ -355,6 +844,128 @@ function escapeHTML(str) {
     div.textContent = str;
     return div.innerHTML;
 }
+
+let deleteUserEscapeHandler = null;
+
+function showDeleteUserModal(userId, username) {
+    const existingModal = document.getElementById('deleteUserModal');
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'deleteUserModal';
+    modal.className = 'admin-modal open';
+    modal.innerHTML = `
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <div class="admin-modal-title">Delete User</div>
+                <button class="admin-modal-close" type="button" onclick="closeDeleteUserModal()" aria-label="Close modal">×</button>
+            </div>
+            <div class="admin-modal-body">
+                <form id="deleteUserForm" class="admin-form" data-user-id="${userId}">
+                    <div style="background: hsl(0, 62%, 96%); border: 1px solid hsl(0, 62%, 80%); border-radius: 12px; padding: 18px;">
+                        <p style="color: hsl(0, 62%, 28%); font-weight: 600; margin-bottom: 8px;">⚠️ Warning: This action permanently removes ${escapeHTML(username)}.</p>
+                        <p style="color: hsl(0, 62%, 24%); font-size: 0.92em; line-height: 1.5;">
+                            Deleting this account will immediately and irreversibly remove:
+                        </p>
+                        <ul style="color: hsl(0, 62%, 24%); font-size: 0.92em; margin: 10px 0 0 24px; line-height: 1.5;">
+                            <li>Their profile information and login access</li>
+                            <li>All forum posts created by this user</li>
+                            <li>All comments created by this user</li>
+                            <li>Any images uploaded by this user</li>
+                        </ul>
+                    </div>
+                    <div class="admin-field">
+                        <span>Type <strong>DELETE</strong> to confirm</span>
+                        <input type="text" id="deleteUserConfirmInput" placeholder="DELETE" autocomplete="off" required>
+                    </div>
+                    <div class="admin-error" id="deleteUserError" style="display:none;"></div>
+                    <div class="admin-modal-actions">
+                        <button type="button" class="modal-btn secondary" onclick="closeDeleteUserModal()">Cancel</button>
+                        <button type="submit" class="modal-btn primary" id="deleteUserSubmitBtn" disabled>Delete User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const confirmInput = document.getElementById('deleteUserConfirmInput');
+    const submitBtn = document.getElementById('deleteUserSubmitBtn');
+    const form = document.getElementById('deleteUserForm');
+
+    confirmInput.addEventListener('input', () => {
+        submitBtn.disabled = confirmInput.value.trim().toUpperCase() !== 'DELETE';
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeDeleteUserModal();
+        }
+    });
+
+    deleteUserEscapeHandler = (e) => {
+        if (e.key === 'Escape') {
+            closeDeleteUserModal();
+        }
+    };
+    document.addEventListener('keydown', deleteUserEscapeHandler);
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await performDeleteUser(userId, username);
+    });
+}
+
+async function performDeleteUser(userId, username) {
+    const errorDiv = document.getElementById('deleteUserError');
+    const submitBtn = document.getElementById('deleteUserSubmitBtn');
+
+    if (!errorDiv || !submitBtn) return;
+
+    errorDiv.textContent = '';
+    errorDiv.style.display = 'none';
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Deleting...';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            closeDeleteUserModal();
+            alert(`User "${username}" deleted successfully`);
+            await loadUsers();
+            await loadStats();
+            await loadPosts();
+        } else {
+            errorDiv.textContent = data.error || 'Failed to delete user';
+            errorDiv.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Delete User';
+        }
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        errorDiv.textContent = 'Failed to delete user';
+        errorDiv.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Delete User';
+    }
+}
+
+window.closeDeleteUserModal = function() {
+    const modal = document.getElementById('deleteUserModal');
+    if (modal) modal.remove();
+    if (deleteUserEscapeHandler) {
+        document.removeEventListener('keydown', deleteUserEscapeHandler);
+        deleteUserEscapeHandler = null;
+    }
+};
 
 function formatDate(dateString) {
     const date = new Date(dateString);

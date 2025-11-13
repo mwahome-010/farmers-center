@@ -752,7 +752,6 @@ app.delete('/api/admin/comments/:id', isAdmin, async (req, res) => {
 app.delete('/api/admin/users/:id', isAdmin, async (req, res) => {
     const userId = parseInt(req.params.id);
 
-    // Prevent admin from deleting themselves
     if (userId === req.session.userId) {
         return res.status(400).json({ error: 'You cannot delete your own account via admin panel' });
     }
@@ -767,7 +766,6 @@ app.delete('/api/admin/users/:id', isAdmin, async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Get all posts with images from this user
         const [posts] = await pool.query(
             'SELECT image_path FROM posts WHERE user_id = ? AND image_path IS NOT NULL',
             [userId]
@@ -837,4 +835,340 @@ process.on('SIGINT', async () => {
     console.log('\nShutting down...');
     await pool.end();
     process.exit(0);
+});
+
+app.get('/api/diseases', async (req, res) => {
+    try {
+        const [diseases] = await pool.query(`
+            SELECT d.*, u.username as created_by_username
+            FROM diseases d
+            LEFT JOIN users u ON d.created_by = u.id
+            ORDER BY d.created_at DESC
+        `);
+        
+        res.json({ success: true, diseases });
+    } catch (error) {
+        console.error('Error fetching diseases:', error);
+        res.status(500).json({ error: 'Failed to fetch diseases' });
+    }
+});
+
+// Get single disease
+app.get('/api/diseases/:id', async (req, res) => {
+    try {
+        const [diseases] = await pool.query(
+            'SELECT * FROM diseases WHERE id = ?',
+            [req.params.id]
+        );
+        
+        if (diseases.length === 0) {
+            return res.status(404).json({ error: 'Disease not found' });
+        }
+        
+        res.json({ success: true, disease: diseases[0] });
+    } catch (error) {
+        console.error('Error fetching disease:', error);
+        res.status(500).json({ error: 'Failed to fetch disease' });
+    }
+});
+
+app.post('/api/diseases', isAdmin, (req, res, next) => {
+    upload.single('image')(req, res, (err) => {
+        if (err instanceof multer.MulterError) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({ error: 'File size must be less than 5MB' });
+            }
+            return res.status(400).json({ error: `Upload error: ${err.message}` });
+        } else if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
+    const { name, caused_by, affects, symptoms, causes, treatment, prevention } = req.body;
+    const userId = req.session.userId;
+    
+    if (!name) {
+        if (req.file) fs.unlinkSync(req.file.path);
+        return res.status(400).json({ error: 'Name is required' });
+    }
+    
+    try {
+        const imagePath = req.file ? `/images/uploads/${req.file.filename}` : null;
+        
+        const [result] = await pool.query(
+            `INSERT INTO diseases (name, image_path, caused_by, affects, symptoms, causes, treatment, prevention, created_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [name, imagePath, caused_by, affects, symptoms, causes, treatment, prevention, userId]
+        );
+        
+        const [diseases] = await pool.query('SELECT * FROM diseases WHERE id = ?', [result.insertId]);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Disease created successfully',
+            disease: diseases[0]
+        });
+    } catch (error) {
+        console.error('Error creating disease:', error);
+        if (req.file) fs.unlinkSync(req.file.path);
+        res.status(500).json({ error: 'Failed to create disease' });
+    }
+});
+
+app.put('/api/diseases/:id', isAdmin, (req, res, next) => {
+    upload.single('image')(req, res, (err) => {
+        if (err instanceof multer.MulterError) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({ error: 'File size must be less than 5MB' });
+            }
+            return res.status(400).json({ error: `Upload error: ${err.message}` });
+        } else if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
+    const diseaseId = req.params.id;
+    const { name, caused_by, affects, symptoms, causes, treatment, prevention } = req.body;
+    
+    try {
+        const [existing] = await pool.query('SELECT * FROM diseases WHERE id = ?', [diseaseId]);
+        
+        if (existing.length === 0) {
+            if (req.file) fs.unlinkSync(req.file.path);
+            return res.status(404).json({ error: 'Disease not found' });
+        }
+        
+        let imagePath = existing[0].image_path;
+        
+        if (req.file) {
+            // Delete old image if exists
+            if (imagePath && imagePath.startsWith('/images/uploads/')) {
+                const oldPath = path.join(__dirname, '..', imagePath);
+                if (fs.existsSync(oldPath)) {
+                    fs.unlinkSync(oldPath);
+                }
+            }
+            imagePath = `/images/uploads/${req.file.filename}`;
+        }
+        
+        await pool.query(
+            `UPDATE diseases 
+             SET name = ?, image_path = ?, caused_by = ?, affects = ?, symptoms = ?, causes = ?, treatment = ?, prevention = ?
+             WHERE id = ?`,
+            [name, imagePath, caused_by, affects, symptoms, causes, treatment, prevention, diseaseId]
+        );
+        
+        const [updated] = await pool.query('SELECT * FROM diseases WHERE id = ?', [diseaseId]);
+        
+        res.json({
+            success: true,
+            message: 'Disease updated successfully',
+            disease: updated[0]
+        });
+    } catch (error) {
+        console.error('Error updating disease:', error);
+        if (req.file) fs.unlinkSync(req.file.path);
+        res.status(500).json({ error: 'Failed to update disease' });
+    }
+});
+
+app.delete('/api/diseases/:id', isAdmin, async (req, res) => {
+    const diseaseId = req.params.id;
+    
+    try {
+        const [diseases] = await pool.query('SELECT * FROM diseases WHERE id = ?', [diseaseId]);
+        
+        if (diseases.length === 0) {
+            return res.status(404).json({ error: 'Disease not found' });
+        }
+        
+        // Delete image if exists
+        const imagePath = diseases[0].image_path;
+        if (imagePath && imagePath.startsWith('/images/uploads/')) {
+            const fullPath = path.join(__dirname, '..', imagePath);
+            if (fs.existsSync(fullPath)) {
+                fs.unlinkSync(fullPath);
+            }
+        }
+        
+        await pool.query('DELETE FROM diseases WHERE id = ?', [diseaseId]);
+        
+        res.json({
+            success: true,
+            message: 'Disease deleted successfully'
+        });
+    } catch (error) {
+        console.error('Error deleting disease:', error);
+        res.status(500).json({ error: 'Failed to delete disease' });
+    }
+});
+
+app.get('/api/guides', async (req, res) => {
+    try {
+        const [guides] = await pool.query(`
+            SELECT g.*, u.username as created_by_username
+            FROM guides g
+            LEFT JOIN users u ON g.created_by = u.id
+            ORDER BY g.created_at DESC
+        `);
+        
+        res.json({ success: true, guides });
+    } catch (error) {
+        console.error('Error fetching guides:', error);
+        res.status(500).json({ error: 'Failed to fetch guides' });
+    }
+});
+
+app.get('/api/guides/:id', async (req, res) => {
+    try {
+        const [guides] = await pool.query(
+            'SELECT * FROM guides WHERE id = ?',
+            [req.params.id]
+        );
+        
+        if (guides.length === 0) {
+            return res.status(404).json({ error: 'Guide not found' });
+        }
+        
+        res.json({ success: true, guide: guides[0] });
+    } catch (error) {
+        console.error('Error fetching guide:', error);
+        res.status(500).json({ error: 'Failed to fetch guide' });
+    }
+});
+
+// Create, update and delete guide
+app.post('/api/guides', isAdmin, (req, res, next) => {
+    upload.single('image')(req, res, (err) => {
+        if (err instanceof multer.MulterError) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({ error: 'File size must be less than 5MB' });
+            }
+            return res.status(400).json({ error: `Upload error: ${err.message}` });
+        } else if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
+    const { name, planting_suggestions, care_instructions } = req.body;
+    const userId = req.session.userId;
+    
+    if (!name) {
+        if (req.file) fs.unlinkSync(req.file.path);
+        return res.status(400).json({ error: 'Name is required' });
+    }
+    
+    try {
+        const imagePath = req.file ? `/images/uploads/${req.file.filename}` : null;
+        
+        const [result] = await pool.query(
+            `INSERT INTO guides (name, image_path, planting_suggestions, care_instructions, created_by)
+             VALUES (?, ?, ?, ?, ?)`,
+            [name, imagePath, planting_suggestions, care_instructions, userId]
+        );
+        
+        const [guides] = await pool.query('SELECT * FROM guides WHERE id = ?', [result.insertId]);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Guide created successfully',
+            guide: guides[0]
+        });
+    } catch (error) {
+        console.error('Error creating guide:', error);
+        if (req.file) fs.unlinkSync(req.file.path);
+        res.status(500).json({ error: 'Failed to create guide' });
+    }
+});
+
+app.put('/api/guides/:id', isAdmin, (req, res, next) => {
+    upload.single('image')(req, res, (err) => {
+        if (err instanceof multer.MulterError) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({ error: 'File size must be less than 5MB' });
+            }
+            return res.status(400).json({ error: `Upload error: ${err.message}` });
+        } else if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
+    const guideId = req.params.id;
+    const { name, planting_suggestions, care_instructions } = req.body;
+    
+    try {
+        const [existing] = await pool.query('SELECT * FROM guides WHERE id = ?', [guideId]);
+        
+        if (existing.length === 0) {
+            if (req.file) fs.unlinkSync(req.file.path);
+            return res.status(404).json({ error: 'Guide not found' });
+        }
+        
+        let imagePath = existing[0].image_path;
+        
+        if (req.file) {
+            // Delete old image if exists
+            if (imagePath && imagePath.startsWith('/images/uploads/')) {
+                const oldPath = path.join(__dirname, '..', imagePath);
+                if (fs.existsSync(oldPath)) {
+                    fs.unlinkSync(oldPath);
+                }
+            }
+            imagePath = `/images/uploads/${req.file.filename}`;
+        }
+        
+        await pool.query(
+            `UPDATE guides 
+             SET name = ?, image_path = ?, planting_suggestions = ?, care_instructions = ?
+             WHERE id = ?`,
+            [name, imagePath, planting_suggestions, care_instructions, guideId]
+        );
+        
+        const [updated] = await pool.query('SELECT * FROM guides WHERE id = ?', [guideId]);
+        
+        res.json({
+            success: true,
+            message: 'Guide updated successfully',
+            guide: updated[0]
+        });
+    } catch (error) {
+        console.error('Error updating guide:', error);
+        if (req.file) fs.unlinkSync(req.file.path);
+        res.status(500).json({ error: 'Failed to update guide' });
+    }
+});
+
+app.delete('/api/guides/:id', isAdmin, async (req, res) => {
+    const guideId = req.params.id;
+    
+    try {
+        const [guides] = await pool.query('SELECT * FROM guides WHERE id = ?', [guideId]);
+        
+        if (guides.length === 0) {
+            return res.status(404).json({ error: 'Guide not found' });
+        }
+        
+        // Delete image if exists
+        const imagePath = guides[0].image_path;
+        if (imagePath && imagePath.startsWith('/images/uploads/')) {
+            const fullPath = path.join(__dirname, '..', imagePath);
+            if (fs.existsSync(fullPath)) {
+                fs.unlinkSync(fullPath);
+            }
+        }
+        
+        await pool.query('DELETE FROM guides WHERE id = ?', [guideId]);
+        
+        res.json({
+            success: true,
+            message: 'Guide deleted successfully'
+        });
+    } catch (error) {
+        console.error('Error deleting guide:', error);
+        res.status(500).json({ error: 'Failed to delete guide' });
+    }
 });

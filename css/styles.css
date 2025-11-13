@@ -12,10 +12,7 @@ body {
   align-items: center;
   padding: 20px;
   min-height: 100vh;
-  /*  background: whitesmoke; */
-  /*  background-image: url(''); */
   /*  background-size: cover; */
-  /*  background-position: center; */
 }
 
 header {
@@ -1397,9 +1394,8 @@ main {
 
 #forumPostModal .form-actions button[type="button"]:hover {
   background: hsl(140, 62%, 96%);
-}
 
-/* Add these styles to your existing styles.css file */
+}
 
 /* Image preview container */
 .image-preview-container {
@@ -1439,7 +1435,6 @@ main {
   transform: scale(0.98);
 }
 
-/* Improve file input styling */
 #forumPostModal #newPostForm input[type="file"] {
   cursor: pointer;
   padding: 8px 12px;

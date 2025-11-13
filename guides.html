@@ -37,67 +37,8 @@
                         <input type="text" placeholder="Search for a plant..." />
                 </div>
                 <div class="guide-container">
-                        <div class="disease-guide-card">
-                                <h3>Maize</h3>
-                                <img src="images/ui-cards/maize.jpg" alt="Maize" />
-                                <h2>Planting Suggestions</h2>
-                                <p>Plant the seeds 2-3 inches deep and 12-18 inches apart.</p>
-                                <h2>Care Instructions</h2>
-                                <p>
-                                        Water the plants regularly and fertilize them with a balanced
-                                        fertilizer.
-                                </p>
-                        </div>
-                        <div class="disease-guide-card">
-                                <h3>Wheat</h3>
-                                <img src="images/ui-cards/wheat.jpg" alt="Wheat" />
-                                <h2>Planting Suggestions</h2>
-                                <p>Plant the seeds 2-3 inches deep and 12-18 inches apart.</p>
-                                <h2>Care Instructions</h2>
-                                <p>
-                                        Water the plants regularly and fertilize them with a balanced
-                                        fertilizer.
-                                </p>
-                        </div>
-                        <div class="disease-guide-card">
-                                <h3>Lemon Grass</h3>
-                                <img src="images/ui-cards/lemon-grass.jpg" alt="Lemon Grass" />
-                                <h2>Planting Suggestions</h2>
-                                <p></p>
-                        </div>
-                        <div class="disease-guide-card">
-                                <h3>Tomato</h3>
-                                <img src="images/ui-cards/tomato.jpg" alt="Tomato" />
-                                <h2>Planting Suggestions</h2>
-                                <p>Plant the seeds 2-3 inches deep and 12-18 inches apart.</p>
-                                <h2>Care Instructions</h2>
-                                <p>
-                                        Water the plants regularly and fertilize them with a balanced
-                                        fertilizer.
-                                </p>
-                        </div>
-                        <div class="disease-guide-card">
-                                <h3>Potato</h3>
-                                <img src="images/ui-cards/potato.jpg" alt="Potato" />
-                                <h2>Planting Suggestions</h2>
-                                <p>Plant the seeds 2-3 inches deep and 12-18 inches apart.</p>
-                                <h2>Care Instructions</h2>
-                                <p>
-                                        Water the plants regularly and fertilize them with a balanced
-                                        fertilizer.
-                                </p>
-                        </div>
-                        <div class="disease-guide-card">
-                                <h3>Carrot</h3>
-                                <img src="images/ui-cards/carrot.jpg" alt="Carrot" />
-                                <h2>Planting Suggestions</h2>
-                                <p>Plant the seeds 2-3 inches deep and 12-18 inches apart.</p>
-                                <h2>Care Instructions</h2>
-                                <p>
-                                        Water the plants regularly and fertilize them with a balanced
-                                        fertilizer.
-                                </p>
-                        </div>
+                        <!-- Cards will be dynamically loaded here -->
+                        <p style="text-align: center; padding: 40px;">Loading guides...</p>
                 </div>
         </main>
 
@@ -161,8 +102,10 @@
         <footer>
 
         </footer>
+        <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js" defer></script>
+        <script src="js/guides-loader.js" type="module"></script>
+        <script src="js/cards.js" type="module"></script>
+        <script src="js/auth.js" type="module"></script>
 </body>
-<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js" defer></script>
-<script src="js/index.js" type="module" defer></script>
 
 </html>

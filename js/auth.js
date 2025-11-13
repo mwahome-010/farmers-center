@@ -433,22 +433,6 @@ export function waitForAuth() {
     return authReadyPromise || init();
 }
 
-export default {
-    register,
-    login,
-    logout,
-    deleteAccount,
-    isLoggedIn,
-    getCurrentUser,
-    requireAuth,
-    openModal,
-    closeModal,
-    checkAuthStatus,
-    init,
-    waitForAuth,
-    showDeleteAccountModal
-};
-
 function renderUserControls() {
     const loginBtns = document.querySelectorAll('.login-popup-btn');
     loginBtns.forEach(btn => {
@@ -541,7 +525,6 @@ function ensureUserMenuHandlers() {
             } else if (action === 'admin-panel') {
                 window.location.href = '/admin.html';
             }
-            // Close any open menu
             document.querySelectorAll('.user-menu.open').forEach(m => m.classList.remove('open'));
             return;
         }
@@ -593,7 +576,6 @@ async function deleteAccount(password) {
     }
 }
 
-// Show delete account modal
 function showDeleteAccountModal() {
     const existingModal = document.getElementById('deleteAccountModal');
     if (existingModal) {
@@ -648,7 +630,6 @@ function showDeleteAccountModal() {
     document.body.appendChild(modal);
     document.body.style.overflow = 'hidden';
 
-    // Setup event listeners
     const closeBtn = document.getElementById('deleteAccountClose');
     const cancelBtn = document.getElementById('deleteAccountCancel');
     const form = document.getElementById('deleteAccountForm');
@@ -678,7 +659,6 @@ function showDeleteAccountModal() {
             return;
         }
 
-        // Double confirmation
         if (!confirm('Are you absolutely sure? This action CANNOT be undone!')) {
             return;
         }
@@ -699,3 +679,19 @@ function showDeleteAccountModal() {
         }
     });
 }
+
+export default {
+    register,
+    login,
+    logout,
+    deleteAccount,
+    isLoggedIn,
+    getCurrentUser,
+    requireAuth,
+    openModal,
+    closeModal,
+    checkAuthStatus,
+    init,
+    waitForAuth,
+    showDeleteAccountModal
+};

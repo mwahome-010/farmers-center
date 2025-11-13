@@ -27,12 +27,10 @@ document.addEventListener('DOMContentLoaded', function () {
         modal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
 
-        // Set up tab switching after modal is open
         setupTabs();
     }
 
     function buildStructuredContent(detailEls) {
-        // Extract data from card elements
         let data = {
             causedBy: '',
             affects: '',
@@ -71,7 +69,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Determine if this is a disease or guide card
         const isDisease = data.symptoms || data.treatment;
         const isGuide = data.planting || data.care;
 
@@ -80,7 +77,6 @@ document.addEventListener('DOMContentLoaded', function () {
         } else if (isGuide) {
             return buildGuideContent(data);
         } else {
-            // Fallback to simple display
             return buildFallbackContent(detailEls);
         }
     }
@@ -177,14 +173,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function setupTabs() {
-        // Remove any existing listeners
         var tabs = modal.querySelectorAll('.tab-btn');
         tabs.forEach(function (tab) {
             var newTab = tab.cloneNode(true);
             tab.parentNode.replaceChild(newTab, tab);
         });
 
-        // Add new listeners
         modal.querySelectorAll('.tab-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 switchTab(this.getAttribute('data-tab'));
@@ -215,11 +209,15 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.style.overflow = '';
     }
 
-    document.querySelectorAll('.disease-guide-card').forEach(function (card) {
-        card.addEventListener('click', function () {
-            openModalFromCard(card);
-        });
-    });
+    document.addEventListener('click', function (event) {
+        var card = event.target.closest('.disease-guide-card');
+        if (!card) return;
+
+        var isDownloadButton = event.target.closest('.card-action');
+        if (isDownloadButton) return;
+
+        openModalFromCard(card);
+    }, true);
 
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
     if (modal) {
