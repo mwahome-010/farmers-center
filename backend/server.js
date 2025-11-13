@@ -807,17 +807,17 @@ app.get('/api/admin/stats', isAdmin, async (req, res) => {
         const [userCount] = await pool.query('SELECT COUNT(*) as count FROM users');
         const [postCount] = await pool.query('SELECT COUNT(*) as count FROM posts');
         const [commentCount] = await pool.query('SELECT COUNT(*) as count FROM comments');
-        const [recentUsers] = await pool.query(
-            'SELECT username, created_at FROM users ORDER BY created_at DESC LIMIT 5'
-        );
-
+        const [diseaseCount] = await pool.query('SELECT COUNT(*) as count FROM diseases');
+        const [guideCount] = await pool.query('SELECT COUNT(*) as count FROM guides');
+        
         res.json({
             success: true,
             stats: {
                 totalUsers: userCount[0].count,
                 totalPosts: postCount[0].count,
                 totalComments: commentCount[0].count,
-                recentUsers: recentUsers
+                totalDiseases: diseaseCount[0].count,
+                totalGuides: guideCount[0].count
             }
         });
     } catch (error) {
