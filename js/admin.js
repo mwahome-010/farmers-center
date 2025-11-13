@@ -60,20 +60,20 @@ async function initAdminPanel() {
                 <div class="stat-value" id="statPosts">-</div>
             </div>
             <div class="stat-card">
-                <h3>Total Diseases</h3>
-                <div class="stat-value" id="statDiseases">-</div>
+                <h3>Total Guides Catalogued</h3>
+                <div class="stat-value" id="statGuides">-</div>
             </div>
             <div class="stat-card">
-                <h3>Total Guides</h3>
-                <div class="stat-value" id="statGuides">-</div>
+                <h3>Total Diseases Catalogued</h3>
+                <div class="stat-value" id="statDiseases">-</div>
             </div>
         </div>
 
         <div class="admin-tabs">
             <button class="admin-tab active" data-tab="users">Users</button>
             <button class="admin-tab" data-tab="posts">Posts</button>
-            <button class="admin-tab" data-tab="diseases">Diseases</button>
             <button class="admin-tab" data-tab="guides">Guides</button>
+            <button class="admin-tab" data-tab="diseases">Diseases</button>
         </div>
 
         <div class="admin-panel active" id="usersPanel">
@@ -90,20 +90,20 @@ async function initAdminPanel() {
             <div id="postsTable"></div>
         </div>
 
-        <div class="admin-panel" id="diseasesPanel">
-            <div class="search-filter">
-                <input type="text" id="diseaseSearch" placeholder="Search diseases...">
-                <button class="admin-btn view" id="addDiseaseBtn">+ Add Disease</button>
-            </div>
-            <div id="diseasesTable"></div>
-        </div>
-
         <div class="admin-panel" id="guidesPanel">
             <div class="search-filter">
                 <input type="text" id="guideSearch" placeholder="Search guides...">
                 <button class="admin-btn view" id="addGuideBtn">+ Add Guide</button>
             </div>
             <div id="guidesTable"></div>
+        </div>
+
+        <div class="admin-panel" id="diseasesPanel">
+            <div class="search-filter">
+                <input type="text" id="diseaseSearch" placeholder="Search diseases...">
+                <button class="admin-btn view" id="addDiseaseBtn">+ Add Disease</button>
+            </div>
+            <div id="diseasesTable"></div>
         </div>
     `;
 
@@ -188,20 +188,22 @@ async function loadStats() {
             document.getElementById('statUsers').textContent = data.stats.totalUsers;
             document.getElementById('statPosts').textContent = data.stats.totalPosts;
             document.getElementById('statComments').textContent = data.stats.totalComments;
+            
         }
         
         // Load disease and guide counts
-        const diseasesRes = await fetch(`${API_BASE_URL}/diseases`, { credentials: 'include' });
-        const diseasesData = await diseasesRes.json();
-        if (diseasesData.success) {
-            document.getElementById('statDiseases').textContent = diseasesData.diseases.length;
-        }
-        
         const guidesRes = await fetch(`${API_BASE_URL}/guides`, { credentials: 'include' });
         const guidesData = await guidesRes.json();
         if (guidesData.success) {
             document.getElementById('statGuides').textContent = guidesData.guides.length;
         }
+
+        const diseasesRes = await fetch(`${API_BASE_URL}/diseases`, { credentials: 'include' });
+        const diseasesData = await diseasesRes.json();
+        if (diseasesData.success) {
+            document.getElementById('statDiseases').textContent = diseasesData.diseases.length;
+        }
+
     } catch (error) {
         console.error('Error loading stats:', error);
     }
@@ -310,7 +312,7 @@ function showDiseaseModal(diseaseId = null) {
                         </label>
                         <label class="admin-field">
                             <span>Affects</span>
-                            <textarea id="diseaseAffects" rows="2" placeholder="Plants, livestock, etc.">${isEdit && disease.affects ? escapeHTML(disease.affects) : ''}</textarea>
+                            <textarea id="diseaseAffects" rows="2" placeholder="Stem, leaves, etc.">${isEdit && disease.affects ? escapeHTML(disease.affects) : ''}</textarea>
                         </label>
                         <label class="admin-field">
                             <span>Symptoms</span>

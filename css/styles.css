@@ -267,7 +267,7 @@ header {
 }
 
 main {
- margin-top: 64px;
+  margin-top: 64px;
 }
 
 .upload-container {
@@ -349,18 +349,22 @@ main {
   align-items: center;
 }
 
-.search-container input {
-  width: 70%;
-  height: 30px;
-  border: 1px solid hsl(140, 62%, 6%);
-  border-radius: 6px;
-  padding: 10px;
-  font-size: 1.1em;
-  font-weight: 500;
+.search-container input{
   text-align: center;
+  padding: 12px 16px;
+  border: 2px solid hsl(140, 62%, 85%);
+  border-radius: 10px;
+  font-size: 1em;
+  transition: border-color 0.2s;
 }
 
-.disease-container, .guide-container {
+.search-container input:focus {
+  outline: none;
+  border-color: hsl(140, 62%, 39%);
+}
+
+.disease-container,
+.guide-container {
   width: 100%;
   display: flex;
   justify-content: center;
@@ -583,252 +587,253 @@ main {
 }
 
 @media (max-width: 768px) {
-    .guide-modal-body {
-        padding: 16px;
-    }
-    
-    .quick-facts-grid {
-        padding: 16px;
-    }
-    
-    .info-tabs {
-        gap: 4px;
-    }
-    
-    .tab-btn {
-        padding: 10px 16px;
-        font-size: 0.95em;
-    }
-    
-    .info-section {
-        padding: 12px 16px;
-    }
-    
-    .info-section h3 {
-        font-size: 1.1em;
-    }
+  .guide-modal-body {
+    padding: 16px;
+  }
+
+  .quick-facts-grid {
+    padding: 16px;
+  }
+
+  .info-tabs {
+    gap: 4px;
+  }
+
+  .tab-btn {
+    padding: 10px 16px;
+    font-size: 0.95em;
+  }
+
+  .info-section {
+    padding: 12px 16px;
+  }
+
+  .info-section h3 {
+    font-size: 1.1em;
+  }
 }
 
 .guide-modal-body:has(.info-tabs) #guideModalImage {
-    box-shadow: 0 4px 12px hsla(140, 62%, 0%, 0.15);
+  box-shadow: 0 4px 12px hsla(140, 62%, 0%, 0.15);
 }
 
 
 @media (min-width: 820px) {
-    .guide-modal-body {
-        display: grid;
-        grid-template-columns: 1.1fr 1.4fr;
-        gap: 24px;
-        align-items: start;
-    }
+  .guide-modal-body {
+    display: grid;
+    grid-template-columns: 1.1fr 1.4fr;
+    gap: 24px;
+    align-items: start;
+  }
 
-    .guide-modal-body img {
-        height: 100%;
-        max-height: 420px;
-        margin-bottom: 0;
-    }
-    
-    .guide-modal-body:has(.info-tabs) {
-        grid-template-columns: 1fr;
-    }
-    
-    .guide-modal-body:has(.info-tabs) img {
-        max-height: 320px;
-        width: 100%;
-        object-fit: cover;
-    }
+  .guide-modal-body img {
+    height: 100%;
+    max-height: 420px;
+    margin-bottom: 0;
+  }
+
+  .guide-modal-body:has(.info-tabs) {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-modal-body:has(.info-tabs) img {
+    max-height: 320px;
+    width: 100%;
+    object-fit: cover;
+  }
 }
 
 .quick-facts-section {
-    margin-bottom: 24px;
+  margin-bottom: 24px;
 }
 
 .quick-facts-grid {
-    background: linear-gradient(135deg, hsl(140, 62%, 98%) 0%, hsl(140, 62%, 95%) 100%);
-    border-radius: 12px;
-    padding: 20px;
-    display: grid;
-    gap: 16px;
+  background: linear-gradient(135deg, hsl(140, 62%, 98%) 0%, hsl(140, 62%, 95%) 100%);
+  border-radius: 12px;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
 }
 
 .fact-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(46, 125, 50, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(46, 125, 50, 0.1);
 }
 
 .fact-item:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
 .fact-icon {
-    width: 40px;
-    height: 40px;
-    background: hsl(140, 62%, 39%);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  background: hsl(140, 62%, 39%);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
 }
 
 .fact-content {
-    flex: 1;
+  flex: 1;
 }
 
 .fact-label {
-    font-size: 0.85em;
-    color: #666;
-    font-weight: 500;
-    margin-bottom: 2px;
+  font-size: 0.85em;
+  color: #666;
+  font-weight: 500;
+  margin-bottom: 2px;
 }
 
 .fact-value {
-    font-size: 1em;
-    color: hsl(140, 62%, 24%);
-    font-weight: 600;
+  font-size: 1em;
+  color: hsl(140, 62%, 24%);
+  font-weight: 600;
 }
 
 /* Info Tabs */
 .info-tabs {
-    display: flex;
-    gap: 8px;
-    border-bottom: 2px solid hsl(140, 62%, 90%);
-    margin-bottom: 20px;
-    overflow-x: auto;
-    scrollbar-width: thin;
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid hsl(140, 62%, 90%);
+  margin-bottom: 20px;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 .info-tabs::-webkit-scrollbar {
-    height: 4px;
+  height: 4px;
 }
 
 .tab-btn {
-    background: none;
-    border: none;
-    padding: 12px 20px;
-    font-size: 1em;
-    font-weight: 600;
-    color: #666;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s;
-    white-space: nowrap;
-    flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 12px 20px;
+  font-size: 1em;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tab-btn.active {
-    color: hsl(140, 62%, 39%);
-    border-bottom-color: hsl(140, 62%, 39%);
+  color: hsl(140, 62%, 39%);
+  border-bottom-color: hsl(140, 62%, 39%);
 }
 
 .tab-btn:hover:not(.active) {
-    background: hsl(140, 62%, 98%);
-    color: hsl(140, 62%, 24%);
+  background: hsl(140, 62%, 98%);
+  color: hsl(140, 62%, 24%);
 }
 
 /* Tab Contents */
 .tab-contents {
-    position: relative;
-    min-height: 200px;
+  position: relative;
+  min-height: 200px;
 }
 
 .tab-content {
-    display: none;
-    animation: fadeIn 0.3s ease;
+  display: none;
+  animation: fadeIn 0.3s ease;
 }
 
 .tab-content.active {
-    display: block;
+  display: block;
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Info Sections */
 .info-section {
-    background: hsl(140, 62%, 99%);
-    border-left: 4px solid hsl(140, 62%, 39%);
-    padding: 16px 20px;
-    margin-bottom: 16px;
-    border-radius: 8px;
+  background: hsl(140, 62%, 99%);
+  border-left: 4px solid hsl(140, 62%, 39%);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  border-radius: 8px;
 }
 
 .info-section:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .info-section h3 {
-    color: hsl(140, 62%, 24%);
-    margin-bottom: 12px;
-    font-size: 1.2em;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  color: hsl(140, 62%, 24%);
+  margin-bottom: 12px;
+  font-size: 1.2em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .info-section p {
-    color: hsl(140, 10%, 20%);
-    line-height: 1.6;
-    margin-bottom: 10px;
+  color: hsl(140, 10%, 20%);
+  line-height: 1.6;
+  margin-bottom: 10px;
 }
 
 .info-section p:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .info-section ul {
-    color: hsl(140, 10%, 20%);
-    line-height: 1.6;
-    padding-left: 20px;
-    margin-bottom: 8px;
+  color: hsl(140, 10%, 20%);
+  line-height: 1.6;
+  padding-left: 20px;
+  margin-bottom: 8px;
 }
 
 .info-section li {
-    margin-bottom: 8px;
+  margin-bottom: 8px;
 }
 
 .info-section li:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .info-section strong {
-    color: hsl(140, 62%, 24%);
-    font-weight: 600;
+  color: hsl(140, 62%, 24%);
+  font-weight: 600;
 }
 
 .info-section em {
-    color: hsl(140, 62%, 30%);
-    font-style: italic;
+  color: hsl(140, 62%, 30%);
+  font-style: italic;
 }
 
 /* Modal Detail Item (fallback for simple content) */
 .modal-detail-item {
-    margin-bottom: 16px;
+  margin-bottom: 16px;
 }
 
 .modal-detail-item h2 {
-    color: hsl(140, 62%, 24%);
-    font-size: 1.2em;
-    margin-bottom: 8px;
+  color: hsl(140, 62%, 24%);
+  font-size: 1.2em;
+  margin-bottom: 8px;
 }
 
 .modal-detail-item p {
-    color: hsl(140, 10%, 20%);
-    line-height: 1.6;
+  color: hsl(140, 10%, 20%);
+  line-height: 1.6;
 }
 
 ::-webkit-scrollbar-track {
