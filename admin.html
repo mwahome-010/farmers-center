@@ -362,11 +362,25 @@
             border: 1px solid hsla(0, 68%, 42%, 0.28);
         }
 
+        .user-dropdown-item.admin-item {
+            background: linear-gradient(135deg, hsl(140, 62%, 96%) 0%, hsl(140, 62%, 93%) 100%);
+            border: 1px solid hsl(140, 62%, 85%);
+            color: hsl(140, 62%, 24%);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .user-dropdown-item.admin-item:hover {
+            background: linear-gradient(135deg, hsl(140, 62%, 93%) 0%, hsl(140, 62%, 90%) 100%);
+            border-color: hsl(140, 62%, 75%);
+        }
+
         @keyframes modal-slide-in {
             from {
                 opacity: 0;
                 transform: translateY(12px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -423,15 +437,17 @@
     </main>
 
     <footer>
-		<p>&copy; 2025 Farmer's Center. Empowering farmers with technology.</p>
-		<p>Made for the agricultural community</p>
-	</footer>
+        <p>&copy; 2025 Farmer's Center. Empowering farmers with technology.</p>
+        <p>Made for the agricultural community</p>
+    </footer>
 
     <div class="auth-modal" id="authModal" role="dialog" aria-modal="true" aria-hidden="true">
         <div class="auth-modal-content">
             <div class="auth-modal-header">
                 <div class="auth-modal-title" id="authModalTitle">Login</div>
-                <button class="auth-modal-close" id="authModalClose" aria-label="Close">×</button>
+                <button class="auth-modal-close" id="authModalClose" aria-label="Close">
+                    <img src="images/ui-icons/cross.svg" alt="close button">
+                </button>
             </div>
             <div class="auth-modal-body">
                 <div class="auth-tabs">
