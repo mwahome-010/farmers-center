@@ -6,13 +6,10 @@
 }
 
 body {
-  background: linear-gradient(135deg, hsla(142, 61%, 94%, 0) 0%, hsl(140, 62%, 84%) 100%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  background: linear-gradient(135deg, hsla(142, 62%, 94%, 0) 0%, hsl(140, 62%, 84%) 100%);
   padding: 20px;
   min-height: 100vh;
-  /*  background-size: cover; */
+  line-height: 1.6;
 }
 
 header {
@@ -26,7 +23,7 @@ header {
   z-index: 99;
   background-color: hsl(140, 62%, 40%);
   height: 64px;
-  border-bottom: hsl(140, 62%, 6%) solid 2px;
+  border-bottom: hsl(0, 0%, 20%) solid 2px;
 }
 
 .logo-container,
@@ -47,7 +44,7 @@ header {
 
 .logo {
   font-size: 2em;
-  color: black;
+  color: hsl(0, 0%, 0%);
   user-select: none;
 }
 
@@ -69,7 +66,7 @@ header {
   font-size: 1.2em;
   font-weight: 500;
   text-decoration: none;
-  color: black;
+  color: hsl(0, 0%, 10%);
   position: relative;
   margin-left: 30px;
 }
@@ -98,7 +95,7 @@ header {
   border-radius: 8px;
   cursor: pointer;
   font-size: 1.1em;
-  color: hsl(140, 62%, 100%);
+  color: hsl(0, 0%, 100%);
   font-weight: 500;
   margin-left: 40px;
   transition: 0.2s;
@@ -108,11 +105,11 @@ header {
 }
 
 .login-popup-btn:hover {
-  background: hsla(140, 62%, 6%, 0.64);
+  background: hsl(0, 0%, 30%);
 }
 
 .login-popup-btn:active {
-  background: hsla(140, 62%, 6%, 0.76);
+  background: hsl(0, 0%, 40%);
 }
 
 /* User avatar + dropdown */
@@ -126,9 +123,9 @@ header {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid hsl(140, 62%, 6%);
-  background: hsla(140, 62%, 6%, 0.55);
-  color: hsl(140, 62%, 100%);
+  border: 1px solid hsl(0, 0%, 20%);
+  background: hsl(140, 62%, 30%);
+  color: hsl(0, 0%, 100%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -137,7 +134,11 @@ header {
 }
 
 .user-avatar:hover {
-  background: hsla(140, 62%, 6%, 0.64);
+  background: hsl(140, 62%, 20%);
+}
+
+.user-avatar::after {
+  background: hsl(140, 62%, 20%);
 }
 
 .avatar-initial {
@@ -270,43 +271,40 @@ main {
   margin-top: 64px;
 }
 
-.upload-container {
-  max-width: 640px;
-  min-height: 300px;
-}
-
 .upload-area {
-  width: 100%;
-  min-height: 260px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16x;
-  border: 1px solid hsl(140, 62%, 40%);
-  border-radius: 12px;
-  background: hsl(140, 62%, 96%);
-  box-shadow: 1px 1px 32px 2px hsla(140, 62%, 24%, 0.45);
-  transition: background 0.2s ease, box-shadow 0.2s ease;
+  background: hsl(140, 62%, 90%);
+  border: 3px dashed hsla(140, 62%, 39%, 0.233);
+  border-radius: 20px;
+  padding: 3rem;
+  text-align: center;
+  transition: all 0.3s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
 
-.upload-area:hover,
-.upload-area:focus-within {
-  background: hsl(140, 62%, 93%);
-  box-shadow: 1px 1px 32px 2px hsla(140, 62%, 24%, 0.66);
+.upload-area:hover {
+  border-color: hsl(140, 62%, 40%, 0.6);
+  background: hsl(140, 62%, 88%);
+  box-shadow: 0 8px 32px hsla(140, 62%, 24%, 0.12);
 }
 
 .upload-area h2 {
-  text-align: center;
-  font-weight: 500;
-  line-height: 1.3;
+  font-size: 1.5rem;
+  color: hsl(140, 62%, 24%);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
 }
 
-.upload-area input {
+.upload-area p {
+  color: gray;
+  margin-bottom: 1.5rem;
+}
+
+.upload-area input[type="file"] {
   appearance: none;
   background: hsla(140, 62%, 39%, 0.31);
-  border: 1px solid hsla(140, 62%, 6%, 0.47);
+  border: 1px solid hsl(0, 0%, 30%);
   border-radius: 8px;
   padding: 12px 16px;
   font-size: 0.95em;
@@ -314,26 +312,25 @@ main {
 }
 
 .analyze-image-btn {
-  background: hsl(140, 62%, 39%);
+  background: hsl(140, 62%, 40%);
   width: 80%;
   height: 40px;
-  border: 1px solid hsla(140, 62%, 6%, 0.47);
+  border: 1px solid hsl(0, 0%, 30%);
   border-radius: 8px;
   color: hsl(140, 62%, 100%);
   cursor: pointer;
   font-size: 1.1em;
   font-weight: 500;
   margin-top: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   transition: .2s;
+
 }
 
 .analyze-image-btn:hover,
 #newPostBtn:hover {
-  background: hsl(140, 62%, 24%);
-  color: #ffffff;
+  transform: scale(1.05);
+  background: hsl(140, 62%, 29%);
+  color: hsl(0, 0%, 100%);
 }
 
 .analyze-image-btn:active,
@@ -342,13 +339,322 @@ main {
   transition: .2s;
 }
 
+.section {
+  padding: 60px 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section h2 {
+  text-align: center;
+  font-size: 2em;
+  color: hsl(140, 62%, 20%);
+  margin-bottom: 30px;
+}
+
+.features-grid,
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+}
+
+.feature-card,
+.stat-item {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.feature-icon {
+  display: inline-block;
+  font-size: 2.5em;
+  margin-bottom: 15px;
+}
+
+.feature-card h3 {
+  display: inline-block; 
+  color: hsl(140, 62%, 40%);
+  margin-bottom: 10px;
+}
+
+.stat-item h3 {
+  font-size: 2.5em;
+  color: hsl(140, 62%, 20%);
+}
+
+.stat-item p {
+  color: hsl(217, 16%, 47%);
+  margin-top: 5px;
+}
+
+.hero {
+  margin-top: 72px;
+  padding: 6rem 2rem 4rem;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(74, 124, 44, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.hero-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-text h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: hsl(0, 0%, 20%);
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.hero-text .highlight {
+  color: hsl(140, 62%, 40%);
+  position: relative;
+  display: inline-block;
+}
+
+.hero-text p {
+  font-size: 1.25rem;
+  color: hsl(0, 0%, 30%);
+  margin-bottom: 2rem;
+  line-height: 1.7;
+}
+
+
+.cta-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-primary {
+  background: hsl(140, 62%, 40%);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.05rem;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: hsl(140, 62%, 24%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px hsl(0, 0%, 20%, 0.12);
+}
+
+.btn-secondary {
+  background: white;
+  color: hsl(140, 62%, 40%);
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.05rem;
+  transition: all 0.3s;
+  border: 2px solid hsl(140, 62%, 90%);
+}
+
+.btn-secondary:hover {
+  border-color: hsl(140, 62%, 70%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px hsla(0, 0%, 0%, 0.12);
+}
+
+.features {
+  padding: 5rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.section-header h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: hsl(0, 0%, 20%);
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.section-header p {
+  font-size: 1.15rem;
+  color: hsl(0, 0%, 30%);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+.feature-card {
+  background: hsl(0, 0%, 100%);
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s;
+  border: 1px solid hsl(140, 62%, 85%);
+}
+
+.feature-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 12px 40px hsla(0, 0%, 20%, 0.4);
+  border-color: hsl(0, 0%, 30%);
+}
+
+.feature-icon {
+  width: 64px;
+  height: 64px;
+  background: hsla(140, 62%, 40%, 0.9);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.feature-card h3 {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  color: hsl(0, 0%, 20%);
+  font-weight: 600;
+}
+
+.feature-card p {
+  color: hsl(0, 0%, 30%);
+  line-height: 1.7;
+}
+
+.stats {
+  background: hsl(140, 62%, 50%, 0.1);
+  padding: 4rem 2rem;
+  margin: 4rem 0;
+}
+
+.stats-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 3rem;
+  text-align: center;
+}
+
+.stat-item h3 {
+  font-size: 3rem;
+  color: hsl(0, 0%, 20%);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.stat-item p {
+  color: hsl(0, 0%, 30%);
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+footer {
+  background: hsl(140, 62%, 40%);
+  color: hsla(0, 0%, 100%, 0.8);
+  padding-top: 12px;
+  text-align: center;
+}
+
+footer p {
+  margin-bottom: 12px;
+}
+
+@media (max-width: 968px) {
+  .hero-content {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .hero-text h1 {
+    font-size: 2.5rem;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  header {
+    padding: 0 1rem;
+  }
+
+  .header-content {
+    height: 64px;
+  }
+
+  .hero {
+    padding: 4rem 1rem 3rem;
+  }
+
+  .hero-text h1 {
+    font-size: 2rem;
+  }
+
+  .hero-text p {
+    font-size: 1.1rem;
+  }
+
+  .section-header h2 {
+    font-size: 2rem;
+  }
+
+  .stat-item h3 {
+    font-size: 2.5rem;
+  }
+}
+
 .search-container {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.search-container input{
+.search-container input {
   width: 100%;
   text-align: center;
   padding: 12px 16px;
@@ -360,7 +666,7 @@ main {
 
 .search-container input:focus {
   outline: none;
-  border-color: hsl(140, 62%, 39%);
+  border-color: hsl(140, 62%, 40%);
 }
 
 .disease-container,
@@ -502,8 +808,8 @@ main {
   height: 28px;
   padding: 0 10px 0 8px;
   border-radius: 8px;
-  border: 1px solid hsl(140, 62%, 39%);
-  background: linear-gradient(180deg, hsl(140, 62%, 44%) 0%, hsl(140, 62%, 39%) 100%);
+  border: 1px solid hsl(140, 62%, 40%);
+  background: linear-gradient(180deg, hsl(140, 62%, 44%) 0%, hsl(140, 62%, 40%) 100%);
   color: #ffffff;
   font-size: 0.9em;
   font-weight: 600;
@@ -545,7 +851,7 @@ main {
 }
 
 .guide-modal-close:focus-visible {
-  outline: 2px solid hsl(140, 62%, 39%);
+  outline: 2px solid hsl(140, 62%, 40%);
   outline-offset: 2px;
 }
 
@@ -671,7 +977,7 @@ main {
 .fact-icon {
   width: 40px;
   height: 40px;
-  background: hsl(140, 62%, 39%);
+  background: hsl(140, 62%, 40%);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -727,8 +1033,8 @@ main {
 }
 
 .tab-btn.active {
-  color: hsl(140, 62%, 39%);
-  border-bottom-color: hsl(140, 62%, 39%);
+  color: hsl(140, 62%, 40%);
+  border-bottom-color: hsl(140, 62%, 40%);
 }
 
 .tab-btn:hover:not(.active) {
@@ -766,7 +1072,7 @@ main {
 /* Info Sections */
 .info-section {
   background: hsl(140, 62%, 99%);
-  border-left: 4px solid hsl(140, 62%, 39%);
+  border-left: 4px solid hsl(140, 62%, 40%);
   padding: 16px 20px;
   margin-bottom: 16px;
   border-radius: 8px;
@@ -843,22 +1149,22 @@ main {
 
 ::-webkit-scrollbar {
   width: 8px;
-  background: hsl(140, 62%, 6%);
+  background: hsl(0, 0%, 100%);
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: hsl(140, 62%, 39%);
+  background-color: hsl(140, 62%, 40%);
   border-radius: 5px;
-  border: 2px solid hsl(140, 62%, 6%);
+  border: 2px solid hsl(0, 0%, 20%);
 }
 
-/* Forum */
 .forum-toolbar {
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 12px;
   padding: 12px 20px;
-  align-items: center;
 }
 
 .forum-toolbar input,
@@ -872,7 +1178,7 @@ main {
 .new-post-btn {
   background-color: hsl(140, 62%, 44%);
   color: white;
-  border: 1px solid hsl(140, 62%, 0%);
+  border: 1px solid hsl(0, 0%, 20%);
   padding: 10px 20px;
   border-radius: 4px;
   cursor: pointer;
@@ -891,21 +1197,31 @@ main {
 
 .forum-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
   flex-direction: column;
   gap: 16px;
-  padding: 0 20px 20px 20px;
+  width: 800px;
+  max-width: 100%;
+  padding: 0 20px 20px;
+  margin: 0 auto;
+}
+
+.forum-container h2 {
+  text-align: center;
+  color: hsl(0, 0%, 20%);
+  margin-bottom: 16px;
 }
 
 .post {
-  border: 1px solid hsl(140, 62%, 89%);
+  border: 1px solid hsl(140, 62%, 90%);
   border-radius: 10px;
   padding: 12px 14px;
-  background: hsl(140, 62%, 100%);
-  box-shadow: 0 1px 6px hsla(140, 62%, 0%, 0.06);
-  width: 100%;
+  background: hsl(0, 0%, 100%);
+  box-shadow: 0 1px 6px hsla(0, 0%, 40%, 0.12);
+  max-width: 800px;
+}
+
+.post:hover {
+  box-shadow: 0 4px 12px hsla(0, 0%, 40%, 0.18);
 }
 
 .post-badges {
@@ -1003,7 +1319,7 @@ main {
 }
 
 .reply-form-post .reply-actions button[type="submit"] {
-  background: hsl(140, 62%, 39%);
+  background: hsl(140, 62%, 40%);
   color: #ffffff;
   border: 1px solid hsl(140, 62%, 32%);
   padding: 6px 12px;
@@ -1153,7 +1469,7 @@ main {
 .auth-modal-title {
   font-size: 1.5em;
   font-weight: 600;
-  color: hsl(140, 62%, 39%);
+  color: hsl(140, 62%, 40%);
 }
 
 .auth-modal-close {
@@ -1171,7 +1487,7 @@ main {
 }
 
 .auth-modal-close:hover {
-  color: hsl(140, 62%, 39%);
+  color: hsl(140, 62%, 40%);
 }
 
 .auth-modal-body {
@@ -1198,9 +1514,9 @@ main {
 }
 
 .auth-tab.active {
-  background: hsl(140, 62%, 39%);
+  background: hsl(140, 62%, 40%);
   color: white;
-  border-color: hsl(140, 62%, 39%);
+  border-color: hsl(140, 62%, 40%);
 }
 
 .auth-tab:hover:not(.active) {
@@ -1234,13 +1550,13 @@ main {
 
 .auth-form input:focus {
   outline: none;
-  border-color: hsl(140, 62%, 39%);
+  border-color: hsl(140, 62%, 40%);
 }
 
 .auth-form button[type="submit"] {
   width: 100%;
   padding: 12px;
-  background: hsl(140, 62%, 39%);
+  background: hsl(140, 62%, 40%);
   color: white;
   border: none;
   border-radius: 6px;
@@ -1341,7 +1657,7 @@ main {
 #forumPostModal #newPostForm select:focus,
 #forumPostModal #newPostForm textarea:focus {
   outline: none;
-  border-color: hsl(140, 62%, 39%);
+  border-color: hsl(140, 62%, 40%);
   box-shadow: 0 0 0 3px hsla(140, 62%, 39%, 0.15);
 }
 
@@ -1373,9 +1689,9 @@ main {
 }
 
 #forumPostModal .form-actions button[type="submit"] {
-  background: hsl(140, 62%, 39%);
+  background: hsl(140, 62%, 40%);
   color: #ffffff;
-  border: 1px solid hsl(140, 62%, 39%);
+  border: 1px solid hsl(140, 62%, 40%);
   padding: 10px 16px;
   border-radius: 10px;
   cursor: pointer;

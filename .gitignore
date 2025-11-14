@@ -8,3 +8,5 @@ node_modules/
 *.sql
 .todo.md
 alternative-index.html
+uploads/
+backup/
