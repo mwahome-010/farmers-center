@@ -11,20 +11,44 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT;
 
-const uploadsDir = path.join(__dirname, '..', 'images', 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-}
+const baseUploadsDir = path.join(__dirname, '..', 'images', 'uploads');
+const forumDir = path.join(baseUploadsDir, 'forum');
+const diseasesDir = path.join(baseUploadsDir, 'diseases');
+const guidesDir = path.join(baseUploadsDir, 'guides');
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadsDir);
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'post-' + uniqueSuffix + path.extname(file.originalname));
+[baseUploadsDir, forumDir, diseasesDir, guidesDir].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
     }
 });
+
+// Separate storage configurations for each upload type
+const createStorage = (uploadType) => {
+    return multer.diskStorage({
+        destination: function (req, file, cb) {
+            let destDir;
+            switch (uploadType) {
+                case 'forum':
+                    destDir = forumDir;
+                    break;
+                case 'disease':
+                    destDir = diseasesDir;
+                    break;
+                case 'guide':
+                    destDir = guidesDir;
+                    break;
+                default:
+                    destDir = baseUploadsDir;
+            }
+            cb(null, destDir);
+        },
+        filename: function (req, file, cb) {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+            const ext = path.extname(file.originalname);
+            cb(null, `${uploadType}-${uniqueSuffix}${ext}`);
+        }
+    });
+};
 
 const fileFilter = (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|webp/;
@@ -38,21 +62,50 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-const upload = multer({
-    storage: storage,
-    limits: {
-        fileSize: 5 * 1024 * 1024 /* 5MB limit */
-    },
+const forumUpload = multer({
+    storage: createStorage('forum'),
+    limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: fileFilter
 });
 
+const diseaseUpload = multer({
+    storage: createStorage('disease'),
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: fileFilter
+});
+
+const guideUpload = multer({
+    storage: createStorage('guide'),
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: fileFilter
+});
+
+function deleteImageFile(imagePath) {
+    if (!imagePath) return;
+    
+    // Handle both old and new path formats
+    const fullPath = imagePath.startsWith('/images/') 
+        ? path.join(__dirname, '..', imagePath)
+        : path.join(__dirname, '..', 'images', imagePath);
+    
+    if (fs.existsSync(fullPath)) {
+        try {
+            fs.unlinkSync(fullPath);
+            console.log('Deleted image:', fullPath);
+        } catch (err) {
+            console.error('Error deleting image:', err);
+        }
+    }
+}
+
+function getRelativePath(file, uploadType) {
+    return `/images/uploads/${uploadType}/${file.filename}`;
+}
+
 app.use(cors({
     origin: function (origin, callback) {
-        if (!origin)
-            return callback(null, true);
-
-        if (origin.startsWith('http://localhost:') ||
-            origin.startsWith('http://127.0.0.1:')) {
+        if (!origin) return callback(null, true);
+        if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
@@ -65,7 +118,6 @@ app.use(cors({
 app.use(express.json());
 
 app.use('/images', express.static(path.join(__dirname, '..', 'images')));
-
 app.use('/css', express.static(path.join(__dirname, '..', 'css')));
 app.use('/js', express.static(path.join(__dirname, '..', 'js')));
 
@@ -408,53 +460,36 @@ app.get('/api/forum/posts/:id', async (req, res) => {
 });
 
 app.post('/api/forum/posts', isAuthenticated, (req, res, next) => {
-    upload.single('image')(req, res, (err) => {
+    forumUpload.single('image')(req, res, (err) => {
         if (err instanceof multer.MulterError) {
-            console.error('Multer error:', err);
             if (err.code === 'LIMIT_FILE_SIZE') {
                 return res.status(400).json({ error: 'File size must be less than 5MB' });
             }
             return res.status(400).json({ error: `Upload error: ${err.message}` });
         } else if (err) {
-            console.error('Upload error:', err);
             return res.status(400).json({ error: err.message });
         }
         next();
     });
 }, async (req, res) => {
-    console.log('Post creation request received');
-    console.log('Body:', req.body);
-    console.log('File:', req.file);
-
     const { title, category, body } = req.body;
     const userId = req.session.userId;
 
     if (!title || !category || !body) {
-        /* Clean up uploaded file if validation fails */
-        if (req.file) {
-            fs.unlinkSync(req.file.path);
-        }
+        if (req.file) deleteImageFile(req.file.path);
         return res.status(400).json({ error: 'Title, category, and body are required' });
     }
 
     try {
-        const [categories] = await pool.query(
-            'SELECT id FROM categories WHERE name = ?',
-            [category]
-        );
+        const [categories] = await pool.query('SELECT id FROM categories WHERE name = ?', [category]);
 
         if (categories.length === 0) {
-            if (req.file) {
-                fs.unlinkSync(req.file.path);
-            }
+            if (req.file) deleteImageFile(req.file.path);
             return res.status(400).json({ error: 'Invalid category' });
         }
 
         const categoryId = categories[0].id;
-
-        const imagePath = req.file ? `/images/uploads/${req.file.filename}` : null;
-
-        console.log('Image path to store:', imagePath);
+        const imagePath = req.file ? getRelativePath(req.file, 'forum') : null;
 
         const [result] = await pool.query(
             `INSERT INTO posts (user_id, category_id, title, body, image_path, status) 
@@ -462,13 +497,8 @@ app.post('/api/forum/posts', isAuthenticated, (req, res, next) => {
             [userId, categoryId, title, body, imagePath]
         );
 
-        console.log('Post created with ID:', result.insertId);
-
         const [posts] = await pool.query(`
-            SELECT 
-                p.*,
-                u.username,
-                c.name as category_name
+            SELECT p.*, u.username, c.name as category_name
             FROM posts p
             JOIN users u ON p.user_id = u.id
             JOIN categories c ON p.category_id = c.id
@@ -480,13 +510,9 @@ app.post('/api/forum/posts', isAuthenticated, (req, res, next) => {
             message: 'Post created successfully',
             post: posts[0]
         });
-
     } catch (error) {
         console.error('Error creating post:', error);
-        // Clean up uploaded file on error
-        if (req.file) {
-            fs.unlinkSync(req.file.path);
-        }
+        if (req.file) deleteImageFile(req.file.path);
         res.status(500).json({ error: 'Failed to create post' });
     }
 });
@@ -541,37 +567,28 @@ app.delete('/api/forum/posts/:id', isAuthenticated, async (req, res) => {
     const userId = req.session.userId;
 
     try {
-        const [posts] = await pool.query(
-            'SELECT id, user_id, image_path FROM posts WHERE id = ?',
-            [postId]
-        );
+        const [posts] = await pool.query('SELECT id, user_id, image_path FROM posts WHERE id = ?', [postId]);
 
         if (posts.length === 0) {
             return res.status(404).json({ error: 'Post not found' });
         }
 
-        if (posts[0].user_id !== userId) {
-            return res.status(403).json({ error: 'You can only delete your own posts' });
+        const [users] = await pool.query(
+            'SELECT is_admin FROM users WHERE id = ?',
+            [userId]
+        );
+        const isAdmin = users.length > 0 ? users[0].is_admin : false;
+
+        if (posts[0].user_id !== userId && !isAdmin) {
+            return res.status(403).json({ error: 'You can only delete your own posts (or be an admin)' });
         }
 
-        // Delete associated image if it exists
-        const imagePath = posts[0].image_path;
-        if (imagePath) {
-            const fullPath = path.join(__dirname, '..', imagePath);
-            if (fs.existsSync(fullPath)) {
-                fs.unlinkSync(fullPath);
-            }
-        }
+        deleteImageFile(posts[0].image_path);
 
         await pool.query('DELETE FROM comments WHERE post_id = ?', [postId]);
-
         await pool.query('DELETE FROM posts WHERE id = ?', [postId]);
 
-        res.json({
-            success: true,
-            message: 'Post deleted successfully'
-        });
-
+        res.json({ success: true, message: 'Post deleted successfully' });
     } catch (error) {
         console.error('Error deleting post:', error);
         res.status(500).json({ error: 'Failed to delete post' });
@@ -592,9 +609,15 @@ app.delete('/api/forum/comments/:id', isAuthenticated, async (req, res) => {
         if (comments.length === 0) {
             return res.status(404).json({ error: 'Comment not found' });
         }
+        
+        const [users] = await pool.query(
+            'SELECT is_admin FROM users WHERE id = ?',
+            [userId]
+        );
+        const isAdmin = users.length > 0 ? users[0].is_admin : false;
 
-        if (comments[0].user_id !== userId) {
-            return res.status(403).json({ error: 'You can only delete your own comments' });
+        if (comments[0].user_id !== userId && !isAdmin) {
+            return res.status(403).json({ error: 'You can only delete your own comments (or be an admin)' });
         }
 
         const postId = comments[0].post_id;
@@ -623,7 +646,6 @@ app.delete('/api/user/account', isAuthenticated, async (req, res) => {
     }
 
     try {
-        //Verify password before deletion
         const [users] = await pool.query(
             'SELECT id, password_hash FROM users WHERE id = ?',
             [userId]
@@ -640,7 +662,6 @@ app.delete('/api/user/account', isAuthenticated, async (req, res) => {
             return res.status(401).json({ error: 'Invalid password' });
         }
 
-        //Get all posts with images from this user
         const [posts] = await pool.query(
             'SELECT image_path FROM posts WHERE user_id = ? AND image_path IS NOT NULL',
             [userId]
@@ -660,7 +681,7 @@ app.delete('/api/user/account', isAuthenticated, async (req, res) => {
             }
         });
 
-        /* Delete comments first, before account */
+        /* Delete comments & posts first, before account */
         await pool.query('DELETE FROM comments WHERE user_id = ?', [userId]);
 
         await pool.query('DELETE FROM posts WHERE user_id = ?', [userId]);
@@ -873,7 +894,7 @@ app.get('/api/diseases/:id', async (req, res) => {
 });
 
 app.post('/api/diseases', isAdmin, (req, res, next) => {
-    upload.single('image')(req, res, (err) => {
+    diseaseUpload.single('image')(req, res, (err) => {
         if (err instanceof multer.MulterError) {
             if (err.code === 'LIMIT_FILE_SIZE') {
                 return res.status(400).json({ error: 'File size must be less than 5MB' });
@@ -889,12 +910,12 @@ app.post('/api/diseases', isAdmin, (req, res, next) => {
     const userId = req.session.userId;
     
     if (!name) {
-        if (req.file) fs.unlinkSync(req.file.path);
+        if (req.file) deleteImageFile(req.file.path);
         return res.status(400).json({ error: 'Name is required' });
     }
     
     try {
-        const imagePath = req.file ? `/images/uploads/${req.file.filename}` : null;
+        const imagePath = req.file ? getRelativePath(req.file, 'diseases') : null;
         
         const [result] = await pool.query(
             `INSERT INTO diseases (name, image_path, caused_by, affects, symptoms, causes, treatment, prevention, created_by)
@@ -911,13 +932,13 @@ app.post('/api/diseases', isAdmin, (req, res, next) => {
         });
     } catch (error) {
         console.error('Error creating disease:', error);
-        if (req.file) fs.unlinkSync(req.file.path);
+        if (req.file) deleteImageFile(req.file.path);
         res.status(500).json({ error: 'Failed to create disease' });
     }
 });
 
 app.put('/api/diseases/:id', isAdmin, (req, res, next) => {
-    upload.single('image')(req, res, (err) => {
+    diseaseUpload.single('image')(req, res, (err) => {
         if (err instanceof multer.MulterError) {
             if (err.code === 'LIMIT_FILE_SIZE') {
                 return res.status(400).json({ error: 'File size must be less than 5MB' });
@@ -936,21 +957,15 @@ app.put('/api/diseases/:id', isAdmin, (req, res, next) => {
         const [existing] = await pool.query('SELECT * FROM diseases WHERE id = ?', [diseaseId]);
         
         if (existing.length === 0) {
-            if (req.file) fs.unlinkSync(req.file.path);
+            if (req.file) deleteImageFile(req.file.path);
             return res.status(404).json({ error: 'Disease not found' });
         }
         
         let imagePath = existing[0].image_path;
         
         if (req.file) {
-            // Delete old image if exists
-            if (imagePath && imagePath.startsWith('/images/uploads/')) {
-                const oldPath = path.join(__dirname, '..', imagePath);
-                if (fs.existsSync(oldPath)) {
-                    fs.unlinkSync(oldPath);
-                }
-            }
-            imagePath = `/images/uploads/${req.file.filename}`;
+            deleteImageFile(imagePath);
+            imagePath = getRelativePath(req.file, 'diseases');
         }
         
         await pool.query(
@@ -969,7 +984,7 @@ app.put('/api/diseases/:id', isAdmin, (req, res, next) => {
         });
     } catch (error) {
         console.error('Error updating disease:', error);
-        if (req.file) fs.unlinkSync(req.file.path);
+        if (req.file) deleteImageFile(req.file.path);
         res.status(500).json({ error: 'Failed to update disease' });
     }
 });
@@ -984,21 +999,10 @@ app.delete('/api/diseases/:id', isAdmin, async (req, res) => {
             return res.status(404).json({ error: 'Disease not found' });
         }
         
-        // Delete image if exists
-        const imagePath = diseases[0].image_path;
-        if (imagePath && imagePath.startsWith('/images/uploads/')) {
-            const fullPath = path.join(__dirname, '..', imagePath);
-            if (fs.existsSync(fullPath)) {
-                fs.unlinkSync(fullPath);
-            }
-        }
-        
+        deleteImageFile(diseases[0].image_path);
         await pool.query('DELETE FROM diseases WHERE id = ?', [diseaseId]);
         
-        res.json({
-            success: true,
-            message: 'Disease deleted successfully'
-        });
+        res.json({ success: true, message: 'Disease deleted successfully' });
     } catch (error) {
         console.error('Error deleting disease:', error);
         res.status(500).json({ error: 'Failed to delete disease' });
@@ -1041,7 +1045,7 @@ app.get('/api/guides/:id', async (req, res) => {
 
 // Create, update and delete guide
 app.post('/api/guides', isAdmin, (req, res, next) => {
-    upload.single('image')(req, res, (err) => {
+    guideUpload.single('image')(req, res, (err) => {
         if (err instanceof multer.MulterError) {
             if (err.code === 'LIMIT_FILE_SIZE') {
                 return res.status(400).json({ error: 'File size must be less than 5MB' });
@@ -1057,12 +1061,12 @@ app.post('/api/guides', isAdmin, (req, res, next) => {
     const userId = req.session.userId;
     
     if (!name) {
-        if (req.file) fs.unlinkSync(req.file.path);
+        if (req.file) deleteImageFile(req.file.path);
         return res.status(400).json({ error: 'Name is required' });
     }
     
     try {
-        const imagePath = req.file ? `/images/uploads/${req.file.filename}` : null;
+        const imagePath = req.file ? getRelativePath(req.file, 'guides') : null;
         
         const [result] = await pool.query(
             `INSERT INTO guides (name, image_path, planting_suggestions, care_instructions, created_by)
@@ -1079,13 +1083,13 @@ app.post('/api/guides', isAdmin, (req, res, next) => {
         });
     } catch (error) {
         console.error('Error creating guide:', error);
-        if (req.file) fs.unlinkSync(req.file.path);
+        if (req.file) deleteImageFile(req.file.path);
         res.status(500).json({ error: 'Failed to create guide' });
     }
 });
 
 app.put('/api/guides/:id', isAdmin, (req, res, next) => {
-    upload.single('image')(req, res, (err) => {
+    guideUpload.single('image')(req, res, (err) => {
         if (err instanceof multer.MulterError) {
             if (err.code === 'LIMIT_FILE_SIZE') {
                 return res.status(400).json({ error: 'File size must be less than 5MB' });
@@ -1104,7 +1108,7 @@ app.put('/api/guides/:id', isAdmin, (req, res, next) => {
         const [existing] = await pool.query('SELECT * FROM guides WHERE id = ?', [guideId]);
         
         if (existing.length === 0) {
-            if (req.file) fs.unlinkSync(req.file.path);
+            if (req.file) deleteImageFile(req.file.path);
             return res.status(404).json({ error: 'Guide not found' });
         }
         
@@ -1118,7 +1122,7 @@ app.put('/api/guides/:id', isAdmin, (req, res, next) => {
                     fs.unlinkSync(oldPath);
                 }
             }
-            imagePath = `/images/uploads/${req.file.filename}`;
+            imagePath = getRelativePath(req.file, 'guides');
         }
         
         await pool.query(
@@ -1137,7 +1141,7 @@ app.put('/api/guides/:id', isAdmin, (req, res, next) => {
         });
     } catch (error) {
         console.error('Error updating guide:', error);
-        if (req.file) fs.unlinkSync(req.file.path);
+        if (req.file) deleteImageFile(req.file.path);
         res.status(500).json({ error: 'Failed to update guide' });
     }
 });
@@ -1154,12 +1158,7 @@ app.delete('/api/guides/:id', isAdmin, async (req, res) => {
         
         // Delete image if exists
         const imagePath = guides[0].image_path;
-        if (imagePath && imagePath.startsWith('/images/uploads/')) {
-            const fullPath = path.join(__dirname, '..', imagePath);
-            if (fs.existsSync(fullPath)) {
-                fs.unlinkSync(fullPath);
-            }
-        }
+        deleteImageFile(imagePath);
         
         await pool.query('DELETE FROM guides WHERE id = ?', [guideId]);
         
