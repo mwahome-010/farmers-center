@@ -8,8 +8,19 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
 
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { SchemaType } = require('@google/generative-ai');
+
+const ai = new GoogleGenerativeAI(process.env.API_KEY);
+const model = 'gemini-2.5-flash';
+
 const app = express();
 const PORT = process.env.PORT;
+
+//const apiSourceUrl = process.env.API_URL
+//const apiKey = process.env.PLANT_ID_API_KEY;
+//const LATITUDE = parseFloat(process.env.LATITUDE);
+//const LONGITUDE = parseFloat(process.env.LONGITUDE);
 
 const baseUploadsDir = path.join(__dirname, '..', 'images', 'uploads');
 const forumDir = path.join(baseUploadsDir, 'forum');
@@ -22,7 +33,6 @@ const guidesDir = path.join(baseUploadsDir, 'guides');
     }
 });
 
-// Separate storage configurations for each upload type
 const createStorage = (uploadType) => {
     return multer.diskStorage({
         destination: function (req, file, cb) {
@@ -82,12 +92,12 @@ const guideUpload = multer({
 
 function deleteImageFile(imagePath) {
     if (!imagePath) return;
-    
+
     // Handle both old and new path formats
-    const fullPath = imagePath.startsWith('/images/') 
+    const fullPath = imagePath.startsWith('/images/')
         ? path.join(__dirname, '..', imagePath)
         : path.join(__dirname, '..', 'images', imagePath);
-    
+
     if (fs.existsSync(fullPath)) {
         try {
             fs.unlinkSync(fullPath);
@@ -115,7 +125,7 @@ app.use(cors({
     exposedHeaders: ['set-cookie']
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
 
 app.use('/images', express.static(path.join(__dirname, '..', 'images')));
 app.use('/css', express.static(path.join(__dirname, '..', 'css')));
@@ -200,6 +210,48 @@ const isAdmin = async (req, res, next) => {
         console.error('Admin check error:', error);
         res.status(500).json({ error: 'Authorization check failed' });
     }
+};
+
+function fileToGenerativePart(buffer, mimeType) {
+    return {
+        inlineData: {
+            data: buffer.toString("base64"),
+            mimeType
+        },
+    };
+}
+
+const diseaseResponseSchema = {
+    type: SchemaType.OBJECT,
+    properties: {
+        plant_name: {
+            type: SchemaType.STRING,
+            description: "The most likely species or type of plant detected in the image.",
+        },
+        diseases: {
+            type: SchemaType.ARRAY,
+            description: "A list of diseases detected and their information.",
+            items: {
+                type: SchemaType.OBJECT,
+                properties: {
+                    name: {
+                        type: SchemaType.STRING,
+                        description: "The name of the disease, or 'Healthy' if no major disease is detected."
+                    },
+                    probability: {
+                        type: SchemaType.NUMBER,
+                        description: "The model's confidence probability (from 0.0 to 1.0) for this specific disease."
+                    },
+                    remedy: {
+                        type: SchemaType.STRING,
+                        description: "A specific, concise step-by-step remedy or care instruction for the detected condition."
+                    }
+                },
+                required: ["name", "probability", "remedy"]
+            }
+        }
+    },
+    required: ["plant_name", "diseases"]
 };
 
 app.post('/api/register', async (req, res) => {
@@ -299,6 +351,70 @@ app.post('/api/logout', (req, res) => {
     });
 });
 
+const uploadDiseaseImage = multer({ storage: createStorage('disease') }).single('image');
+
+app.post('/api/analyze-disease', uploadDiseaseImage, async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No image file uploaded.' });
+    }
+
+    try {
+        // Read the file from disk
+        const imageBuffer = fs.readFileSync(req.file.path);
+        const imagePart = fileToGenerativePart(imageBuffer, req.file.mimetype);
+        const prompt = process.env.PROMPT;
+
+        console.log('Calling Gemini API...');
+
+        // Get the model instance first
+        const genModel = ai.getGenerativeModel({
+            model: model,
+            generationConfig: {
+                responseMimeType: "application/json",
+                responseSchema: diseaseResponseSchema,
+                temperature: 0.1,
+            }
+        });
+
+        // Then call generateContent on the model instance
+        const result = await genModel.generateContent([
+            prompt,
+            imagePart
+        ]);
+
+        const response = await result.response;
+        const responseText = response.text();
+
+        console.log('Raw Gemini response:', responseText);
+
+        const diseaseData = JSON.parse(responseText);
+
+        console.log('Parsed disease data:', JSON.stringify(diseaseData, null, 2));
+
+        // Delete the temporary file after processing
+        fs.unlink(req.file.path, (err) => {
+            if (err) console.error("Error deleting temp file:", err);
+        });
+
+        // Send the parsed data directly
+        res.json(diseaseData);
+
+    } catch (error) {
+        console.error('Error with Gemini API or JSON parsing:', error);
+        console.error('Error stack:', error.stack);
+
+        if (req.file && req.file.path) {
+            fs.unlink(req.file.path, (err) => {
+                if (err) console.error("Error deleting temp file on error:", err);
+            });
+        }
+
+        res.status(500).json({
+            error: 'Failed to analyze image with AI.',
+            details: error.message
+        });
+    }
+});
 app.get('/api/auth/status', async (req, res) => {
     if (req.session.userId) {
         try {
@@ -609,7 +725,7 @@ app.delete('/api/forum/comments/:id', isAuthenticated, async (req, res) => {
         if (comments.length === 0) {
             return res.status(404).json({ error: 'Comment not found' });
         }
-        
+
         const [users] = await pool.query(
             'SELECT is_admin FROM users WHERE id = ?',
             [userId]
@@ -830,7 +946,7 @@ app.get('/api/admin/stats', isAdmin, async (req, res) => {
         const [commentCount] = await pool.query('SELECT COUNT(*) as count FROM comments');
         const [diseaseCount] = await pool.query('SELECT COUNT(*) as count FROM diseases');
         const [guideCount] = await pool.query('SELECT COUNT(*) as count FROM guides');
-        
+
         res.json({
             success: true,
             stats: {
@@ -866,7 +982,7 @@ app.get('/api/diseases', async (req, res) => {
             LEFT JOIN users u ON d.created_by = u.id
             ORDER BY d.created_at DESC
         `);
-        
+
         res.json({ success: true, diseases });
     } catch (error) {
         console.error('Error fetching diseases:', error);
@@ -881,11 +997,11 @@ app.get('/api/diseases/:id', async (req, res) => {
             'SELECT * FROM diseases WHERE id = ?',
             [req.params.id]
         );
-        
+
         if (diseases.length === 0) {
             return res.status(404).json({ error: 'Disease not found' });
         }
-        
+
         res.json({ success: true, disease: diseases[0] });
     } catch (error) {
         console.error('Error fetching disease:', error);
@@ -908,23 +1024,23 @@ app.post('/api/diseases', isAdmin, (req, res, next) => {
 }, async (req, res) => {
     const { name, caused_by, affects, symptoms, causes, treatment, prevention } = req.body;
     const userId = req.session.userId;
-    
+
     if (!name) {
         if (req.file) deleteImageFile(req.file.path);
         return res.status(400).json({ error: 'Name is required' });
     }
-    
+
     try {
         const imagePath = req.file ? getRelativePath(req.file, 'diseases') : null;
-        
+
         const [result] = await pool.query(
             `INSERT INTO diseases (name, image_path, caused_by, affects, symptoms, causes, treatment, prevention, created_by)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [name, imagePath, caused_by, affects, symptoms, causes, treatment, prevention, userId]
         );
-        
+
         const [diseases] = await pool.query('SELECT * FROM diseases WHERE id = ?', [result.insertId]);
-        
+
         res.status(201).json({
             success: true,
             message: 'Disease created successfully',
@@ -952,31 +1068,31 @@ app.put('/api/diseases/:id', isAdmin, (req, res, next) => {
 }, async (req, res) => {
     const diseaseId = req.params.id;
     const { name, caused_by, affects, symptoms, causes, treatment, prevention } = req.body;
-    
+
     try {
         const [existing] = await pool.query('SELECT * FROM diseases WHERE id = ?', [diseaseId]);
-        
+
         if (existing.length === 0) {
             if (req.file) deleteImageFile(req.file.path);
             return res.status(404).json({ error: 'Disease not found' });
         }
-        
+
         let imagePath = existing[0].image_path;
-        
+
         if (req.file) {
             deleteImageFile(imagePath);
             imagePath = getRelativePath(req.file, 'diseases');
         }
-        
+
         await pool.query(
             `UPDATE diseases 
              SET name = ?, image_path = ?, caused_by = ?, affects = ?, symptoms = ?, causes = ?, treatment = ?, prevention = ?
              WHERE id = ?`,
             [name, imagePath, caused_by, affects, symptoms, causes, treatment, prevention, diseaseId]
         );
-        
+
         const [updated] = await pool.query('SELECT * FROM diseases WHERE id = ?', [diseaseId]);
-        
+
         res.json({
             success: true,
             message: 'Disease updated successfully',
@@ -991,17 +1107,17 @@ app.put('/api/diseases/:id', isAdmin, (req, res, next) => {
 
 app.delete('/api/diseases/:id', isAdmin, async (req, res) => {
     const diseaseId = req.params.id;
-    
+
     try {
         const [diseases] = await pool.query('SELECT * FROM diseases WHERE id = ?', [diseaseId]);
-        
+
         if (diseases.length === 0) {
             return res.status(404).json({ error: 'Disease not found' });
         }
-        
+
         deleteImageFile(diseases[0].image_path);
         await pool.query('DELETE FROM diseases WHERE id = ?', [diseaseId]);
-        
+
         res.json({ success: true, message: 'Disease deleted successfully' });
     } catch (error) {
         console.error('Error deleting disease:', error);
@@ -1017,7 +1133,7 @@ app.get('/api/guides', async (req, res) => {
             LEFT JOIN users u ON g.created_by = u.id
             ORDER BY g.created_at DESC
         `);
-        
+
         res.json({ success: true, guides });
     } catch (error) {
         console.error('Error fetching guides:', error);
@@ -1031,11 +1147,11 @@ app.get('/api/guides/:id', async (req, res) => {
             'SELECT * FROM guides WHERE id = ?',
             [req.params.id]
         );
-        
+
         if (guides.length === 0) {
             return res.status(404).json({ error: 'Guide not found' });
         }
-        
+
         res.json({ success: true, guide: guides[0] });
     } catch (error) {
         console.error('Error fetching guide:', error);
@@ -1059,23 +1175,23 @@ app.post('/api/guides', isAdmin, (req, res, next) => {
 }, async (req, res) => {
     const { name, planting_suggestions, care_instructions } = req.body;
     const userId = req.session.userId;
-    
+
     if (!name) {
         if (req.file) deleteImageFile(req.file.path);
         return res.status(400).json({ error: 'Name is required' });
     }
-    
+
     try {
         const imagePath = req.file ? getRelativePath(req.file, 'guides') : null;
-        
+
         const [result] = await pool.query(
             `INSERT INTO guides (name, image_path, planting_suggestions, care_instructions, created_by)
              VALUES (?, ?, ?, ?, ?)`,
             [name, imagePath, planting_suggestions, care_instructions, userId]
         );
-        
+
         const [guides] = await pool.query('SELECT * FROM guides WHERE id = ?', [result.insertId]);
-        
+
         res.status(201).json({
             success: true,
             message: 'Guide created successfully',
@@ -1103,17 +1219,17 @@ app.put('/api/guides/:id', isAdmin, (req, res, next) => {
 }, async (req, res) => {
     const guideId = req.params.id;
     const { name, planting_suggestions, care_instructions } = req.body;
-    
+
     try {
         const [existing] = await pool.query('SELECT * FROM guides WHERE id = ?', [guideId]);
-        
+
         if (existing.length === 0) {
             if (req.file) deleteImageFile(req.file.path);
             return res.status(404).json({ error: 'Guide not found' });
         }
-        
+
         let imagePath = existing[0].image_path;
-        
+
         if (req.file) {
             // Delete old image if exists
             if (imagePath && imagePath.startsWith('/images/uploads/')) {
@@ -1124,16 +1240,16 @@ app.put('/api/guides/:id', isAdmin, (req, res, next) => {
             }
             imagePath = getRelativePath(req.file, 'guides');
         }
-        
+
         await pool.query(
             `UPDATE guides 
              SET name = ?, image_path = ?, planting_suggestions = ?, care_instructions = ?
              WHERE id = ?`,
             [name, imagePath, planting_suggestions, care_instructions, guideId]
         );
-        
+
         const [updated] = await pool.query('SELECT * FROM guides WHERE id = ?', [guideId]);
-        
+
         res.json({
             success: true,
             message: 'Guide updated successfully',
@@ -1148,20 +1264,20 @@ app.put('/api/guides/:id', isAdmin, (req, res, next) => {
 
 app.delete('/api/guides/:id', isAdmin, async (req, res) => {
     const guideId = req.params.id;
-    
+
     try {
         const [guides] = await pool.query('SELECT * FROM guides WHERE id = ?', [guideId]);
-        
+
         if (guides.length === 0) {
             return res.status(404).json({ error: 'Guide not found' });
         }
-        
+
         // Delete image if exists
         const imagePath = guides[0].image_path;
         deleteImageFile(imagePath);
-        
+
         await pool.query('DELETE FROM guides WHERE id = ?', [guideId]);
-        
+
         res.json({
             success: true,
             message: 'Guide deleted successfully'
