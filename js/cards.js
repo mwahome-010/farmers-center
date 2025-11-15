@@ -6,6 +6,10 @@ document.addEventListener('DOMContentLoaded', function () {
     var closeBtn = document.getElementById('guideModalClose');
     var downloadBtn = document.getElementById('guideModalDownload');
 
+    if (!modal) {
+        return;
+    }
+    
     function openModalFromCard(card) {
         var titleEl = card.querySelector('h3');
         var imgEl = card.querySelector('img');

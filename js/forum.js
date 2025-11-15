@@ -6,6 +6,13 @@ let replyHandlersWired = false;
 let selectedImageFile = null;
 
 document.addEventListener('DOMContentLoaded', async function () {
+    // Check if we're on the forum page
+    const forumContainer = document.querySelector('.forum-container');
+    if (!forumContainer) {
+        console.log('Not on forum page, skipping forum initialization');
+        return; // Exit early if not on forum page
+    }
+
     await auth.waitForAuth();
 
     await loadPosts();
@@ -37,9 +44,13 @@ async function loadPosts() {
 
 function renderPosts(posts) {
     const container = document.querySelector('.forum-container');
-    const existingItems = container.querySelectorAll('.post, .no-results');
 
-    existingItems.forEach(item => item.remove());
+    if (!container) {
+        console.log('Forum container not found');
+        return;
+    }
+
+    const existingItems = container.querySelectorAll('.post, .no-results');
 
     if (posts.length === 0) {
         const noResults = document.createElement('p');

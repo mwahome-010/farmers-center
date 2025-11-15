@@ -1,6 +1,11 @@
 const API_BASE_URL = 'http://localhost:3000/api';
 
 document.addEventListener('DOMContentLoaded', async function() {
+    const container = document.querySelector('.guide-container');
+    if (!container) {
+        return;
+    }
+    
     await loadDiseases();
     setupSearch();
 });
