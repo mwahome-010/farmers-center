@@ -1054,11 +1054,11 @@ app.get('/api/admin/stats', isAdmin, async (req, res) => {
         res.json({
             success: true,
             stats: {
-                totalUsers: userCount[0].count,
-                totalPosts: postCount[0].count,
-                totalComments: commentCount[0].count,
-                totalDiseases: diseaseCount[0].count,
-                totalGuides: guideCount[0].count
+                totalUsers: Number(userCount[0].count),
+                totalPosts: Number(postCount[0].count),
+                totalComments: Number(commentCount[0].count),
+                totalDiseases: Number(diseaseCount[0].count),
+                totalGuides: Number(guideCount[0].count)
             }
         });
     } catch (error) {

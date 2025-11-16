@@ -181,26 +181,26 @@ async function loadStats() {
             credentials: 'include'
         });
 
+        if (!response.ok) {
+            console.error('Stats response not OK:', response.status, response.statusText);
+            return;
+        }
+
         const data = await response.json();
+        console.log('Stats data received:', data);
 
-        if (data.success) {
-            document.getElementById('statUsers').textContent = data.stats.totalUsers;
-            document.getElementById('statPosts').textContent = data.stats.totalPosts;
-            document.getElementById('statComments').textContent = data.stats.totalComments;
+        if (data.success && data.stats) {
+            const statUsersEl = document.getElementById('statUsers');
+            const statPostsEl = document.getElementById('statPosts');
+            const statGuidesEl = document.getElementById('statGuides');
+            const statDiseasesEl = document.getElementById('statDiseases');
             
-        }
-        
-        // Load disease and guide counts
-        const guidesRes = await fetch(`${API_BASE_URL}/guides`, { credentials: 'include' });
-        const guidesData = await guidesRes.json();
-        if (guidesData.success) {
-            document.getElementById('statGuides').textContent = guidesData.guides.length;
-        }
-
-        const diseasesRes = await fetch(`${API_BASE_URL}/diseases`, { credentials: 'include' });
-        const diseasesData = await diseasesRes.json();
-        if (diseasesData.success) {
-            document.getElementById('statDiseases').textContent = diseasesData.diseases.length;
+            if (statUsersEl) statUsersEl.textContent = data.stats.totalUsers || 0;
+            if (statPostsEl) statPostsEl.textContent = data.stats.totalPosts || 0;
+            if (statGuidesEl) statGuidesEl.textContent = data.stats.totalGuides || 0;
+            if (statDiseasesEl) statDiseasesEl.textContent = data.stats.totalDiseases || 0;
+        } else {
+            console.error('Stats response not successful or missing stats:', data);
         }
 
     } catch (error) {
