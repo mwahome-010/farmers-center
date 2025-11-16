@@ -101,7 +101,7 @@ function deleteImageFile(imagePath) {
     if (fs.existsSync(fullPath)) {
         try {
             fs.unlinkSync(fullPath);
-            console.log('Deleted image:', fullPath);
+            //console.log('Deleted image:', fullPath);
         } catch (err) {
             console.error('Error deleting image:', err);
         }
@@ -175,7 +175,7 @@ const pool = mysql.createPool({
 
 pool.getConnection()
     .then(conn => {
-        console.log('Connected to MariaDB database');
+        console.log('✓ Connected to MariaDB database');
         conn.release();
     })
     .catch(err => {
@@ -369,7 +369,7 @@ async function initializeDiseaseAnalysesTable() {
         `);
         console.log('✓ disease_analyses table ready');
     } catch (error) {
-        console.error('Error initializing disease_analyses table:', error);
+        //console.error('Error initializing disease_analyses table:', error);
     }
 }
 
@@ -389,8 +389,7 @@ app.post('/api/analyze-disease', uploadDiseaseImage, async (req, res) => {
             `INSERT INTO disease_analyses (image_path, status) VALUES (?, 'processing')`,
             [imagePath]
         );
-        analysisId = result.insertId;
-        console.log(`Created analysis record with ID: ${analysisId}`);
+        analysisId = result.insertId;        
 
         res.json({ 
             success: true, 
@@ -405,8 +404,7 @@ app.post('/api/analyze-disease', uploadDiseaseImage, async (req, res) => {
                 const imagePart = fileToGenerativePart(imageBuffer, req.file.mimetype);
                 const prompt = process.env.PROMPT;
 
-                console.log(`[Analysis ${analysisId}] Calling Gemini API...`);
-
+                //console.log(`[Analysis ${analysisId}] Prompt:`, prompt);
                 const genModel = ai.getGenerativeModel({
                     model: model,
                     generationConfig: {
@@ -422,23 +420,19 @@ app.post('/api/analyze-disease', uploadDiseaseImage, async (req, res) => {
                 ]);
 
                 const response = await result.response;
-                const responseText = response.text();
-
-                console.log(`[Analysis ${analysisId}] Raw Gemini response:`, responseText);
+                const responseText = response.text();                
 
                 const diseaseData = JSON.parse(responseText);
+                //console.log(`[Analysis ${analysisId}] Parsed disease data:`, JSON.stringify(diseaseData, null, 2));
+                //console.log(`[Analysis ${analysisId}] Results stored in database`);
 
-                console.log(`[Analysis ${analysisId}] Parsed disease data:`, JSON.stringify(diseaseData, null, 2));
-
-                // Store results in database
+                /* Store results in database*/
                 await pool.query(
                     `UPDATE disease_analyses 
                      SET plant_name = ?, result_data = ?, status = 'completed' 
                      WHERE id = ?`,
                     [diseaseData.plant_name, JSON.stringify(diseaseData), analysisId]
                 );
-
-                console.log(`[Analysis ${analysisId}] Results stored in database`);
 
                 // Delete the temporary file after processing
                 fs.unlink(req.file.path, (err) => {

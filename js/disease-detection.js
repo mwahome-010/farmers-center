@@ -177,7 +177,6 @@ function initDiseaseDetection() {
         analyzeBtn.disabled = true;
     });
 
-
     analyzeBtn.addEventListener('click', async (e) => {
 
         e.preventDefault();
