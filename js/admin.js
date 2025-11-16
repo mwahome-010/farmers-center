@@ -1,6 +1,5 @@
 import auth from './auth.js';
-
-const API_BASE_URL = 'http://localhost:3000/api';
+import { API_BASE_URL } from './config.js';
 
 let currentTab = 'users';
 let allUsers = [];

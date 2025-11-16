@@ -1,4 +1,5 @@
 import auth from './auth.js';
+import { API_BASE_URL } from './config.js';
 
 let allPosts = [];
 let currentFilters = { category: 'all', sort: 'newest', search: '' };
@@ -25,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 async function loadPosts() {
     try {
         const params = new URLSearchParams(currentFilters);
-        const response = await fetch(`http://localhost:3000/api/forum/posts?${params}`, {
+        const response = await fetch(`${API_BASE_URL}/forum/posts?${params}`, {
             credentials: 'include'
         });
 
@@ -107,7 +108,7 @@ function createPostElement(post) {
 
 async function loadComments(postId) {
     try {
-        const response = await fetch(`http://localhost:3000/api/forum/posts/${postId}`, {
+        const response = await fetch(`${API_BASE_URL}/forum/posts/${postId}`, {
             credentials: 'include'
         });
 
@@ -291,8 +292,8 @@ function setupEventListeners() {
 async function deletePost(postId, isAdmin = false) {
     try {
         const endpoint = isAdmin
-            ? `http://localhost:3000/api/admin/posts/${postId}`
-            : `http://localhost:3000/api/forum/posts/${postId}`;
+            ? `${API_BASE_URL}/admin/posts/${postId}`
+            : `${API_BASE_URL}/forum/posts/${postId}`;
 
         const response = await fetch(endpoint, {
             method: 'DELETE',
@@ -319,8 +320,8 @@ async function deletePost(postId, isAdmin = false) {
 async function deleteComment(commentId, isAdmin = false) {
     try {
         const endpoint = isAdmin
-            ? `http://localhost:3000/api/admin/comments/${commentId}`
-            : `http://localhost:3000/api/forum/comments/${commentId}`;
+            ? `${API_BASE_URL}/admin/comments/${commentId}`
+            : `${API_BASE_URL}/forum/comments/${commentId}`;
 
         const response = await fetch(endpoint, {
             method: 'DELETE',
@@ -424,7 +425,7 @@ function wireReplyHandlers() {
         const postId = form.getAttribute('data-post-id');
 
         try {
-            const response = await fetch('http://localhost:3000/api/forum/comments', {
+            const response = await fetch(`${API_BASE_URL}/forum/comments`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -474,7 +475,7 @@ async function handleNewPost(e) {
             formData.append('image', imageInput.files[0]);
         }
 
-        const response = await fetch('http://localhost:3000/api/forum/posts', {
+        const response = await fetch(`${API_BASE_URL}/forum/posts`, {
             method: 'POST',
             credentials: 'include',
             body: formData

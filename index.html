@@ -33,136 +33,143 @@
 		</div>
 	</header>
 
-	<section class="hero">
-		<div class="hero-content">
+	<main>
 
-			<div class="hero-text">
-				<h1>
-					Your <span class="highlight">Smart</span> Agricultural Companion
-				</h1>
-				<p>
-					Detect plant diseases instantly with <span class="highlight">AI</span>, access expert growing
-					guides, and connect with a community of
-					farmers. Everything you need for successful farming.
-				</p>
-				<div class="cta-buttons">
-					<a href="/guides.html" class="btn-primary">
-						Browse Guides →
-					</a>
-					<a href="/forum.html" class="btn-secondary">
-						Join Community
-					</a>
-				</div>
-			</div>
-
-			<div class="detection-section">
-				<div class="detection-header">
-					<h2>🔬 AI Plant Disease Detection</h2>
-					<p>Upload an image of your plant to identify diseases instantly</p>
+		<section class="hero">
+			<div class="hero-content">
+				<div class="hero-text">
+					<h1>
+						Your <span class="highlight">Smart</span> Agricultural Companion
+					</h1>
+					<p>
+						Detect plant diseases instantly with <span class="highlight">AI</span>, access expert growing
+						guides, and connect with a community of
+						farmers. Everything you need for successful farming.
+					</p>
+					<div class="cta-buttons">
+						<a href="/guides.html" class="btn-primary">
+							Browse Guides →
+						</a>
+						<a href="/forum.html" class="btn-secondary">
+							Join Community
+						</a>
+					</div>
 				</div>
 
-			<div class="upload-zone" id="uploadZone">
-				<div class="upload-icon">📸</div>
-				<h3>Upload Plant Image</h3>
-				<p>Drag and drop your image here, or click to browse</p>
-				<input type="file" id="imageInput" accept="image/*" style="display: none;">
-				<button type="button" class="select-file-btn" id="selectFileBtn">Select Image</button>
-				<p style="font-size: 0.85em; margin-top: 10px; color: #666;">Supports: JPG, PNG, WebP (Max 5MB)</p>
-			</div>
+				<div class="detection-section">
+					<div class="detection-header">
+						<h2>🔬 AI Plant Disease Detection</h2>
+						<p>Upload an image of your plant to identify diseases instantly</p>
+					</div>
 
-			<div class="image-preview-section" id="previewSection">
-				<div class="preview-header">
-					<h4>Selected Image</h4>
-					<button type="button" class="remove-btn" id="removeImageBtn">Remove</button>
+					<div class="upload-zone" id="uploadZone">
+						<div class="upload-icon">📸</div>
+						<h3>Upload Plant Image</h3>
+						<p>Drag and drop your image here, or click to browse</p>
+						<input type="file" id="imageInput" accept="image/*" style="display: none;">
+						<button type="button" class="select-file-btn" id="selectFileBtn">Select Image</button>
+						<p style="font-size: 0.85em; margin-top: 10px; color: #666;">Supports: JPG, PNG, WebP (Max 5MB)
+						</p>
+					</div>
+
+					<div class="image-preview-section" id="previewSection" style="display: none;">
+						<div class="preview-header">
+							<h4>Selected Image</h4>
+							<button type="button" class="remove-btn" id="removeImageBtn">Remove</button>
+						</div>
+						<img id="previewImage" class="preview-image" alt="Preview">
+						<div class="preview-info" id="previewInfo"></div>
+					</div>
+
+					<div class="analyze-section">
+						<button type="button" class="analyze-btn" id="analyzeBtn" disabled>
+							Analyze for Diseases
+						</button>
+					</div>
+
+					<div class="detection-result" id="detectionResult" style="display: none;">
+						<h3>Detection Result</h3>
+						<div id="resultContent"></div>
+					</div>
 				</div>
-				<img id="previewImage" class="preview-image" alt="Preview">
-				<div class="preview-info" id="previewInfo"></div>
+			</div>
+		</section>
+
+		<section class="features">
+			<div class="section-header">
+				<h2>Everything You Need to Grow</h2>
+				<p>Comprehensive tools and resources designed specifically for modern farmers</p>
 			</div>
 
-			<div class="analyze-section">
-				<button type="button" class="analyze-btn" id="analyzeBtn" disabled>
-					Analyze for Diseases
-				</button>
-			</div>
-				
-			<div class="detection-result" id="detectionResult">
-					<h3>Detection Result</h3>
-					<div id="resultContent"></div>
+			<div class="features-grid">
+				<div class="feature-card">
+					<div class="feature-icon">🔍</div>
+					<h3>Disease Detection</h3>
+					<p>Upload images of your crops and get instant AI-powered disease identification with treatment
+						recommendations.</p>
+				</div>
+
+				<div class="feature-card">
+					<div class="feature-icon">📚</div>
+					<h3>Growing Guides</h3>
+					<p>Access detailed planting and care instructions for a wide variety of crops, from sowing to
+						harvest.
+					</p>
+				</div>
+
+				<div class="feature-card">
+					<div class="feature-icon">🌾</div>
+					<h3>Disease Database</h3>
+					<p>Browse our comprehensive database of plant diseases with symptoms, causes, and prevention
+						strategies.
+					</p>
+				</div>
+
+				<div class="feature-card">
+					<div class="feature-icon">💬</div>
+					<h3>Community Forum</h3>
+					<p>Connect with fellow farmers, share experiences, ask questions, and learn from agricultural
+						experts.
+					</p>
+				</div>
+
+				<div class="feature-card">
+					<div class="feature-icon">🎯</div>
+					<h3>Expert Advice</h3>
+					<p>Get personalized recommendations based on your location, crop type, and specific growing
+						conditions.
+					</p>
+				</div>
+
+				<div class="feature-card">
+					<div class="feature-icon">📱</div>
+					<h3>Mobile Friendly</h3>
+					<p>Access all features from any device - perfect for quick checks while you're out in the field.</p>
 				</div>
 			</div>
+		</section>
 
-	</section>
-
-	<section class="features">
-		<div class="section-header">
-			<h2>Everything You Need to Grow</h2>
-			<p>Comprehensive tools and resources designed specifically for modern farmers</p>
-		</div>
-
-		<div class="features-grid">
-			<div class="feature-card">
-				<div class="feature-icon">🔍</div>
-				<h3>Disease Detection</h3>
-				<p>Upload images of your crops and get instant AI-powered disease identification with treatment
-					recommendations.</p>
+		<section class="stats">
+			<div class="stats-grid">
+				<div class="stat-item">
+					<h3>500+</h3>
+					<p>Plant Diseases</p>
+				</div>
+				<div class="stat-item">
+					<h3>200+</h3>
+					<p>Growing Guides</p>
+				</div>
+				<div class="stat-item">
+					<h3>10K+</h3>
+					<p>Active Farmers</p>
+				</div>
+				<div class="stat-item">
+					<h3>24/7</h3>
+					<p>Support Available</p>
+				</div>
 			</div>
-
-			<div class="feature-card">
-				<div class="feature-icon">📚</div>
-				<h3>Growing Guides</h3>
-				<p>Access detailed planting and care instructions for a wide variety of crops, from sowing to harvest.
-				</p>
-			</div>
-
-			<div class="feature-card">
-				<div class="feature-icon">🌾</div>
-				<h3>Disease Database</h3>
-				<p>Browse our comprehensive database of plant diseases with symptoms, causes, and prevention strategies.
-				</p>
-			</div>
-
-			<div class="feature-card">
-				<div class="feature-icon">💬</div>
-				<h3>Community Forum</h3>
-				<p>Connect with fellow farmers, share experiences, ask questions, and learn from agricultural experts.
-				</p>
-			</div>
-
-			<div class="feature-card">
-				<div class="feature-icon">🎯</div>
-				<h3>Expert Advice</h3>
-				<p>Get personalized recommendations based on your location, crop type, and specific growing conditions.
-				</p>
-			</div>
-
-			<div class="feature-card">
-				<div class="feature-icon">📱</div>
-				<h3>Mobile Friendly</h3>
-				<p>Access all features from any device - perfect for quick checks while you're out in the field.</p>
-			</div>
-		</div>
-	</section>
-
-	<section class="stats">
-		<div class="stats-grid">
-			<div class="stat-item">
-				<h3>500+</h3>
-				<p>Plant Diseases</p>
-			</div>
-			<div class="stat-item">
-				<h3>200+</h3>
-				<p>Growing Guides</p>
-			</div>
-			<div class="stat-item">
-				<h3>10K+</h3>
-				<p>Active Farmers</p>
-			</div>
-			<div class="stat-item">
-				<h3>24/7</h3>
-				<p>Support Available</p>
-			</div>
-		</div>
-	</section>
+		</section>
+	</main>
 
 	<footer>
 		<p>&copy; 2025 Farmer's Center. Empowering farmers with technology.</p>
@@ -194,7 +201,7 @@
 						<label>Email<input type="email" id="registerEmail" required></label>
 						<label>Password<input type="password" id="registerPassword" required minlength="6"></label>
 						<label>Confirm Password<input type="password" id="registerConfirmPassword" required
-								minlength="8"></label>
+								minlength="6"></label>
 						<div class="auth-error" id="registerError"></div>
 						<button type="submit">Register</button>
 					</form>
