@@ -1,9 +1,6 @@
 import { API_BASE_URL } from './config.js';
 
-console.log('disease-detection.js module loaded');
-
 function initDiseaseDetection() {
-    console.log('Initializing disease detection...');
     const uploadZone = document.getElementById('uploadZone');
     const imageInput = document.getElementById('imageInput');
     const selectFileBtn = document.getElementById('selectFileBtn');
@@ -12,40 +9,108 @@ function initDiseaseDetection() {
     const previewImage = document.getElementById('previewImage');
     const previewInfo = document.getElementById('previewInfo');
     const removeImageBtn = document.getElementById('removeImageBtn');
-    const detectionResult = document.getElementById('detectionResult');
+    const diseaseResultModal = document.getElementById('diseaseResultModal');
     const resultContent = document.getElementById('resultContent');
+    const resultModalImage = document.getElementById('resultModalImage');
+    const diseaseResultModalClose = document.getElementById('diseaseResultModalClose');
+    const diseaseResultModalDownload = document.getElementById('diseaseResultModalDownload');
 
-    // Check if we're on the right page (elements exist)
     if (!uploadZone || !imageInput || !selectFileBtn || !analyzeBtn ||
         !previewSection || !previewImage || !previewInfo || !removeImageBtn ||
-        !detectionResult || !resultContent) {
-        console.log('Disease detection elements not found - skipping initialization');
+        !diseaseResultModal || !resultContent || !resultModalImage || !diseaseResultModalClose || !diseaseResultModalDownload) {
+
         return;
     }
 
-    console.log('All disease detection elements found - initializing...');
 
     let selectedFile = null;
     let isProcessing = false;
 
     previewSection.style.display = 'none';
-    detectionResult.style.display = 'none';
 
-    // Select file button
+    function closeModal() {
+        diseaseResultModal.classList.remove('open');
+        diseaseResultModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    function openModal() {
+        diseaseResultModal.classList.add('open');
+        diseaseResultModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    diseaseResultModalClose.addEventListener('click', closeModal);
+    diseaseResultModal.addEventListener('click', (e) => {
+        if (e.target === diseaseResultModal) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && diseaseResultModal.classList.contains('open')) {
+            closeModal();
+        }
+    });
+
+    // PDF download functionality
+    if (diseaseResultModalDownload) {
+        diseaseResultModalDownload.addEventListener('click', function () {
+            if (!diseaseResultModal || !diseaseResultModal.classList.contains('open')) return;
+
+            const content = document.createElement('div');
+            const title = 'Plant Disease Detection Result';
+            content.style.padding = '16px';
+            content.style.maxWidth = '800px';
+
+            const heading = document.createElement('h2');
+            heading.textContent = title;
+            heading.style.marginBottom = '16px';
+            heading.style.color = 'hsl(140, 62%, 20%)';
+
+            // Clone the image
+            const imgClone = resultModalImage && resultModalImage.src ? resultModalImage.cloneNode(true) : null;
+            if (imgClone) {
+                imgClone.style.maxWidth = '100%';
+                imgClone.style.borderRadius = '8px';
+                imgClone.style.margin = '8px 0';
+            }
+
+            const resultClone = resultContent.cloneNode(true);
+            resultClone.style.marginTop = '16px';
+
+            resultClone.querySelectorAll('button').forEach(function (b) { b.remove(); });
+
+            content.appendChild(heading);
+            if (imgClone) content.appendChild(imgClone);
+            content.appendChild(resultClone);
+
+            const opt = {
+                margin: 10,
+                filename: 'plant-disease-detection-result.pdf',
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            if (window.html2pdf) {
+                window.html2pdf().set(opt).from(content).save();
+            } else {
+                alert('PDF library failed to load. Please try again.');
+            }
+        });
+    }
+
     selectFileBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         imageInput.click();
     });
 
-    // Upload zone click (only triggers if not clicking on nested elements)
     uploadZone.addEventListener('click', (e) => {
-        if (e.target === uploadZone || e.target.closest('.upload-icon, h3, p')) {
+
+        if (!e.target.closest('.select-file-btn')) {
             imageInput.click();
         }
     });
 
-    // Handle file input change
     imageInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -53,7 +118,6 @@ function initDiseaseDetection() {
         }
     });
 
-    // Drag and drop handlers
     uploadZone.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadZone.style.borderColor = 'hsl(140, 62%, 40%)';
@@ -79,7 +143,6 @@ function initDiseaseDetection() {
         }
     });
 
-    // Handle file selection
     function handleFileSelect(file) {
         if (file.size > 5 * 1024 * 1024) {
             alert('File size must be less than 5MB.');
@@ -98,36 +161,33 @@ function initDiseaseDetection() {
             previewImage.src = e.target.result;
             previewInfo.textContent = `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
             previewSection.style.display = 'block';
+            uploadZone.style.display = 'none';
             analyzeBtn.disabled = false;
         };
         reader.readAsDataURL(file);
     }
 
-    // Remove image
     removeImageBtn.addEventListener('click', (e) => {
         e.preventDefault();
         selectedFile = null;
         imageInput.value = '';
         previewSection.style.display = 'none';
-        detectionResult.style.display = 'none';
+        uploadZone.style.display = 'block';
+        closeModal();
         analyzeBtn.disabled = true;
     });
 
 
     analyzeBtn.addEventListener('click', async (e) => {
-        //Stop ALL default behaviors and propagation FIRST
+
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
 
-        // Prevent any form submission
         const form = analyzeBtn.closest('form');
         if (form) {
-            console.warn('Button is inside a form - this should not happen');
             return false;
         }
-
-        console.log('=== ANALYZE BUTTON CLICKED ===');
 
         if (!selectedFile) {
             alert('Please select an image first.');
@@ -135,7 +195,6 @@ function initDiseaseDetection() {
         }
 
         if (isProcessing) {
-            console.log('Already processing, ignoring click');
             return;
         }
 
@@ -143,8 +202,12 @@ function initDiseaseDetection() {
         analyzeBtn.disabled = true;
         analyzeBtn.textContent = 'Analyzing...';
 
-        // Show waiting message
-        detectionResult.style.display = 'block';
+        previewSection.style.display = 'none';
+        uploadZone.style.display = 'block';
+
+        resultModalImage.src = previewImage.src;
+        resultModalImage.style.display = 'block';
+
         resultContent.innerHTML = `
             <div style="text-align: center; padding: 40px 20px;">
                 <div style="font-size: 2em; margin-bottom: 20px;">⏳</div>
@@ -160,15 +223,11 @@ function initDiseaseDetection() {
             </div>
         `;
 
-        setTimeout(() => {
-            detectionResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 100);
+        openModal();
 
         try {
             const formData = new FormData();
             formData.append('image', selectedFile);
-
-            console.log('Sending request to:', `${API_BASE_URL}/analyze-disease`);
 
             const response = await fetch(`${API_BASE_URL}/analyze-disease`, {
                 method: 'POST',
@@ -188,7 +247,6 @@ function initDiseaseDetection() {
             }
 
             const startResponse = await response.json();
-            console.log('Analysis started, ID:', startResponse.analysisId);
 
             if (!startResponse.analysisId) {
                 throw new Error('Failed to get analysis ID from server');
@@ -196,8 +254,6 @@ function initDiseaseDetection() {
 
             const analysisId = startResponse.analysisId;
 
-            // Poll for results
-            console.log('Polling for results...');
             analyzeBtn.textContent = 'Analyzing... (Waiting for results)';
             const maxAttempts = 120;
             let attempts = 0;
@@ -212,6 +268,12 @@ function initDiseaseDetection() {
                         <p style="color: hsl(0, 0%, 40%); margin-bottom: 10px;">Please wait while we analyze your plant image...</p>
                         <p style="color: hsl(0, 0%, 50%); font-size: 0.9em; margin-bottom: 20px;">Elapsed time: ${elapsedSeconds.toFixed(1)}s</p>
                         <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid hsl(140, 62%, 90%); border-top: 4px solid hsl(140, 62%, 40%); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                        <style>
+                            @keyframes spin {
+                                0% { transform: rotate(0deg); }
+                                100% { transform: rotate(360deg); }
+                            }
+                        </style>
                     </div>
                 `;
             };
@@ -241,18 +303,15 @@ function initDiseaseDetection() {
                     }
 
                     const result = await resultResponse.json();
-                    console.log(`Poll attempt ${attempts}:`, result.status);
 
                     if (result.status === 'completed') {
                         const { status, ...data } = result;
                         resultData = data;
-                        console.log('Results received:', resultData);
                         break;
                     } else if (result.status === 'error') {
                         throw new Error(result.error || 'Analysis failed');
                     }
                 } catch (pollError) {
-                    console.error('Error polling:', pollError);
                     if (pollError.message.includes('Analysis failed')) {
                         throw pollError;
                     }
@@ -267,6 +326,7 @@ function initDiseaseDetection() {
                         <p style="margin-bottom: 20px;">The analysis is still processing. Please try again.</p>
                     </div>
                 `;
+                openModal();
                 throw new Error('Analysis timed out after 60 seconds.');
             }
 
@@ -274,14 +334,14 @@ function initDiseaseDetection() {
             displayResults(resultData);
 
         } catch (error) {
-            console.error('Analysis error:', error);
 
             let errorMessage = error.message;
             if (error.message.includes('Failed to fetch')) {
                 errorMessage = 'Cannot connect to server. Please make sure the backend is running.';
             }
 
-            detectionResult.style.display = 'block';
+            resultModalImage.src = previewImage.src;
+            resultModalImage.style.display = 'block';
             resultContent.innerHTML = `
                 <div style="text-align: center; padding: 40px 20px; color: hsl(0, 62%, 50%);">
                     <div style="font-size: 2em; margin-bottom: 20px;">❌</div>
@@ -290,6 +350,7 @@ function initDiseaseDetection() {
                     <p style="font-size: 0.9em; color: hsl(0, 0%, 40%);">Please try again or check your connection.</p>
                 </div>
             `;
+            openModal();
         } finally {
             isProcessing = false;
             analyzeBtn.disabled = false;
@@ -298,7 +359,6 @@ function initDiseaseDetection() {
     });
 
     function displayResults(data) {
-        console.log('Displaying results:', data);
 
         let html = '';
 
@@ -366,14 +426,11 @@ function initDiseaseDetection() {
         }
 
         resultContent.innerHTML = html;
-        detectionResult.style.display = 'block';
-
-        setTimeout(() => {
-            detectionResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 100);
+        resultModalImage.src = previewImage.src;
+        resultModalImage.style.display = 'block';
+        openModal();
     }
 
-    console.log('Disease detection initialization complete');
 }
 
 if (document.readyState === 'loading') {

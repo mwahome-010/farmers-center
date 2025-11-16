@@ -62,34 +62,47 @@
 						<p>Upload an image of your plant to identify diseases instantly</p>
 					</div>
 
-					<div class="upload-zone" id="uploadZone">
-						<div class="upload-icon">📸</div>
-						<h3>Upload Plant Image</h3>
-						<p>Drag and drop your image here, or click to browse</p>
-						<input type="file" id="imageInput" accept="image/*" style="display: none;">
-						<button type="button" class="select-file-btn" id="selectFileBtn">Select Image</button>
-						<p style="font-size: 0.85em; margin-top: 10px; color: #666;">Supports: JPG, PNG, WebP (Max 5MB)
-						</p>
-					</div>
-
-					<div class="image-preview-section" id="previewSection" style="display: none;">
-						<div class="preview-header">
-							<h4>Selected Image</h4>
-							<button type="button" class="remove-btn" id="removeImageBtn">Remove</button>
+					<div class="detection-content-wrapper">
+						<div class="image-preview-section" id="previewSection" style="display: none;">
+							<div class="preview-header">
+								<h4>Selected Image</h4>
+								<button type="button" class="remove-btn" id="removeImageBtn">Remove</button>
+							</div>
+							<img id="previewImage" class="preview-image" alt="Preview">
+							<div class="preview-info" id="previewInfo"></div>
+							<div class="analyze-section">
+								<button type="button" class="analyze-btn" id="analyzeBtn" disabled>
+									Analyze for Diseases
+								</button>
+							</div>
 						</div>
-						<img id="previewImage" class="preview-image" alt="Preview">
-						<div class="preview-info" id="previewInfo"></div>
-					</div>
 
-					<div class="analyze-section">
-						<button type="button" class="analyze-btn" id="analyzeBtn" disabled>
-							Analyze for Diseases
-						</button>
+						<div class="upload-zone" id="uploadZone">
+							<div class="upload-icon">📸</div>
+							<h3>Upload Plant Image</h3>
+							<p>Drag and drop your image here, or click to browse</p>
+							<input type="file" id="imageInput" accept="image/*" style="display: none;">
+							<button type="button" class="select-file-btn" id="selectFileBtn">Select Image</button>
+							<p style="font-size: 0.85em; margin-top: 10px; color: #666;">Supports: JPG, PNG, WebP (Max 5MB)
+							</p>
+						</div>
 					</div>
+				</div>
 
-					<div class="detection-result" id="detectionResult" style="display: none;">
-						<h3>Detection Result</h3>
-						<div id="resultContent"></div>
+				<!-- Disease Detection Results Modal -->
+				<div class="disease-result-modal" id="diseaseResultModal" role="dialog" aria-modal="true" aria-hidden="true">
+					<div class="disease-result-modal-content">
+						<div class="disease-result-modal-header">
+							<div class="disease-result-modal-title">Detection Result</div>
+							<button class="disease-result-modal-download" id="diseaseResultModalDownload" aria-label="Download as PDF"></button>
+							<button class="disease-result-modal-close" id="diseaseResultModalClose" aria-label="Close">
+								<img src="images/ui-icons/cross.svg" alt="close button">
+							</button>
+						</div>
+						<div class="disease-result-modal-body">
+							<img id="resultModalImage" class="result-modal-image" alt="Analyzed plant image">
+							<div id="resultContent"></div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -211,6 +224,7 @@
 	</div>
 
 	<script src="js/index.js" type="module" defer></script>
+	<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js" defer></script>
 
 </body>
 
