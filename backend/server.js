@@ -353,68 +353,178 @@ app.post('/api/logout', (req, res) => {
 
 const uploadDiseaseImage = multer({ storage: createStorage('disease') }).single('image');
 
+async function initializeDiseaseAnalysesTable() {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS disease_analyses (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                image_path VARCHAR(500),
+                plant_name VARCHAR(255),
+                result_data JSON,
+                status ENUM('processing', 'completed', 'error') DEFAULT 'processing',
+                error_message TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('✓ disease_analyses table ready');
+    } catch (error) {
+        console.error('Error initializing disease_analyses table:', error);
+    }
+}
+
+initializeDiseaseAnalysesTable();
+
 app.post('/api/analyze-disease', uploadDiseaseImage, async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No image file uploaded.' });
     }
 
+    let analysisId = null;
+    const imagePath = getRelativePath(req.file, 'disease');
+
     try {
-        // Read the file from disk
-        const imageBuffer = fs.readFileSync(req.file.path);
-        const imagePart = fileToGenerativePart(imageBuffer, req.file.mimetype);
-        const prompt = process.env.PROMPT;
+        //analysis record in db
+        const [result] = await pool.query(
+            `INSERT INTO disease_analyses (image_path, status) VALUES (?, 'processing')`,
+            [imagePath]
+        );
+        analysisId = result.insertId;
+        console.log(`Created analysis record with ID: ${analysisId}`);
 
-        console.log('Calling Gemini API...');
+        res.json({ 
+            success: true, 
+            analysisId: analysisId,
+            message: 'Analysis started. Use the analysisId to fetch results.'
+        });
 
-        // Get the model instance first
-        const genModel = ai.getGenerativeModel({
-            model: model,
-            generationConfig: {
-                responseMimeType: "application/json",
-                responseSchema: diseaseResponseSchema,
-                temperature: 0.1,
+        // Process analysis asynchronously
+        (async () => {
+            try {
+                const imageBuffer = fs.readFileSync(req.file.path);
+                const imagePart = fileToGenerativePart(imageBuffer, req.file.mimetype);
+                const prompt = process.env.PROMPT;
+
+                console.log(`[Analysis ${analysisId}] Calling Gemini API...`);
+
+                const genModel = ai.getGenerativeModel({
+                    model: model,
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: diseaseResponseSchema,
+                        temperature: 0.1,
+                    }
+                });
+
+                const result = await genModel.generateContent([
+                    prompt,
+                    imagePart
+                ]);
+
+                const response = await result.response;
+                const responseText = response.text();
+
+                console.log(`[Analysis ${analysisId}] Raw Gemini response:`, responseText);
+
+                const diseaseData = JSON.parse(responseText);
+
+                console.log(`[Analysis ${analysisId}] Parsed disease data:`, JSON.stringify(diseaseData, null, 2));
+
+                // Store results in database
+                await pool.query(
+                    `UPDATE disease_analyses 
+                     SET plant_name = ?, result_data = ?, status = 'completed' 
+                     WHERE id = ?`,
+                    [diseaseData.plant_name, JSON.stringify(diseaseData), analysisId]
+                );
+
+                console.log(`[Analysis ${analysisId}] Results stored in database`);
+
+                // Delete the temporary file after processing
+                fs.unlink(req.file.path, (err) => {
+                    if (err) console.error(`[Analysis ${analysisId}] Error deleting temp file:`, err);
+                });
+
+            } catch (error) {
+                console.error(`[Analysis ${analysisId}] Error with Gemini API or JSON parsing:`, error);
+                console.error(`[Analysis ${analysisId}] Error stack:`, error.stack);
+
+                await pool.query(
+                    `UPDATE disease_analyses 
+                     SET status = 'error', error_message = ? 
+                     WHERE id = ?`,
+                    [error.message, analysisId]
+                );
+
+                if (req.file && req.file.path) {
+                    fs.unlink(req.file.path, (err) => {
+                        if (err) console.error(`[Analysis ${analysisId}] Error deleting temp file on error:`, err);
+                    });
+                }
             }
-        });
-
-        // Then call generateContent on the model instance
-        const result = await genModel.generateContent([
-            prompt,
-            imagePart
-        ]);
-
-        const response = await result.response;
-        const responseText = response.text();
-
-        console.log('Raw Gemini response:', responseText);
-
-        const diseaseData = JSON.parse(responseText);
-
-        console.log('Parsed disease data:', JSON.stringify(diseaseData, null, 2));
-
-        // Delete the temporary file after processing
-        fs.unlink(req.file.path, (err) => {
-            if (err) console.error("Error deleting temp file:", err);
-        });
-
-        // Send the parsed data directly
-        res.json(diseaseData);
+        })();
 
     } catch (error) {
-        console.error('Error with Gemini API or JSON parsing:', error);
-        console.error('Error stack:', error.stack);
-
+        console.error('Error creating analysis record:', error);
+        
         if (req.file && req.file.path) {
             fs.unlink(req.file.path, (err) => {
-                if (err) console.error("Error deleting temp file on error:", err);
+                if (err) console.error("Error deleting temp file:", err);
             });
         }
 
         res.status(500).json({
-            error: 'Failed to analyze image with AI.',
+            error: 'Failed to start analysis.',
             details: error.message
         });
     }
 });
+
+/* Endpoint to fetch analysis results */
+app.get('/api/analyze-disease/:id', async (req, res) => {
+    const analysisId = req.params.id;
+
+    try {
+        const [analyses] = await pool.query(
+            'SELECT * FROM disease_analyses WHERE id = ?',
+            [analysisId]
+        );
+
+        if (analyses.length === 0) {
+            return res.status(404).json({ error: 'Analysis not found' });
+        }
+
+        const analysis = analyses[0];
+
+        if (analysis.status === 'processing') {
+            return res.json({
+                status: 'processing',
+                message: 'Analysis is still in progress'
+            });
+        }
+
+        if (analysis.status === 'error') {
+            return res.json({
+                status: 'error',
+                error: analysis.error_message || 'Analysis failed'
+            });
+        }
+
+        // Status is 'completed'
+        const resultData = JSON.parse(analysis.result_data);
+        // Return the result data with status, ensuring plant_name is included
+        res.json({
+            status: 'completed',
+            plant_name: resultData.plant_name || analysis.plant_name,
+            diseases: resultData.diseases || []
+        });
+
+    } catch (error) {
+        console.error('Error fetching analysis:', error);
+        res.status(500).json({ error: 'Failed to fetch analysis results' });
+    }
+});
+
 app.get('/api/auth/status', async (req, res) => {
     if (req.session.userId) {
         try {

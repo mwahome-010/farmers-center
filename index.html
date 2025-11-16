@@ -61,31 +61,31 @@
 					<p>Upload an image of your plant to identify diseases instantly</p>
 				</div>
 
-				<div class="upload-zone" id="uploadZone">
-					<div class="upload-icon">📸</div>
-					<h3>Upload Plant Image</h3>
-					<p>Drag and drop your image here, or click to browse</p>
-					<input type="file" id="imageInput" accept="image/*">
-					<button type="button" class="select-file-btn" id="selectFileBtn">Select Image</button>
-					<p style="font-size: 0.85em; margin-top: 10px; color: #666;">Supports: JPG, PNG, WebP (Max 5MB)</p>
-					<div class="analyze-section">
+			<div class="upload-zone" id="uploadZone">
+				<div class="upload-icon">📸</div>
+				<h3>Upload Plant Image</h3>
+				<p>Drag and drop your image here, or click to browse</p>
+				<input type="file" id="imageInput" accept="image/*" style="display: none;">
+				<button type="button" class="select-file-btn" id="selectFileBtn">Select Image</button>
+				<p style="font-size: 0.85em; margin-top: 10px; color: #666;">Supports: JPG, PNG, WebP (Max 5MB)</p>
+			</div>
 
-					<button type="button" class="analyze-btn" id="analyzeBtn" disabled>
-						Analyze for Diseases
-					</button>
+			<div class="image-preview-section" id="previewSection">
+				<div class="preview-header">
+					<h4>Selected Image</h4>
+					<button type="button" class="remove-btn" id="removeImageBtn">Remove</button>
 				</div>
-				</div>
+				<img id="previewImage" class="preview-image" alt="Preview">
+				<div class="preview-info" id="previewInfo"></div>
+			</div>
 
-				<div class="image-preview-section" id="previewSection">
-					<div class="preview-header">
-						<h4>Selected Image</h4>
-						<button type="button" class="remove-btn" id="removeImageBtn">Remove</button>
-					</div>
-					<img id="previewImage" class="preview-image" alt="Preview">
-					<div class="preview-info" id="previewInfo"></div>
-				</div>
+			<div class="analyze-section">
+				<button type="button" class="analyze-btn" id="analyzeBtn" disabled>
+					Analyze for Diseases
+				</button>
+			</div>
 				
-				<div class="detection-result" id="detectionResult">
+			<div class="detection-result" id="detectionResult">
 					<h3>Detection Result</h3>
 					<div id="resultContent"></div>
 				</div>
