@@ -32,7 +32,6 @@ function renderGuideCards(guides) {
         return;
     }
     
-    // Clear existing content
     container.innerHTML = '';
     
     if (guides.length === 0) {
@@ -132,5 +131,3 @@ function debounce(func, wait) {
         timeout = setTimeout(later, wait);
     };
 }
-
-export default {};

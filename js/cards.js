@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', function () {
             modalImage.alt = '';
         }
 
-        // Build structured content from card data
         modalDetails.innerHTML = buildStructuredContent(detailEls);
 
         modal.classList.add('open');
