@@ -272,535 +272,6 @@ main {
   margin-top: 64px;
 }
 
-.detection-section {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 40px 20px;
-}
-
-.detection-header {
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-.detection-header h2 {
-    font-size: 2em;
-    color: hsl(140, 62%, 24%);
-    margin-bottom: 10px;
-}
-
-.detection-header p {
-    color: hsl(0, 0%, 40%);
-    font-size: 1.1em;
-}
-
-.upload-zone {
-    background: hsl(140, 62%, 90%);
-    border: 3px dashed hsl(140, 62%, 40%);
-    border-radius: 20px;
-    padding: 40px 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-bottom: 20px;
-}
-
-.upload-zone:hover {
-    border-color: hsl(140, 62%, 30%);
-    background: hsl(140, 62%, 88%);
-    box-shadow: 0 8px 32px hsla(140, 62%, 24%, 0.12);
-}
-
-.upload-zone.dragover {
-    border-color: hsl(140, 62%, 30%);
-    background: hsl(140, 62%, 85%);
-    transform: scale(1.02);
-}
-
-.upload-icon {
-    font-size: 3em;
-    margin-bottom: 15px;
-}
-
-.upload-zone h3 {
-    font-size: 1.3em;
-    color: hsl(140, 62%, 24%);
-    margin-bottom: 10px;
-}
-
-.upload-zone p {
-    color: hsl(0, 0%, 40%);
-    margin-bottom: 15px;
-}
-
-.upload-zone input[type="file"] {
-    display: none;
-}
-
-.select-file-btn {
-    background: hsl(140, 62%, 40%);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.select-file-btn:hover {
-    background: hsl(140, 62%, 30%);
-    transform: translateY(-2px);
-}
-
-.image-preview-section {
-    background: white;
-    border: 2px solid hsl(140, 62%, 85%);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 20px;
-    display: none;
-}
-
-.image-preview-section.show {
-    display: block;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.preview-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.preview-header h4 {
-    color: hsl(140, 62%, 24%);
-    margin: 0;
-    font-size: 1.2em;
-}
-
-.remove-btn {
-    background: hsl(0, 62%, 95%);
-    color: hsl(0, 62%, 35%);
-    border: 1px solid hsl(0, 62%, 75%);
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9em;
-    font-weight: 500;
-    transition: all 0.2s;
-}
-
-.remove-btn:hover {
-    background: hsl(0, 62%, 90%);
-}
-
-.preview-image {
-    width: 100%;
-    max-height: 300px;
-    object-fit: contain;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px hsla(0, 0%, 0%, 0.1);
-}
-
-.preview-info {
-    margin-top: 10px;
-    color: hsl(0, 0%, 40%);
-    font-size: 0.9em;
-    text-align: center;
-}
-
-.analyze-section {
-    text-align: center;
-}
-
-.analyze-btn {
-    background: hsl(140, 62%, 40%);
-    color: white;
-    border: none;
-    padding: 16px 48px;
-    border-radius: 12px;
-    font-size: 1.2em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 4px 12px hsla(140, 62%, 40%, 0.3);
-}
-
-.analyze-btn:hover:not(:disabled) {
-    background: hsl(140, 62%, 30%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px hsla(140, 62%, 40%, 0.4);
-}
-
-.analyze-btn:disabled {
-    background: hsl(0, 0%, 80%);
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.analyze-btn .loading-spinner {
-    display: inline-block;
-    margin-right: 10px;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.analyze-image-btn {
-  background: hsl(140, 62%, 40%);
-  width: 80%;
-  height: 40px;
-  border: 1px solid hsl(0, 0%, 30%);
-  border-radius: 8px;
-  color: hsl(140, 62%, 100%);
-  cursor: pointer;
-  font-size: 1.1em;
-  font-weight: 500;
-  margin-top: 12px;
-  transition: .2s;
-
-}
-
-.analyze-image-btn:hover,
-#newPostBtn:hover {
-  transform: scale(1.05);
-  background: hsl(140, 62%, 29%);
-  color: hsl(0, 0%, 100%);
-}
-
-.analyze-image-btn:active,
-#newPostBtn:active {
-  background: hsl(140, 62%, 14%);
-  transition: .2s;
-}
-
-.image-preview-box {
-    margin-top: 16px;
-    text-align: center;
-}
-
-.remove-preview-btn:hover {
-    background: hsl(0, 62%, 90%) !important;
-    border-color: hsl(0, 62%, 60%) !important;
-}
-
-.loading-spinner {
-    margin-top: 20px;
-    padding: 12px;
-    background: hsl(140, 62%, 95%);
-    border-radius: 8px;
-    color: hsl(140, 62%, 24%);
-    font-weight: 600;
-    animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
-}
-
-.ai-results-modal {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    background: hsla(0, 0%, 0%, 0.6) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    z-index: 9999 !important;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.ai-results-modal.open {
-    opacity: 1 !important;
-}
-
-.ai-results-content {
-    background: white !important;
-    border-radius: 16px;
-    max-width: 800px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 60px hsla(0, 0%, 0%, 0.3);
-    transform: scale(0.9);
-    transition: transform 0.3s ease;
-    position: relative;
-}
-
-.ai-results-modal.open .ai-results-content {
-    transform: scale(1);
-}
-
-.ai-results-header {
-    background: linear-gradient(135deg, hsl(140, 62%, 96%) 0%, hsl(140, 62%, 93%) 100%);
-    padding: 24px;
-    border-bottom: 2px solid hsl(140, 62%, 85%);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-radius: 16px 16px 0 0;
-}
-
-.ai-results-header h2 {
-    margin: 0;
-    color: hsl(140, 62%, 24%);
-    font-size: 1.5em;
-}
-
-.ai-results-close {
-    background: transparent;
-    border: none;
-    font-size: 2em;
-    color: hsl(140, 62%, 24%);
-    cursor: pointer;
-    line-height: 1;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    transition: background 0.2s ease;
-}
-
-.ai-results-close:hover {
-    background: hsl(140, 62%, 85%);
-}
-
-.ai-results-body {
-    padding: 24px;
-}
-
-.healthy-result {
-    text-align: center;
-    padding: 40px 20px;
-}
-
-.result-icon {
-    font-size: 4em;
-    margin-bottom: 16px;
-}
-
-.healthy-result h3 {
-    color: hsl(140, 62%, 24%);
-    margin-bottom: 12px;
-    font-size: 1.5em;
-}
-
-.healthy-result p {
-    color: hsl(0, 0%, 40%);
-    font-size: 1.1em;
-}
-
-.no-results {
-    text-align: center;
-    padding: 40px 20px;
-    background: hsl(48, 100%, 96%);
-    border-radius: 12px;
-    border: 1px solid hsl(48, 100%, 80%);
-}
-
-.no-results p:first-child {
-    font-size: 1.2em;
-    font-weight: 600;
-    color: hsl(48, 100%, 22%);
-}
-
-.diseases-list {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.disease-card {
-    background: hsl(0, 0%, 100%);
-    border: 2px solid hsl(140, 62%, 85%);
-    border-radius: 12px;
-    padding: 20px;
-    opacity: 0;
-    animation: slideIn 0.4s ease forwards;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.disease-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.disease-header h3 {
-    color: hsl(140, 62%, 24%);
-    margin: 0;
-    font-size: 1.3em;
-}
-
-.confidence-badge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.9em;
-    font-weight: 600;
-    border: 1px solid hsl(140, 62%, 70%);
-    color: hsl(140, 62%, 24%);
-}
-
-.disease-section {
-    margin-bottom: 16px;
-    padding: 16px;
-    background: hsl(140, 62%, 98%);
-    border-radius: 8px;
-    border-left: 4px solid hsl(140, 62%, 70%);
-}
-
-.disease-section h4 {
-    color: hsl(140, 62%, 24%);
-    margin: 0 0 8px 0;
-    font-size: 1.05em;
-}
-
-.disease-section p {
-    margin: 0;
-    line-height: 1.6;
-    color: hsl(0, 0%, 20%);
-}
-
-.disease-section.treatment {
-    background: hsl(48, 100%, 98%);
-    border-left-color: hsl(48, 100%, 60%);
-}
-
-.disease-section.treatment h4 {
-    color: hsl(48, 100%, 22%);
-}
-
-.learn-more-btn {
-    display: inline-block;
-    margin-top: 12px;
-    padding: 10px 20px;
-    background: hsl(140, 62%, 40%);
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: background 0.2s ease, transform 0.1s ease;
-}
-
-.learn-more-btn:hover {
-    background: hsl(140, 62%, 30%);
-    transform: translateY(-2px);
-}
-
-.results-footer {
-    margin-top: 24px;
-    padding: 16px;
-    background: hsl(48, 100%, 96%);
-    border-radius: 8px;
-    border: 1px solid hsl(48, 100%, 80%);
-}
-
-.results-footer p {
-    margin: 0;
-    color: hsl(48, 100%, 22%);
-    line-height: 1.5;
-}
-
-.notification {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 16px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-    box-shadow: 0 4px 20px hsla(0, 0%, 0%, 0.2);
-    z-index: 3000;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.3s ease;
-}
-
-.notification.show {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.notification-success {
-    background: hsl(140, 62%, 90%);
-    color: hsl(140, 62%, 24%);
-    border: 1px solid hsl(140, 62%, 70%);
-}
-
-.notification-error {
-    background: hsl(0, 62%, 95%);
-    color: hsl(0, 62%, 35%);
-    border: 1px solid hsl(0, 62%, 75%);
-}
-
-.notification-info {
-    background: hsl(210, 62%, 95%);
-    color: hsl(210, 62%, 35%);
-    border: 1px solid hsl(210, 62%, 75%);
-}
-
-@media (max-width: 768px) {
-    .ai-results-content {
-        max-height: 95vh;
-    }
-    
-    .ai-results-header {
-        padding: 20px;
-    }
-    
-    .ai-results-header h2 {
-        font-size: 1.2em;
-    }
-    
-    .ai-results-body {
-        padding: 16px;
-    }
-    
-    .disease-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .notification {
-        bottom: 10px;
-        right: 10px;
-        left: 10px;
-        text-align: center;
-    }
-}
-
 .section {
   padding: 60px 20px;
   width: 100%;
@@ -808,6 +279,73 @@ main {
   margin: 0 auto;
 }
 
+.detection-section {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.upload-zone {
+  border: 2px dashed hsla(140, 62%, 40%, 0.5);
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  background: hsl(140, 62%, 98%);
+  cursor: pointer;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.upload-zone:hover {
+  background: hsl(140, 62%, 96%);
+  border-color: hsl(140, 62%, 40%);
+  transform: scale(1.01);
+  transition: transform 0.4s ease-in-out;
+}
+
+.upload-zone .analyze-btn {
+  color: hsl(0, 0%, 100%);
+  background-color: hsl(140, 62%, 40%);
+  padding: 8px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 8px;
+}
+
+.upload-zone .analyze-btn:disabled {
+  background-color: hsl(140, 62%, 40%, 0.6);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.upload-zone .analyze-btn:hover:enabled {
+  background-color: hsl(140, 62%, 50%);
+}
+
+.image-preview-section {
+  margin: 0 auto;
+}
+
+.image-preview-section .preview-header {
+  text-align: center;
+}
+
+.image-preview-section .remove-btn {
+  background: hsl(0, 62%, 50%);
+  color: hsl(0, 0%, 100%);
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: background 0.3s;
+}
+.image-preview-section .remove-btn:hover {
+  background: hsl(0, 62%, 50%, 0.8);
+}
+
+.detection-result {
+  text-align: center;
+}
 .section h2 {
   text-align: center;
   font-size: 2em;
@@ -1911,7 +1449,7 @@ footer p {
   background-color: hsla(140, 62%, 0%, 0.5);
   align-items: center;
   justify-content: center;
-  
+
 }
 
 .auth-modal.open {

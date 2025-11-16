@@ -10,7 +10,6 @@ async function init() {
 
     authReadyPromise = (async () => {
         await checkAuthStatus();
-
         setupModalHandlers();
         setupFormHandlers();
         setupLoginButtons();
@@ -34,7 +33,6 @@ async function checkAuthStatus() {
             console.log('User logged in:', currentUser);
         } else {
             currentUser = null;
-            console.log('User not logged in');
         }
     } catch (error) {
         console.error('Error checking auth status:', error);
@@ -384,7 +382,6 @@ function switchTab(tab) {
 }
 
 function updateUI() {
-    console.log('Updating UI with currentUser:', currentUser);
     if (isLoggedIn()) {
         renderUserControls();
     } else {

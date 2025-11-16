@@ -68,6 +68,12 @@
 					<input type="file" id="imageInput" accept="image/*">
 					<button type="button" class="select-file-btn" id="selectFileBtn">Select Image</button>
 					<p style="font-size: 0.85em; margin-top: 10px; color: #666;">Supports: JPG, PNG, WebP (Max 5MB)</p>
+					<div class="analyze-section">
+
+					<button type="button" class="analyze-btn" id="analyzeBtn" disabled>
+						Analyze for Diseases
+					</button>
+				</div>
 				</div>
 
 				<div class="image-preview-section" id="previewSection">
@@ -78,14 +84,12 @@
 					<img id="previewImage" class="preview-image" alt="Preview">
 					<div class="preview-info" id="previewInfo"></div>
 				</div>
-
-				<div class="analyze-section">
-					<button type="button" class="analyze-btn" id="analyzeBtn" disabled>
-						Analyze for Diseases
-					</button>
+				
+				<div class="detection-result" id="detectionResult">
+					<h3>Detection Result</h3>
+					<div id="resultContent"></div>
 				</div>
 			</div>
-		</div>
 
 	</section>
 
@@ -199,8 +203,8 @@
 		</div>
 	</div>
 
-<script src="js/index.js" type="module" defer></script>
-	
+	<script src="js/index.js" type="module" defer></script>
+
 </body>
 
 </html>
