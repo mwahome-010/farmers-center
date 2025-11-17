@@ -454,7 +454,6 @@ function renderUserControls() {
                     <hr class="user-dropdown-sep" />
                 ` : ''}
                 <button type="button" class="user-dropdown-item" data-action="account" role="menuitem">Account overview</button>
-                <button type="button" class="user-dropdown-item" data-action="change-username" role="menuitem">Change username</button>
                 <hr class="user-dropdown-sep" />
                 <button type="button" class="user-dropdown-item danger" data-action="delete-account" role="menuitem">Delete account</button>
                 <hr class="user-dropdown-sep" />
