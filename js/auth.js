@@ -30,7 +30,6 @@ async function checkAuthStatus() {
 
         if (data.authenticated && data.user) {
             currentUser = data.user;
-            console.log('User logged in:', currentUser);
         } else {
             currentUser = null;
         }

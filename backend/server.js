@@ -1391,3 +1391,95 @@ app.delete('/api/guides/:id', isAdmin, async (req, res) => {
         res.status(500).json({ error: 'Failed to delete guide' });
     }
 });
+
+app.get('/api/user/report', isAuthenticated, async (req, res) => {
+    const userId = req.session.userId;
+
+    try {
+        const [users] = await pool.query(
+            'SELECT id, username, email, created_at FROM users WHERE id = ?',
+            [userId]
+        );
+
+        if (users.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const user = users[0];
+
+        const [posts] = await pool.query(`
+            SELECT 
+                p.id,
+                p.title,
+                p.body,
+                p.image_path,
+                p.views,
+                p.created_at,
+                c.name as category_name,
+                COUNT(DISTINCT cm.id) as comment_count
+            FROM posts p
+            LEFT JOIN categories c ON p.category_id = c.id
+            LEFT JOIN comments cm ON p.id = cm.post_id
+            WHERE p.user_id = ?
+            GROUP BY p.id
+            ORDER BY p.created_at DESC
+        `, [userId]);
+
+        const [comments] = await pool.query(`
+            SELECT 
+                c.id,
+                c.content,
+                c.created_at,
+                p.title as post_title,
+                p.id as post_id
+            FROM comments c
+            LEFT JOIN posts p ON c.post_id = p.id
+            WHERE c.user_id = ?
+            ORDER BY c.created_at DESC
+        `, [userId]);
+
+        const totalPosts = posts.length;
+        const totalComments = comments.length;
+        const totalViews = posts.reduce((sum, post) => sum + (post.views || 0), 0);
+
+        const report = {
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                created_at: user.created_at
+            },
+            stats: {
+                totalPosts,
+                totalComments,
+                totalViews
+            },
+            posts: posts.map(post => ({
+                id: post.id,
+                title: post.title,
+                body: post.body,
+                image_path: post.image_path,
+                category_name: post.category_name,
+                views: post.views,
+                comment_count: parseInt(post.comment_count),
+                created_at: post.created_at
+            })),
+            comments: comments.map(comment => ({
+                id: comment.id,
+                content: comment.content,
+                post_title: comment.post_title,
+                post_id: comment.post_id,
+                created_at: comment.created_at
+            }))
+        };
+
+        res.json({
+            success: true,
+            report
+        });
+
+    } catch (error) {
+        console.error('Error generating user report:', error);
+        res.status(500).json({ error: 'Failed to generate report' });
+    }
+});

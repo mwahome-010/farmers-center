@@ -33,7 +33,7 @@ function showNoAccess() {
         <div class="no-access">
             <h2>🔒 Access Denied</h2>
             <p>You need administrator privileges to access this page.</p>
-            <button onclick="window.location.href='/'" style="margin-top: 16px; padding: 10px 20px; background: hsl(140, 62%, 39%); color: white; border: none; border-radius: 8px; cursor: pointer;">
+            <button onclick="window.location.href='/'" style="margin-top: 16px; padding: 10px 20px; background: hsl(140, 62%, 42%); color: white; border: none; border-radius: 8px; cursor: pointer;">
                 Go to Home
             </button>
         </div>
@@ -187,7 +187,7 @@ async function loadStats() {
         }
 
         const data = await response.json();
-        console.log('Stats data received:', data);
+        console.log('Stats data received:');
 
         if (data.success && data.stats) {
             const statUsersEl = document.getElementById('statUsers');
