@@ -50,6 +50,7 @@ function renderPosts(posts) {
     }
 
     const existingItems = container.querySelectorAll('.post, .no-results');
+    existingItems.forEach(el => el.remove());
 
     if (posts.length === 0) {
         const noResults = document.createElement('p');
@@ -61,10 +62,14 @@ function renderPosts(posts) {
         return;
     }
 
+    const fragment = document.createDocumentFragment();
+
     posts.forEach(post => {
         const postEl = createPostElement(post);
-        container.appendChild(postEl);
+        fragment.appendChild(postEl);
     });
+
+    container.appendChild(fragment);
 }
 
 function createPostElement(post) {
