@@ -164,7 +164,7 @@ function ensurePostReplyControls(postId) {
     wrapper.className = 'post-reply-controls';
     wrapper.innerHTML = `
         <div class="reply-actions">
-            <button type="button" class="reply-btn-post">Reply to post</button>
+            <button type="button" class="reply-btn-post">Reply</button>
         </div>
         <form class="reply-form-post is-hidden" data-post-id="${postId}">
             <textarea rows="2" placeholder="Write a reply to the post..." required></textarea>

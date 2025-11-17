@@ -1,13 +1,10 @@
-improved-guides.html
 .env
+.venv/
 .vscode
-.todo
+todo.md
 .config
-api_key.py
 node_modules/
 *.sql
-.todo.md
-alternative-index.html
 uploads/
 backup/
 test-api.js

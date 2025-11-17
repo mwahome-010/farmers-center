@@ -21,7 +21,7 @@ header {
   justify-content: space-between;
   align-items: center;
   z-index: 99;
-  background-color: hsl(140, 62%, 40%);
+  background-color: hsl(140, 62%, 42%);
   height: 64px;
   border-bottom: hsl(0, 0%, 20%) solid 2px;
 }
@@ -183,7 +183,7 @@ header {
 }
 
 .user-dropdown-item.danger {
-  color: hsl(0, 62%, 51%);
+  color: hsl(0, 62%, 50%);
 }
 
 .user-dropdown-sep {
@@ -203,17 +203,17 @@ header {
 
 #deleteAccountModal input[type="password"]:focus {
   outline: none;
-  border-color: hsl(0, 62%, 51%);
-  box-shadow: 0 0 0 3px hsla(0, 62%, 51%, 0.15);
+  border-color: hsl(0, 62%, 50%);
+  box-shadow: 0 0 0 3px hsla(0, 62%, 50%, 0.15);
 }
 
 #deleteAccountModal button[type="submit"] {
-  background: hsl(0, 62%, 51%);
+  background: hsl(0, 62%, 50%);
   transition: background 0.2s ease, transform 0.1s ease;
 }
 
 #deleteAccountModal button[type="submit"]:hover {
-  background: hsl(0, 62%, 45%);
+  background: hsl(0, 62%, 50%);
 }
 
 #deleteAccountModal button[type="submit"]:active {
@@ -235,12 +235,12 @@ header {
 }
 
 .user-dropdown-item.danger {
-  color: hsl(0, 62%, 51%);
+  color: hsl(0, 62%, 50%);
 }
 
 .user-dropdown-item.danger:hover {
   background: hsl(0, 62%, 96%);
-  color: hsl(0, 62%, 45%);
+  color: hsl(0, 62%, 50%);
 }
 
 .warning-box {
@@ -263,7 +263,7 @@ header {
 }
 
 #deleteAccountError {
-  color: hsl(0, 62%, 51%);
+  color: hsl(0, 62%, 50%);
   font-size: 0.9em;
   margin-bottom: 10px;
   min-height: 20px;
@@ -279,23 +279,26 @@ main {
   margin: 0 auto;
   padding: 40px 20px;
   position: relative;
+  border-radius: 8px;
+  background-color: hsl(140, 62%, 92%);
 }
 
 .upload-zone {
-  border: 4px dashed hsla(140, 62%, 40%, 0.3);
-  border-radius: 12px;
-  padding: 40px;
+  position: relative;
   text-align: center;
+  color: hsl(0, 0%, 20%);
   background: hsl(140, 62%, 98%);
   cursor: pointer;
+  border: 4px dashed hsla(140, 62%, 42%, 0.3);
+  border-radius: 12px;
+  padding: 40px;
   transition: background 0.3s, border-color 0.3s;
-  position: relative;
   z-index: 1;
 }
 
 .upload-zone:hover {
   background: hsl(140, 62%, 96%);
-  border-color: hsl(140, 62%, 40%);
+  border-color: hsl(140, 62%, 42%);
   transform: scale(1.01);
   transition: transform 0.4s ease-in-out;
 }
@@ -304,7 +307,7 @@ main {
   padding: 8px 16px;
   border-radius: 8px;
   border: none;
-  background: hsl(140, 62%, 40%, 0.5);
+  background: hsl(140, 62%, 42%, 0.5);
   cursor: pointer;
   font-size: 1em;
 }
@@ -316,7 +319,7 @@ main {
 
 .analyze-btn {
   color: hsl(0, 0%, 100%);
-  background-color: hsl(140, 62%, 40%);
+  background-color: hsl(140, 62%, 42%);
   padding: 12px 32px;
   border: none;
   border-radius: 8px;
@@ -327,7 +330,7 @@ main {
 }
 
 .analyze-btn:disabled {
-  background-color: hsl(140, 62%, 40%, 0.6);
+  background-color: hsl(140, 62%, 42%, 0.6);
   cursor: not-allowed;
   opacity: 0.6;
 }
@@ -363,10 +366,10 @@ main {
 .image-preview-section {
   position: relative;
   z-index: 20;
-  background: hsl(140, 62%, 100%);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  background: hsl(140, 62%, 92%);
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 4px 12px hsla(0, 0%, 20%);
   margin-bottom: 20px;
   animation: slideDown 0.3s ease-out;
   border: 2px solid hsl(140, 62%, 85%);
@@ -377,6 +380,7 @@ main {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -385,6 +389,7 @@ main {
 
 .image-preview-section .preview-header {
   text-align: center;
+  color: hsl(0, 0%, 20%);
 }
 
 .image-preview-section .remove-btn {
@@ -392,11 +397,11 @@ main {
   color: hsl(0, 0%, 100%);
   border: none;
   padding: 8px;
-  border-radius: 8px;
   cursor: pointer;
-  margin-top: 12px;
+  margin-top: 8px;
   transition: background 0.3s;
 }
+
 .image-preview-section .remove-btn:hover {
   background: hsl(0, 62%, 50%, 0.8);
 }
@@ -407,7 +412,6 @@ main {
   border-radius: 8px;
   margin: 15px auto;
   display: block;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .image-preview-section .preview-info {
@@ -458,7 +462,7 @@ main {
   justify-content: center;
   align-items: center;
   padding: 2px 12px;
-  background: linear-gradient(180deg, hsl(140, 62%, 98%) 0%, hsl(140, 62%, 95%) 100%);
+  background: linear-gradient(180deg, hsl(140, 62%, 96%) 0%, hsl(140, 62%, 95%) 100%);
   border-bottom: 1px solid hsl(140, 62%, 93%);
   text-align: center;
   position: relative;
@@ -467,7 +471,7 @@ main {
 .disease-result-modal-title {
   font-size: 1.25em;
   font-weight: 600;
-  color: hsl(140, 62%, 14%);
+  color: hsl(0, 0%, 20%);
   display: flex;
   justify-content: center;
   align-self: center;
@@ -483,7 +487,7 @@ main {
   font-size: 1.5em;
   line-height: 1;
   cursor: pointer;
-  color: hsl(140, 62%, 22%);
+  color: hsl(140, 62%, 20%);
   width: 36px;
   height: 36px;
   border-bottom-left-radius: 12px;
@@ -500,7 +504,7 @@ main {
 }
 
 .disease-result-modal-close:hover {
-  background: hsl(140, 62%, 40%);
+  background: hsl(140, 62%, 42%);
 }
 
 .disease-result-modal-close:active {
@@ -508,7 +512,7 @@ main {
 }
 
 .disease-result-modal-close:focus-visible {
-  outline: 2px solid hsl(140, 62%, 40%);
+  outline: 2px solid hsl(140, 62%, 42%);
   outline-offset: 2px;
 }
 
@@ -522,7 +526,7 @@ main {
   padding: 8px;
   border-radius: 100%;
   border: 1px solid hsl(0, 0%, 20%);
-  background: hsl(140, 62%, 40%);
+  background: hsl(140, 62%, 42%);
   color: hsl(0, 0%, 100%);
   font-size: 0.9em;
   font-weight: 600;
@@ -571,6 +575,7 @@ main {
 #resultContent {
   text-align: left;
 }
+
 .section h2 {
   text-align: center;
   font-size: 2em;
@@ -583,6 +588,10 @@ main {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 30px;
+}
+
+.stats {
+  border-radius: 8x;
 }
 
 .feature-card,
@@ -602,7 +611,7 @@ main {
 
 .feature-card h3 {
   display: inline-block;
-  color: hsl(140, 62%, 40%);
+  color: hsl(140, 62%, 42%);
   margin-bottom: 10px;
 }
 
@@ -656,7 +665,7 @@ main {
 }
 
 .hero-text .highlight {
-  color: hsl(140, 62%, 40%);
+  color: hsl(140, 62%, 42%);
   position: relative;
   display: inline-block;
 }
@@ -675,7 +684,7 @@ main {
 }
 
 .btn-primary {
-  background: hsl(140, 62%, 40%);
+  background: hsl(140, 62%, 42%);
   color: white;
   padding: 1rem 2rem;
   border-radius: 12px;
@@ -691,14 +700,14 @@ main {
 }
 
 .btn-primary:hover {
-  background: hsl(140, 62%, 24%);
+  background: hsl(140, 62%, 20%);
   transform: translateY(-2px);
   box-shadow: 0 8px 24px hsl(0, 0%, 20%, 0.12);
 }
 
 .btn-secondary {
   background: white;
-  color: hsl(140, 62%, 40%);
+  color: hsl(140, 62%, 42%);
   padding: 1rem 2rem;
   border-radius: 12px;
   text-decoration: none;
@@ -764,7 +773,7 @@ main {
 .feature-icon {
   width: 64px;
   height: 64px;
-  background: hsla(140, 62%, 40%, 0.9);
+  background: hsla(140, 62%, 42%, 0.9);
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -815,7 +824,7 @@ main {
 
 footer {
   padding: 12px;
-  background: hsl(140, 62%, 40%);
+  background: hsl(140, 62%, 42%);
   text-align: center;
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
@@ -893,7 +902,7 @@ footer p {
 
 .search-container input:focus {
   outline: none;
-  border-color: hsl(140, 62%, 40%);
+  border-color: hsl(140, 62%, 42%);
 }
 
 .disease-container,
@@ -917,7 +926,7 @@ footer p {
   text-align: center;
   cursor: pointer;
   overflow: hidden;
-  box-shadow: 2px 2px 12px hsla(140, 62%, 24%, 0.43);
+  box-shadow: 2px 2px 12px hsla(140, 62%, 20%, 0.43);
   transition: transform 0.2s ease, box-shadow 0.3s ease;
 }
 
@@ -943,7 +952,7 @@ footer p {
 }
 
 .disease-guide-card:hover {
-  box-shadow: 4px 4px 20px hsl(140, 62%, 24%);
+  box-shadow: 4px 4px 20px hsl(140, 62%, 20%);
   transform: scale(1.02);
   transition: transform 0.2s ease, box-shadow 0.3s ease;
 }
@@ -1033,7 +1042,7 @@ footer p {
   padding: 8px;
   border-radius: 100%;
   border: 1px solid hsl(0, 0%, 20%);
-  background: hsl(140, 62%, 40%);
+  background: hsl(140, 62%, 42%);
   color: hsl(0, 0%, 100%);
   font-size: 0.9em;
   font-weight: 600;
@@ -1072,7 +1081,7 @@ footer p {
 }
 
 .guide-modal-close:hover {
-  background: hsl(140, 62%, 40%);
+  background: hsl(140, 62%, 42%);
 }
 
 .guide-modal-close:active {
@@ -1080,7 +1089,7 @@ footer p {
 }
 
 .guide-modal-close:focus-visible {
-  outline: 2px solid hsl(140, 62%, 40%);
+  outline: 2px solid hsl(140, 62%, 42%);
   outline-offset: 2px;
 }
 
@@ -1103,7 +1112,7 @@ footer p {
 
 #guideModalDetails h2 {
   font-size: 1.05em;
-  color: hsl(140, 62%, 24%);
+  color: hsl(140, 62%, 20%);
   background: hsl(140, 62%, 96%);
   border: 1px solid hsl(140, 62%, 93%);
   padding: 6px 10px;
@@ -1206,7 +1215,7 @@ footer p {
 .fact-icon {
   width: 40px;
   height: 40px;
-  background: hsl(140, 62%, 40%);
+  background: hsl(140, 62%, 42%);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -1229,7 +1238,7 @@ footer p {
 
 .fact-value {
   font-size: 1em;
-  color: hsl(140, 62%, 24%);
+  color: hsl(140, 62%, 20%);
   font-weight: 600;
 }
 
@@ -1261,13 +1270,13 @@ footer p {
 }
 
 .tab-btn.active {
-  color: hsl(140, 62%, 40%);
-  border-bottom-color: hsl(140, 62%, 40%);
+  color: hsl(140, 62%, 42%);
+  border-bottom-color: hsl(140, 62%, 42%);
 }
 
 .tab-btn:hover:not(.active) {
   background: hsl(140, 62%, 98%);
-  color: hsl(140, 62%, 24%);
+  color: hsl(140, 62%, 20%);
 }
 
 .tab-contents {
@@ -1298,7 +1307,7 @@ footer p {
 
 .info-section {
   background: hsl(140, 62%, 99%);
-  border-left: 4px solid hsl(140, 62%, 40%);
+  border-left: 4px solid hsl(140, 62%, 42%);
   padding: 16px 20px;
   margin-bottom: 16px;
   border-radius: 8px;
@@ -1309,7 +1318,7 @@ footer p {
 }
 
 .info-section h3 {
-  color: hsl(140, 62%, 24%);
+  color: hsl(140, 62%, 20%);
   margin-bottom: 12px;
   font-size: 1.2em;
   display: flex;
@@ -1343,7 +1352,7 @@ footer p {
 }
 
 .info-section strong {
-  color: hsl(140, 62%, 24%);
+  color: hsl(140, 62%, 20%);
   font-weight: 600;
 }
 
@@ -1358,18 +1367,18 @@ footer p {
 }
 
 .modal-detail-item h2 {
-  color: hsl(140, 62%, 24%);
+  color: hsl(140, 62%, 20%);
   font-size: 1.2em;
   margin-bottom: 8px;
 }
 
 .modal-detail-item p {
-  color: hsl(140, 10%, 20%);
+  color: hsl(0, 0%, 10%);
   line-height: 1.6;
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(140, 62%, 6%);
+  background: hsl(0, 0%, 20%);
   border-radius: 5px;
 }
 
@@ -1380,7 +1389,7 @@ footer p {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: hsl(140, 62%, 40%);
+  background-color: hsl(140, 62%, 42%);
   border-radius: 5px;
   border: 2px solid hsl(0, 0%, 20%);
 }
@@ -1396,15 +1405,19 @@ footer p {
 .forum-toolbar input,
 .forum-toolbar select {
   height: 36px;
-  border: 1px solid hsl(140, 62%, 6%);
+  border: 1px solid hsl(0, 0%, 20%);
   border-radius: 6px;
   padding: 6px 10px;
 }
 
+.forum-container input:active {
+  border: none;
+}
+
 .new-post-btn {
-  background-color: hsl(140, 62%, 44%);
+  background-color: hsl(140, 62%, 42%);
   color: white;
-  border: 1px solid hsl(0, 0%, 20%);
+  border: 1px solid hsl(140, 62%, 42%, 0.2);
   padding: 10px 20px;
   border-radius: 4px;
   cursor: pointer;
@@ -1414,7 +1427,9 @@ footer p {
 }
 
 .new-post-btn:hover {
-  background-color: hsl(140, 62%, 24%);
+  background-color: hsla(140, 62%, 42%, 0.8);
+  transform: scale(1.01);
+  transition: 0.4ms ease-in-out;
 }
 
 .new-post-btn:active {
@@ -1442,7 +1457,7 @@ footer p {
   border-radius: 10px;
   padding: 12px 14px;
   background: hsl(0, 0%, 100%);
-  box-shadow: 0 1px 6px hsla(0, 0%, 40%, 0.12);
+  box-shadow: 0 1px 6px hsla(0, 0%, 20%, 0.4);
   max-width: 800px;
 }
 
@@ -1459,8 +1474,8 @@ footer p {
 
 .badge {
   background: hsl(140, 62%, 93%);
-  color: hsl(140, 62%, 24%);
-  border: 1px solid hsl(140, 62%, 22%);
+  color: hsl(140, 62%, 20%);
+  border: 1px solid hsl(140, 62%, 20%);
   border-radius: 999px;
   padding: 2px 8px;
   font-size: 0.8em;
@@ -1493,6 +1508,7 @@ footer p {
   border-left: 3px solid hsl(140, 36%, 93%);
   background: hsl(140, 62%, 92%);
   border-radius: 6px;
+  margin-top: 8px;
 }
 
 .reply-btn {
@@ -1505,8 +1521,9 @@ footer p {
 }
 
 .reply-form textarea {
+  margin: 4px;
   width: 100%;
-  border: 1px solid hsl(140, 62%, 6%);
+  border: 1px solid hsl(0, 0%, 20%);
   border-radius: 6px;
   padding: 6px 8px;
 }
@@ -1518,9 +1535,9 @@ footer p {
 }
 
 .reply-btn-post {
-  background: hsl(140, 62%, 44%);
+  background: hsl(140, 62%, 42%);
   color: #fff;
-  border: 1px solid hsl(140, 62%, 30%);
+  border: 1px solid hsl(140, 62%, 42%);
   padding: 6px 12px;
   border-radius: 8px;
   font-weight: 600;
@@ -1545,7 +1562,7 @@ footer p {
 }
 
 .reply-form-post .reply-actions button[type="submit"] {
-  background: hsl(140, 62%, 40%);
+  background: hsl(140, 62%, 42%);
   color: #ffffff;
   border: 1px solid hsl(140, 62%, 32%);
   padding: 6px 12px;
@@ -1612,7 +1629,7 @@ footer p {
 
 .delete-post-btn:hover {
   background: hsl(0, 62%, 90%);
-  border-color: hsl(0, 62%, 60%);
+  border-color: hsl(0, 62%, 50%);
 }
 
 .delete-post-btn:active {
@@ -1633,7 +1650,7 @@ footer p {
 
 .delete-comment-btn {
   background: hsl(0, 62%, 95%);
-  color: hsl(0, 62%, 35%);
+  color: hsl(0, 62%, 50%);
   border: 1px solid hsl(0, 62%, 75%);
   border-radius: 6px;
   width: 24px;
@@ -1652,7 +1669,7 @@ footer p {
 
 .delete-comment-btn:hover {
   background: hsl(0, 62%, 90%);
-  border-color: hsl(0, 62%, 60%);
+  border-color: hsl(0, 62%, 50%);
 }
 
 .delete-comment-btn:active {
@@ -1699,7 +1716,7 @@ footer p {
 .auth-modal-title {
   font-size: 1.5em;
   font-weight: 600;
-  color: hsl(140, 62%, 40%);
+  color: hsl(140, 62%, 42%);
   display: inline-block;
 }
 
@@ -1719,7 +1736,7 @@ footer p {
 }
 
 .auth-modal-close:hover {
-  background: hsl(140, 62%, 40%);
+  background: hsl(140, 62%, 42%);
   border-bottom-left-radius: 12px;
   transition: 0.2s ease-in-out;
 }
@@ -1753,9 +1770,9 @@ footer p {
 }
 
 .auth-tab.active {
-  background: hsl(140, 62%, 40%);
+  background: hsl(140, 62%, 42%);
   color: white;
-  border-color: hsl(140, 62%, 40%);
+  border-color: hsl(140, 62%, 42%);
 }
 
 .auth-tab:hover:not(.active) {
@@ -1789,13 +1806,13 @@ footer p {
 
 .auth-form input:focus {
   outline: none;
-  border-color: hsl(140, 62%, 40%);
+  border-color: hsl(140, 62%, 42%);
 }
 
 .auth-form button[type="submit"] {
   width: 100%;
   padding: 12px;
-  background: hsl(140, 62%, 40%);
+  background: hsl(140, 62%, 42%);
   color: white;
   border: none;
   border-radius: 6px;
@@ -1810,7 +1827,7 @@ footer p {
 }
 
 .auth-error {
-  color: hsl(0, 62%, 51%);
+  color: hsl(0, 62%, 50%);
   font-size: 0.9em;
   margin-bottom: 10px;
   min-height: 20px;
@@ -1896,7 +1913,7 @@ footer p {
 #forumPostModal #newPostForm select:focus,
 #forumPostModal #newPostForm textarea:focus {
   outline: none;
-  border-color: hsl(140, 62%, 40%);
+  border-color: hsl(140, 62%, 42%);
   box-shadow: 0 0 0 3px hsla(140, 62%, 39%, 0.15);
 }
 
@@ -1928,9 +1945,9 @@ footer p {
 }
 
 #forumPostModal .form-actions button[type="submit"] {
-  background: hsl(140, 62%, 40%);
-  color: #ffffff;
-  border: 1px solid hsl(140, 62%, 40%);
+  background: hsl(140, 62%, 42%);
+  color: hsl(0, 0%, 100%);
+  border: 1px solid hsl(140, 62%, 42%);
   padding: 10px 16px;
   border-radius: 10px;
   cursor: pointer;
@@ -1938,14 +1955,14 @@ footer p {
 }
 
 #forumPostModal .form-actions button[type="submit"]:hover {
-  background: hsl(140, 62%, 24%);
-  border-color: hsl(140, 62%, 24%);
+  background: hsl(140, 62%, 20%);
+  border-color: hsl(140, 62%, 20%);
 }
 
 #forumPostModal .form-actions button[type="button"] {
   background: hsl(140, 62%, 100%);
   color: hsl(140, 62%, 14%);
-  border: 1px solid hsl(140, 62%, 25%);
+  border: 1px solid hsl(140, 62%, 20%);
   padding: 10px 16px;
   border-radius: 10px;
   cursor: pointer;
@@ -1975,7 +1992,7 @@ footer p {
 
 .remove-image-btn {
   background: hsl(0, 62%, 95%);
-  color: hsl(0, 62%, 35%);
+  color: hsl(0, 62%, 50%);
   border: 1px solid hsl(0, 62%, 75%);
   padding: 6px 12px;
   border-radius: 8px;
@@ -1987,7 +2004,7 @@ footer p {
 
 .remove-image-btn:hover {
   background: hsl(0, 62%, 90%);
-  border-color: hsl(0, 62%, 60%);
+  border-color: hsl(0, 62%, 50%);
 }
 
 .remove-image-btn:active {
@@ -2001,7 +2018,7 @@ footer p {
 
 #forumPostModal #newPostForm input[type="file"]::file-selector-button {
   background: hsl(140, 62%, 93%);
-  color: hsl(140, 62%, 24%);
+  color: hsl(140, 62%, 20%);
   border: 1px solid hsl(140, 62%, 75%);
   padding: 6px 12px;
   border-radius: 6px;

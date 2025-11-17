@@ -120,19 +120,19 @@ function initDiseaseDetection() {
 
     uploadZone.addEventListener('dragover', (e) => {
         e.preventDefault();
-        uploadZone.style.borderColor = 'hsl(140, 62%, 40%)';
+        uploadZone.style.borderColor = 'hsl(140, 62%, 42%)';
         uploadZone.style.background = 'hsl(140, 62%, 95%)';
     });
 
     uploadZone.addEventListener('dragleave', (e) => {
         e.preventDefault();
-        uploadZone.style.borderColor = 'hsla(140, 62%, 40%, 0.5)';
+        uploadZone.style.borderColor = 'hsla(140, 62%, 42%, 0.5)';
         uploadZone.style.background = 'hsl(140, 62%, 98%)';
     });
 
     uploadZone.addEventListener('drop', (e) => {
         e.preventDefault();
-        uploadZone.style.borderColor = 'hsla(140, 62%, 40%, 0.5)';
+        uploadZone.style.borderColor = 'hsla(140, 62%, 42%, 0.5)';
         uploadZone.style.background = 'hsl(140, 62%, 98%)';
 
         const file = e.dataTransfer.files[0];
@@ -210,9 +210,9 @@ function initDiseaseDetection() {
         resultContent.innerHTML = `
             <div style="text-align: center; padding: 40px 20px;">
                 <div style="font-size: 2em; margin-bottom: 20px;">⏳</div>
-                <h3 style="color: hsl(140, 62%, 40%); margin-bottom: 10px;">Processing Your Image</h3>
-                <p style="color: hsl(0, 0%, 40%); margin-bottom: 20px;">Please wait while we analyze your plant image...</p>
-                <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid hsl(140, 62%, 90%); border-top: 4px solid hsl(140, 62%, 40%); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <h3 style="color: hsl(140, 62%, 42%); margin-bottom: 10px;">Processing Your Image</h3>
+                <p style="color: hsl(0, 0%, 30%); margin-bottom: 20px;">Please wait while we analyze your plant image...</p>
+                <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid hsl(140, 62%, 90%); border-top: 4px solid hsl(140, 62%, 42%); border-radius: 50%; animation: spin 1s linear infinite;"></div>
                 <style>
                     @keyframes spin {
                         0% { transform: rotate(0deg); }
@@ -263,10 +263,10 @@ function initDiseaseDetection() {
                 resultContent.innerHTML = `
                     <div style="text-align: center; padding: 40px 20px;">
                         <div style="font-size: 2em; margin-bottom: 20px;">⏳</div>
-                        <h3 style="color: hsl(140, 62%, 40%); margin-bottom: 10px;">Processing Your Image</h3>
+                        <h3 style="color: hsl(140, 62%, 42%); margin-bottom: 10px;">Processing Your Image</h3>
                         <p style="color: hsl(0, 0%, 40%); margin-bottom: 10px;">Please wait while we analyze your plant image...</p>
                         <p style="color: hsl(0, 0%, 50%); font-size: 0.9em; margin-bottom: 20px;">Elapsed time: ${elapsedSeconds.toFixed(1)}s</p>
-                        <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid hsl(140, 62%, 90%); border-top: 4px solid hsl(140, 62%, 40%); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                        <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid hsl(140, 62%, 90%); border-top: 4px solid hsl(140, 62%, 42%); border-radius: 50%; animation: spin 1s linear infinite;"></div>
                         <style>
                             @keyframes spin {
                                 0% { transform: rotate(0deg); }
@@ -364,7 +364,7 @@ function initDiseaseDetection() {
         if (data.plant_name) {
             html += `
                 <div style="margin-bottom: 20px; padding: 15px; background: hsl(140, 62%, 95%); border-radius: 8px;">
-                    <strong style="color: hsl(140, 62%, 40%); font-size: 1.1em;">Plant Detected:</strong>
+                    <strong style="color: hsl(140, 62%, 42%); font-size: 1.1em;">Plant Detected:</strong>
                     <span style="font-size: 1.1em; margin-left: 10px;">${data.plant_name}</span>
                 </div>
             `;
@@ -384,18 +384,18 @@ function initDiseaseDetection() {
                         padding: 20px; 
                         background: ${isHealthy ? 'hsl(140, 62%, 95%)' : 'hsl(48, 100%, 95%)'}; 
                         border-radius: 8px;
-                        border-left: 4px solid ${isHealthy ? 'hsl(140, 62%, 40%)' : 'hsl(48, 100%, 50%)'};
+                        border-left: 4px solid ${isHealthy ? 'hsl(140, 62%, 42%)' : 'hsl(48, 100%, 50%)'};
                     ">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <h5 style="
-                                color: ${isHealthy ? 'hsl(140, 62%, 40%)' : 'hsl(48, 100%, 30%)'}; 
+                                color: ${isHealthy ? 'hsl(140, 62%, 42%)' : 'hsl(48, 100%, 30%)'}; 
                                 font-size: 1.2em; 
                                 margin: 0;
                             ">
                                 ${disease.name}
                             </h5>
                             <span style="
-                                background: ${isHealthy ? 'hsl(140, 62%, 40%)' : 'hsl(48, 100%, 50%)'}; 
+                                background: ${isHealthy ? 'hsl(140, 62%, 42%)' : 'hsl(48, 100%, 50%)'}; 
                                 color: white; 
                                 padding: 5px 12px; 
                                 border-radius: 20px; 
