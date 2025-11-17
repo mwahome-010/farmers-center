@@ -187,7 +187,7 @@ async function loadStats() {
         }
 
         const data = await response.json();
-        console.log('Stats data received:');
+        //console.log('Stats data received:');
 
         if (data.success && data.stats) {
             const statUsersEl = document.getElementById('statUsers');
