@@ -1392,6 +1392,36 @@ app.delete('/api/guides/:id', isAdmin, async (req, res) => {
     }
 });
 
+/* stats for stats div in landing page */
+app.post('/api/stats', async (req, res) => {
+    const numOfUsers = req.query.users === 'true';
+    const numOfGuides = req.query.guidesCount === 'true';
+    const numOfDiseases = req.query.diseaseCount === 'true';
+
+    try {
+        const stats = {
+        };
+
+        if (numOfUsers) {
+            const [userCount] = await pool.query('SELECT COUNT(*) as count FROM users WHERE is_admin = 0');
+            stats.totalUsers = Number(userCount[0].count);
+        }
+        if (numOfGuides) {
+            const [guideCount] = await pool.query('SELECT COUNT(*) as count FROM guides');
+            stats.totalGuides = Number(guideCount[0].count);
+        }
+        if (numOfDiseases) {
+            const [diseaseCount] = await pool.query('SELECT COUNT(*) as count FROM diseases');
+            stats.totalDiseases = Number(diseaseCount[0].count);
+        }
+
+        res.json({ success: true, stats });
+    } catch (error) {
+        console.error('Error fetching stats:', error);
+        res.status(500).json({ error: 'Failed to fetch stats' });
+    }
+});
+
 app.get('/api/user/report', isAuthenticated, async (req, res) => {
     const userId = req.session.userId;
 
