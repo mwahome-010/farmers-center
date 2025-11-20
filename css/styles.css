@@ -117,6 +117,144 @@ header {
   background: hsl(50, 100%, 80%);
 }
 
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 12px;
+}
+
+.mobile-menu-toggle span {
+  display: block;
+  width: 25px;
+  height: 3px;
+  background: hsl(0, 0%, 10%);
+  margin: 5px 0;
+  transition: 0.3s;
+  border-radius: 3px;
+}
+
+/* Mobile responsive */
+@media (max-width: 968px) {
+  header {
+    padding: 0 12px;
+  }
+
+  .logo {
+    font-size: 1.5em;
+    padding: 4px;
+  }
+
+  .logo-img {
+    height: 40px;
+    width: 40px;
+    margin-left: 8px;
+  }
+
+  .mobile-menu-toggle {
+    display: block;
+    order: 3;
+  }
+
+  .nav-container {
+    position: fixed;
+    top: 64px;
+    left: -100%;
+    width: 100%;
+    height: calc(100vh - 64px);
+    background: hsl(140, 62%, 40%);
+    transition: left 0.3s ease;
+    z-index: 98;
+    overflow-y: auto;
+  }
+
+  .nav-container.active {
+    left: 0;
+  }
+
+  .nav-bar {
+    flex-direction: column;
+    height: auto;
+    padding: 20px 0;
+    gap: 0;
+  }
+
+  .nav-bar a {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 1.1em;
+    border-bottom: 1px solid hsla(0, 0%, 10%, 0.2);
+  }
+
+  .nav-bar a::after {
+    display: none;
+  }
+
+  .nav-bar a:hover {
+    background: hsla(0, 0%, 0%, 0.1);
+  }
+
+  .login-popup-btn,
+  .user-menu {
+    margin: 16px 20px;
+    width: calc(100% - 40px);
+  }
+
+  .login-popup-btn {
+    margin-left: 20px;
+  }
+
+  .user-avatar {
+    margin-left: 0;
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Hamburger animation when active */
+  .mobile-menu-toggle.active span:nth-child(1) {
+    transform: rotate(-45deg) translate(-5px, 6px);
+  }
+
+  .mobile-menu-toggle.active span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .mobile-menu-toggle.active span:nth-child(3) {
+    transform: rotate(45deg) translate(-5px, -6px);
+  }
+}
+
+@media (max-width: 480px) {
+  .logo {
+    font-size: 1.2em;
+  }
+
+  .logo-img {
+    height: 36px;
+    width: 36px;
+    margin-left: 6px;
+  }
+
+  header {
+    height: 56px;
+  }
+
+  .nav-container {
+    top: 56px;
+    height: calc(100vh - 56px);
+  }
+
+  main {
+    margin-top: 56px;
+  }
+
+  .hero {
+    margin-top: 64px;
+  }
+}
+
 /* User avatar + dropdown */
 .user-menu {
   position: relative;
