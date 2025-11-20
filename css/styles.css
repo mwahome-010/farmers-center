@@ -1370,19 +1370,16 @@ footer p {
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(0, 0%, 20%);
-  border-radius: 5px;
+  background: hsl(0, 0%, 30%);    
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  background: hsl(0, 0%, 100%);
-  border-radius: 5px;
+  width: 12px;
 }
 
 ::-webkit-scrollbar-thumb {
   background-color: hsl(140, 62%, 40%);
-  border-radius: 5px;
+  border-radius: 8px;
   border: 2px solid hsl(0, 0%, 20%);
 }
 
@@ -1397,7 +1394,7 @@ footer p {
 .forum-toolbar input,
 .forum-toolbar select {
   height: 36px;
-  border: 1px solid hsl(0, 0%, 20%);
+  border: 1px solid hsl(0, 0%, 30%);
   border-radius: 6px;
   padding: 6px 10px;
 }
@@ -1409,7 +1406,7 @@ footer p {
 .new-post-btn {
   background-color: hsl(140, 62%, 40%);
   color: white;
-  border: 1px solid hsl(140, 62%, 40%, 0.2);
+  border: 1px solid hsl(0, 0%, 30%);
   padding: 10px 20px;
   border-radius: 4px;
   cursor: pointer;

@@ -303,6 +303,7 @@ app.post('/api/register', async (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
+
     const { username, password } = req.body;
 
     if (!username || !password) {
@@ -367,9 +368,9 @@ async function initializeDiseaseAnalysesTable() {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             )
         `);
-        console.log('✓ disease_analyses table ready');
+        
     } catch (error) {
-        //console.error('Error initializing disease_analyses table:', error);
+        console.error('Error initializing disease_analyses table:', error);
     }
 }
 
@@ -389,10 +390,10 @@ app.post('/api/analyze-disease', uploadDiseaseImage, async (req, res) => {
             `INSERT INTO disease_analyses (image_path, status) VALUES (?, 'processing')`,
             [imagePath]
         );
-        analysisId = result.insertId;        
+        analysisId = result.insertId;
 
-        res.json({ 
-            success: true, 
+        res.json({
+            success: true,
             analysisId: analysisId,
             message: 'Analysis started. Use the analysisId to fetch results.'
         });
@@ -420,7 +421,7 @@ app.post('/api/analyze-disease', uploadDiseaseImage, async (req, res) => {
                 ]);
 
                 const response = await result.response;
-                const responseText = response.text();                
+                const responseText = response.text();
 
                 const diseaseData = JSON.parse(responseText);
                 //console.log(`[Analysis ${analysisId}] Parsed disease data:`, JSON.stringify(diseaseData, null, 2));
@@ -460,7 +461,7 @@ app.post('/api/analyze-disease', uploadDiseaseImage, async (req, res) => {
 
     } catch (error) {
         console.error('Error creating analysis record:', error);
-        
+
         if (req.file && req.file.path) {
             fs.unlink(req.file.path, (err) => {
                 if (err) console.error("Error deleting temp file:", err);
@@ -1050,6 +1051,70 @@ app.get('/api/admin/stats', isAdmin, async (req, res) => {
         const [commentCount] = await pool.query('SELECT COUNT(*) as count FROM comments');
         const [diseaseCount] = await pool.query('SELECT COUNT(*) as count FROM diseases');
         const [guideCount] = await pool.query('SELECT COUNT(*) as count FROM guides');
+        
+        const [unansweredPosts] = await pool.query(
+            "SELECT COUNT(*) as count FROM posts WHERE status = 'unanswered'"
+        );
+        
+        const [activeUsers7d] = await pool.query(`
+            SELECT COUNT(DISTINCT user_id) as count
+            FROM (
+                SELECT user_id FROM posts WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                UNION
+                SELECT user_id FROM comments WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            ) as active
+        `);
+        
+        const [activeUsers30d] = await pool.query(`
+            SELECT COUNT(DISTINCT user_id) as count
+            FROM (
+                SELECT user_id FROM posts WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+                UNION
+                SELECT user_id FROM comments WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+            ) as active
+        `);
+        
+        const [retention7d] = await pool.query(`
+            SELECT 
+                COUNT(DISTINCT u.id) as total_eligible,
+                COUNT(DISTINCT active.user_id) as active_users
+            FROM users u
+            LEFT JOIN (
+                SELECT DISTINCT user_id 
+                FROM posts 
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                UNION
+                SELECT DISTINCT user_id 
+                FROM comments 
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            ) active ON u.id = active.user_id AND active.user_id IS NOT NULL
+            WHERE u.created_at <= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        `);
+        
+        const [retention30d] = await pool.query(`
+            SELECT 
+                COUNT(DISTINCT u.id) as total_eligible,
+                COUNT(DISTINCT active.user_id) as active_users
+            FROM users u
+            LEFT JOIN (
+                SELECT DISTINCT user_id 
+                FROM posts 
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+                UNION
+                SELECT DISTINCT user_id 
+                FROM comments 
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+            ) active ON u.id = active.user_id AND active.user_id IS NOT NULL
+            WHERE u.created_at <= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        `);
+        
+        const retentionRate7d = retention7d[0].total_eligible > 0
+            ? ((retention7d[0].active_users / retention7d[0].total_eligible) * 100).toFixed(1)
+            : 'N/A';
+            
+        const retentionRate30d = retention30d[0].total_eligible > 0
+            ? ((retention30d[0].active_users / retention30d[0].total_eligible) * 100).toFixed(1)
+            : 'N/A';
 
         res.json({
             success: true,
@@ -1058,7 +1123,15 @@ app.get('/api/admin/stats', isAdmin, async (req, res) => {
                 totalPosts: Number(postCount[0].count),
                 totalComments: Number(commentCount[0].count),
                 totalDiseases: Number(diseaseCount[0].count),
-                totalGuides: Number(guideCount[0].count)
+                totalGuides: Number(guideCount[0].count),
+                unansweredPosts: Number(unansweredPosts[0].count),
+                activeUsers7d: Number(activeUsers7d[0].count),
+                activeUsers30d: Number(activeUsers30d[0].count),
+                retentionRate7d: retentionRate7d,
+                retentionRate30d: retentionRate30d,
+                /* Additional context for debugging */
+                eligibleUsers7d: retention7d[0].total_eligible,
+                eligibleUsers30d: retention30d[0].total_eligible
             }
         });
     } catch (error) {

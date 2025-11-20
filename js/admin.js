@@ -1,13 +1,13 @@
-import auth from './auth.js';
-import { API_BASE_URL } from './config.js';
+import auth from "./auth.js";
+import { API_BASE_URL } from "./config.js";
 
-let currentTab = 'users';
+let currentTab = "users";
 let allUsers = [];
 let allPosts = [];
 let allDiseases = [];
 let allGuides = [];
 
-document.addEventListener('DOMContentLoaded', async function () {
+document.addEventListener("DOMContentLoaded", async function () {
     await auth.waitForAuth();
 
     const user = auth.getCurrentUser();
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     await initAdminPanel();
 
-    window.addEventListener('auth:changed', () => {
+    window.addEventListener("auth:changed", () => {
         const updatedUser = auth.getCurrentUser();
         if (!updatedUser || !updatedUser.isAdmin) {
             showNoAccess();
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 
 function showNoAccess() {
-    const container = document.getElementById('adminContainer');
+    const container = document.getElementById("adminContainer");
     container.innerHTML = `
         <div class="no-access">
             <h2>🔒 Access Denied</h2>
@@ -41,69 +41,85 @@ function showNoAccess() {
 }
 
 async function initAdminPanel() {
-    const container = document.getElementById('adminContainer');
+    const container = document.getElementById("adminContainer");
 
     container.innerHTML = `
-        <div class="admin-header">
-            <h1>🛡️ Admin Dashboard</h1>
-            <p>Manage users, posts, diseases, and guides</p>
-        </div>
+    <div class="admin-header">
+        <h1>🛡️ Admin Dashboard</h1>
+        <p>Manage users, posts, diseases, and guides</p>
+    </div>
 
-        <div class="admin-stats" id="adminStats">
-            <div class="stat-card">
-                <h3>Total Users</h3>
-                <div class="stat-value" id="statUsers">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Total Posts</h3>
-                <div class="stat-value" id="statPosts">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Total Guides Catalogued</h3>
-                <div class="stat-value" id="statGuides">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Total Diseases Catalogued</h3>
-                <div class="stat-value" id="statDiseases">-</div>
-            </div>
+    <div class="admin-stats" id="adminStats">
+        <div class="stat-card">
+            <h3>Total Users</h3>
+            <div class="stat-value" id="statUsers">-</div>
         </div>
+        <div class="stat-card">
+            <h3>Total Posts</h3>
+            <div class="stat-value" id="statPosts">-</div>
+        </div>
+        <div class="stat-card">
+            <h3>Unanswered Posts</h3>
+            <div class="stat-value" id="statUnanswered">-</div>
+        </div>
+        <div class="stat-card">
+            <h3>Active Users (7d)</h3>
+            <div class="stat-value" id="statActive7d">-</div>
+        </div>
+        <div class="stat-card">
+            <h3>Active Users (30d)</h3>
+            <div class="stat-value" id="statActive30d">-</div>
+        </div>
+        <div class="stat-card">
+            <h3>7-Day Retention</h3>
+            <div class="stat-value" id="statRetention7d">-</div>
+            <p style="font-size: 0.75em; color: hsl(0, 0%, 20%); margin-top: 4px;">Users active in last 7d</p>
+        </div>
+        <div class="stat-card">
+            <h3>30-Day Retention</h3>
+            <div class="stat-value" id="statRetention30d">-</div>
+            <p style="font-size: 0.75em; color: hsl(0, 0%, 20%); margin-top: 4px;">Users active in last 30d</p>
+        </div>
+    </div>
 
-        <div class="admin-tabs">
+
+    <div class="admin-tabs">
             <button class="admin-tab active" data-tab="users">Users</button>
             <button class="admin-tab" data-tab="posts">Posts</button>
             <button class="admin-tab" data-tab="guides">Guides</button>
             <button class="admin-tab" data-tab="diseases">Diseases</button>
-        </div>
+    </div>
 
-        <div class="admin-panel active" id="usersPanel">
+    <div class="admin-panel active" id="usersPanel">
             <div class="search-filter">
                 <input type="text" id="userSearch" placeholder="Search users...">
             </div>
             <div id="usersTable"></div>
-        </div>
+    </div>
 
-        <div class="admin-panel" id="postsPanel">
-            <div class="search-filter">
-                <input type="text" id="postSearch" placeholder="Search posts...">
-            </div>
-            <div id="postsTable"></div>
+    <div class="admin-panel" id="postsPanel">
+        <div class="search-filter">
+            <input type="text" id="postSearch" placeholder="Search posts...">
         </div>
+        <div id="postsTable"></div>
+    </div>
 
-        <div class="admin-panel" id="guidesPanel">
-            <div class="search-filter">
-                <input type="text" id="guideSearch" placeholder="Search guides...">
-                <button class="admin-btn view" id="addGuideBtn">+ Add Guide</button>
-            </div>
-            <div id="guidesTable"></div>
+    <div class="admin-panel" id="guidesPanel">
+        <div class="search-filter">
+            <input type="text" id="guideSearch" placeholder="Search guides...">
+            <button class="admin-btn view" id="addGuideBtn">+ Add Guide</button>
         </div>
+        <div id="guidesTable"></div>
+    </div>
 
-        <div class="admin-panel" id="diseasesPanel">
-            <div class="search-filter">
-                <input type="text" id="diseaseSearch" placeholder="Search diseases...">
-                <button class="admin-btn view" id="addDiseaseBtn">+ Add Disease</button>
-            </div>
-            <div id="diseasesTable"></div>
+    <div class="admin-panel" id="diseasesPanel">
+        <div class="search-filter">
+            <input type="text" id="diseaseSearch" placeholder="Search diseases...">
+            <button class="admin-btn view" id="addDiseaseBtn">+ Add Disease</button>
         </div>
+        <div id="diseasesTable"></div>
+    </div>
+    
     `;
 
     setupTabHandlers();
@@ -115,62 +131,80 @@ async function initAdminPanel() {
 }
 
 function setupTabHandlers() {
-    const tabs = document.querySelectorAll('.admin-tab');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const tabName = tab.getAttribute('data-tab');
+    const tabs = document.querySelectorAll(".admin-tab");
+    tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+            const tabName = tab.getAttribute("data-tab");
             switchTab(tabName);
         });
     });
 
-    const userSearch = document.getElementById('userSearch');
+    const userSearch = document.getElementById("userSearch");
     if (userSearch) {
-        userSearch.addEventListener('input', debounce((e) => {
-            filterUsers(e.target.value);
-        }, 300));
+        userSearch.addEventListener(
+            "input",
+            debounce((e) => {
+                filterUsers(e.target.value);
+            }, 300)
+        );
     }
 
-    const postSearch = document.getElementById('postSearch');
+    const postSearch = document.getElementById("postSearch");
     if (postSearch) {
-        postSearch.addEventListener('input', debounce((e) => {
-            filterPosts(e.target.value);
-        }, 300));
+        postSearch.addEventListener(
+            "input",
+            debounce((e) => {
+                filterPosts(e.target.value);
+            }, 300)
+        );
     }
-    
-    const diseaseSearch = document.getElementById('diseaseSearch');
+
+    const diseaseSearch = document.getElementById("diseaseSearch");
     if (diseaseSearch) {
-        diseaseSearch.addEventListener('input', debounce((e) => {
-            filterDiseases(e.target.value);
-        }, 300));
+        diseaseSearch.addEventListener(
+            "input",
+            debounce((e) => {
+                filterDiseases(e.target.value);
+            }, 300)
+        );
     }
-    
-    const guideSearch = document.getElementById('guideSearch');
+
+    const guideSearch = document.getElementById("guideSearch");
     if (guideSearch) {
-        guideSearch.addEventListener('input', debounce((e) => {
-            filterGuides(e.target.value);
-        }, 300));
+        guideSearch.addEventListener(
+            "input",
+            debounce((e) => {
+                filterGuides(e.target.value);
+            }, 300)
+        );
     }
-    
-    const addDiseaseBtn = document.getElementById('addDiseaseBtn');
+
+    const addDiseaseBtn = document.getElementById("addDiseaseBtn");
     if (addDiseaseBtn) {
-        addDiseaseBtn.addEventListener('click', () => showDiseaseModal());
+        addDiseaseBtn.addEventListener("click", () => showDiseaseModal());
     }
-    
-    const addGuideBtn = document.getElementById('addGuideBtn');
+
+    const addGuideBtn = document.getElementById("addGuideBtn");
     if (addGuideBtn) {
-        addGuideBtn.addEventListener('click', () => showGuideModal());
+        addGuideBtn.addEventListener("click", () => showGuideModal());
     }
 }
 
 function switchTab(tabName) {
-    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+    document
+        .querySelectorAll(".admin-tab")
+        .forEach((t) => t.classList.remove("active"));
+    document
+        .querySelectorAll(".admin-panel")
+        .forEach((p) => p.classList.remove("active"));
 
-    const selectedTab = document.querySelector(`.admin-tab[data-tab="${tabName}"]`);
+    const selectedTab = document.querySelector(
+        `.admin-tab[data-tab="${tabName}"]`
+    );
     const selectedPanel = document.getElementById(`${tabName}Panel`);
 
-    if (selectedTab) selectedTab.classList.add('active');
-    if (selectedPanel) selectedPanel.classList.add('active');
+    if (selectedTab) selectedTab.classList.add("active");
+    if (selectedPanel) selectedPanel.classList.add("active");
 
     currentTab = tabName;
 }
@@ -182,27 +216,24 @@ async function loadStats() {
         });
 
         if (!response.ok) {
-            console.error('Stats response not OK:', response.status, response.statusText);
+            console.error('Stats response not OK:', response.status);
             return;
         }
 
         const data = await response.json();
-        //console.log('Stats data received:');
 
         if (data.success && data.stats) {
-            const statUsersEl = document.getElementById('statUsers');
-            const statPostsEl = document.getElementById('statPosts');
-            const statGuidesEl = document.getElementById('statGuides');
-            const statDiseasesEl = document.getElementById('statDiseases');
+            document.getElementById('statUsers').textContent = data.stats.totalUsers || 0;
+            document.getElementById('statPosts').textContent = data.stats.totalPosts || 0;
+            document.getElementById('statUnanswered').textContent = data.stats.unansweredPosts || 0;
+            document.getElementById('statActive7d').textContent = data.stats.activeUsers7d || 0;
+            document.getElementById('statActive30d').textContent = data.stats.activeUsers30d || 0;
             
-            if (statUsersEl) statUsersEl.textContent = data.stats.totalUsers || 0;
-            if (statPostsEl) statPostsEl.textContent = data.stats.totalPosts || 0;
-            if (statGuidesEl) statGuidesEl.textContent = data.stats.totalGuides || 0;
-            if (statDiseasesEl) statDiseasesEl.textContent = data.stats.totalDiseases || 0;
-        } else {
-            console.error('Stats response not successful or missing stats:', data);
+            document.getElementById('statRetention7d').textContent = 
+                data.stats.retentionRate7d === 'N/A' ? 'N/A' : `${data.stats.retentionRate7d}%`;
+            document.getElementById('statRetention30d').textContent = 
+                data.stats.retentionRate30d === 'N/A' ? 'N/A' : `${data.stats.retentionRate30d}%`;
         }
-
     } catch (error) {
         console.error('Error loading stats:', error);
     }
@@ -211,7 +242,7 @@ async function loadStats() {
 async function loadDiseases() {
     try {
         const response = await fetch(`${API_BASE_URL}/diseases`, {
-            credentials: 'include'
+            credentials: "include",
         });
 
         const data = await response.json();
@@ -221,15 +252,16 @@ async function loadDiseases() {
             renderDiseases(allDiseases);
         }
     } catch (error) {
-        console.error('Error loading diseases:', error);
+        console.error("Error loading diseases:", error);
     }
 }
 
 function renderDiseases(diseases) {
-    const container = document.getElementById('diseasesTable');
+    const container = document.getElementById("diseasesTable");
 
     if (diseases.length === 0) {
-        container.innerHTML = '<p style="text-align: center; padding: 20px;">No diseases found.</p>';
+        container.innerHTML =
+            '<p style="text-align: center; padding: 20px;">No diseases found.</p>';
         return;
     }
 
@@ -247,55 +279,73 @@ function renderDiseases(diseases) {
                 </tr>
             </thead>
             <tbody>
-                ${diseases.map(disease => `
+                ${diseases
+            .map(
+                (disease) => `
                     <tr>
                         <td>${disease.id}</td>
                         <td><strong>${escapeHTML(disease.name)}</strong></td>
-                        <td>${disease.caused_by ? escapeHTML(disease.caused_by) : '<em style="color: #999;">-</em>'}</td>
+                        <td>${disease.caused_by
+                        ? escapeHTML(disease.caused_by)
+                        : '<em style="color: hsl(0, 0%, 50%);">-</em>'
+                    }</td>
                         <td>
-                            ${disease.image_path ? 
-                                `<img src="${disease.image_path}" alt="${escapeHTML(disease.name)}" style="max-width: 60px; max-height: 60px; object-fit: cover; border-radius: 4px;">` 
-                                : '<em style="color: #999;">No image</em>'}
+                            ${disease.image_path
+                        ? `<img src="${disease.image_path
+                        }" alt="${escapeHTML(
+                            disease.name
+                        )}" style="max-width: 60px; max-height: 60px; object-fit: cover; border-radius: 4px;">`
+                        : '<em style="color:hsl(0, 0%, 50%);">No image</em>'
+                    }
                         </td>
-                        <td>${disease.created_by_username || '<em style="color: #999;">System</em>'}</td>
+                        <td>${disease.created_by_username ||
+                    '<em style="color: hsl(0, 0%, 50%);">System</em>'
+                    }</td>
                         <td>${formatDate(disease.created_at)}</td>
                         <td>
-                            <button class="admin-btn view" onclick="showDiseaseModal(${disease.id})">
+                            <button class="admin-btn view" onclick="showDiseaseModal(${disease.id
+                    })">
                                 Edit
                             </button>
-                            <button class="admin-btn delete" onclick="deleteDisease(${disease.id}, '${escapeHTML(disease.name)}')">
+                            <button class="admin-btn delete" onclick="deleteDisease(${disease.id
+                    }, '${escapeHTML(disease.name)}')">
                                 Delete
                             </button>
                         </td>
                     </tr>
-                `).join('')}
+                `
+            )
+            .join("")}
             </tbody>
         </table>
     `;
 }
 
 function filterDiseases(searchTerm) {
-    const filtered = allDiseases.filter(disease =>
-        disease.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (disease.caused_by && disease.caused_by.toLowerCase().includes(searchTerm.toLowerCase()))
+    const filtered = allDiseases.filter(
+        (disease) =>
+            disease.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (disease.caused_by &&
+                disease.caused_by.toLowerCase().includes(searchTerm.toLowerCase()))
     );
     renderDiseases(filtered);
 }
 
 function showDiseaseModal(diseaseId = null) {
     const isEdit = diseaseId !== null;
-    const disease = isEdit ? allDiseases.find(d => d.id === diseaseId) : null;
-    
-    const existingModal = document.getElementById('diseaseModal');
+    const disease = isEdit ? allDiseases.find((d) => d.id === diseaseId) : null;
+
+    const existingModal = document.getElementById("diseaseModal");
     if (existingModal) existingModal.remove();
-    
-    const modal = document.createElement('div');
-    modal.id = 'diseaseModal';
-    modal.className = 'admin-modal open';
+
+    const modal = document.createElement("div");
+    modal.id = "diseaseModal";
+    modal.className = "admin-modal open";
     modal.innerHTML = `
         <div class="admin-modal-content">
             <div class="admin-modal-header">
-                <div class="admin-modal-title">${isEdit ? 'Edit' : 'Add'} Disease</div>
+                <div class="admin-modal-title">${isEdit ? "Edit" : "Add"
+        } Disease</div>
                 <button class="admin-modal-close" type="button" onclick="closeDiseaseModal()" aria-label="Close modal">×</button>
             </div>
             <div class="admin-modal-body">
@@ -303,31 +353,50 @@ function showDiseaseModal(diseaseId = null) {
                     <div class="admin-form-grid">
                         <label class="admin-field">
                             <span>Name *</span>
-                            <input type="text" id="diseaseName" value="${isEdit ? escapeHTML(disease.name) : ''}" required>
+                            <input type="text" id="diseaseName" value="${isEdit ? escapeHTML(disease.name) : ""
+        }" required>
                         </label>
                         <label class="admin-field">
                             <span>Caused By</span>
-                            <input type="text" id="diseaseCausedBy" value="${isEdit && disease.caused_by ? escapeHTML(disease.caused_by) : ''}">
+                            <input type="text" id="diseaseCausedBy" value="${isEdit && disease.caused_by
+            ? escapeHTML(disease.caused_by)
+            : ""
+        }">
                         </label>
                         <label class="admin-field">
                             <span>Affects</span>
-                            <textarea id="diseaseAffects" rows="2" placeholder="Stem, leaves, etc.">${isEdit && disease.affects ? escapeHTML(disease.affects) : ''}</textarea>
+                            <textarea id="diseaseAffects" rows="2" placeholder="Stem, leaves, etc.">${isEdit && disease.affects
+            ? escapeHTML(disease.affects)
+            : ""
+        }</textarea>
                         </label>
                         <label class="admin-field">
                             <span>Symptoms</span>
-                            <textarea id="diseaseSymptoms" rows="3" placeholder="Visible signs, indicators">${isEdit && disease.symptoms ? escapeHTML(disease.symptoms) : ''}</textarea>
+                            <textarea id="diseaseSymptoms" rows="3" placeholder="Visible signs, indicators">${isEdit && disease.symptoms
+            ? escapeHTML(disease.symptoms)
+            : ""
+        }</textarea>
                         </label>
                         <label class="admin-field">
                             <span>Causes</span>
-                            <textarea id="diseaseCauses" rows="3" placeholder="Environmental or biological causes">${isEdit && disease.causes ? escapeHTML(disease.causes) : ''}</textarea>
+                            <textarea id="diseaseCauses" rows="3" placeholder="Environmental or biological causes">${isEdit && disease.causes
+            ? escapeHTML(disease.causes)
+            : ""
+        }</textarea>
                         </label>
                         <label class="admin-field">
                             <span>Treatment</span>
-                            <textarea id="diseaseTreatment" rows="3" placeholder="Recommended treatment plan">${isEdit && disease.treatment ? escapeHTML(disease.treatment) : ''}</textarea>
+                            <textarea id="diseaseTreatment" rows="3" placeholder="Recommended treatment plan">${isEdit && disease.treatment
+            ? escapeHTML(disease.treatment)
+            : ""
+        }</textarea>
                         </label>
                         <label class="admin-field">
                             <span>Prevention</span>
-                            <textarea id="diseasePrevention" rows="3" placeholder="Preventive actions or tips">${isEdit && disease.prevention ? escapeHTML(disease.prevention) : ''}</textarea>
+                            <textarea id="diseasePrevention" rows="3" placeholder="Preventive actions or tips">${isEdit && disease.prevention
+            ? escapeHTML(disease.prevention)
+            : ""
+        }</textarea>
                         </label>
                     </div>
                     <div class="admin-field">
@@ -335,28 +404,33 @@ function showDiseaseModal(diseaseId = null) {
                         <input type="file" id="diseaseImage" accept="image/*">
                         <p class="admin-form-help">Upload image: JPG, PNG, or webp.</p>
                     </div>
-                    ${isEdit && disease.image_path ? `
+                    ${isEdit && disease.image_path
+            ? `
                         <div class="admin-form-preview">
                             <strong>Current image preview</strong>
-                            <img src="${disease.image_path}" alt="${escapeHTML(disease.name)} image preview">
+                            <img src="${disease.image_path}" alt="${escapeHTML(
+                disease.name
+            )} image preview">
                         </div>
-                    ` : ''}
+                    `
+            : ""
+        }
                     <div class="admin-error" id="diseaseError" style="display:none;"></div>
                     <div class="admin-modal-actions">
                         <button type="button" class="modal-btn secondary" onclick="closeDiseaseModal()">Cancel</button>
                         <button type="submit" class="modal-btn primary">
-                            ${isEdit ? 'Update Disease' : 'Create Disease'}
+                            ${isEdit ? "Update Disease" : "Create Disease"}
                         </button>
                     </div>
                 </form>
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(modal);
-    
-    const form = document.getElementById('diseaseForm');
-    form.addEventListener('submit', async (e) => {
+
+    const form = document.getElementById("diseaseForm");
+    form.addEventListener("submit", async (e) => {
         e.preventDefault();
         await saveDiseaseForm(diseaseId);
     });
@@ -364,36 +438,54 @@ function showDiseaseModal(diseaseId = null) {
 
 async function saveDiseaseForm(diseaseId) {
     const formData = new FormData();
-    formData.append('name', document.getElementById('diseaseName').value.trim());
-    formData.append('caused_by', document.getElementById('diseaseCausedBy').value.trim());
-    formData.append('affects', document.getElementById('diseaseAffects').value.trim());
-    formData.append('symptoms', document.getElementById('diseaseSymptoms').value.trim());
-    formData.append('causes', document.getElementById('diseaseCauses').value.trim());
-    formData.append('treatment', document.getElementById('diseaseTreatment').value.trim());
-    formData.append('prevention', document.getElementById('diseasePrevention').value.trim());
-    
-    const imageFile = document.getElementById('diseaseImage').files[0];
+    formData.append("name", document.getElementById("diseaseName").value.trim());
+    formData.append(
+        "caused_by",
+        document.getElementById("diseaseCausedBy").value.trim()
+    );
+    formData.append(
+        "affects",
+        document.getElementById("diseaseAffects").value.trim()
+    );
+    formData.append(
+        "symptoms",
+        document.getElementById("diseaseSymptoms").value.trim()
+    );
+    formData.append(
+        "causes",
+        document.getElementById("diseaseCauses").value.trim()
+    );
+    formData.append(
+        "treatment",
+        document.getElementById("diseaseTreatment").value.trim()
+    );
+    formData.append(
+        "prevention",
+        document.getElementById("diseasePrevention").value.trim()
+    );
+
+    const imageFile = document.getElementById("diseaseImage").files[0];
     if (imageFile) {
-        formData.append('image', imageFile);
+        formData.append("image", imageFile);
     }
-    
-    const errorDiv = document.getElementById('diseaseError');
-    errorDiv.textContent = '';
-    errorDiv.style.display = 'none';
-    
+
+    const errorDiv = document.getElementById("diseaseError");
+    errorDiv.textContent = "";
+    errorDiv.style.display = "none";
+
     try {
-        const url = diseaseId 
+        const url = diseaseId
             ? `${API_BASE_URL}/diseases/${diseaseId}`
             : `${API_BASE_URL}/diseases`;
-        
+
         const response = await fetch(url, {
-            method: diseaseId ? 'PUT' : 'POST',
-            credentials: 'include',
-            body: formData
+            method: diseaseId ? "PUT" : "POST",
+            credentials: "include",
+            body: formData,
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             closeDiseaseModal();
             await loadDiseases();
@@ -401,45 +493,49 @@ async function saveDiseaseForm(diseaseId) {
             alert(data.message);
         } else {
             errorDiv.textContent = data.error;
-            errorDiv.style.display = data.error ? 'block' : 'none';
+            errorDiv.style.display = data.error ? "block" : "none";
         }
     } catch (error) {
-        console.error('Error saving disease:', error);
-        errorDiv.textContent = 'Failed to save disease';
-        errorDiv.style.display = 'block';
+        console.error("Error saving disease:", error);
+        errorDiv.textContent = "Failed to save disease";
+        errorDiv.style.display = "block";
     }
 }
 
-window.closeDiseaseModal = function() {
-    const modal = document.getElementById('diseaseModal');
+window.closeDiseaseModal = function () {
+    const modal = document.getElementById("diseaseModal");
     if (modal) modal.remove();
 };
 
 window.showDiseaseModal = showDiseaseModal;
 
-window.deleteDisease = async function(diseaseId, name) {
-    if (!confirm(`Are you sure you want to delete "${name}"?\n\nThis action cannot be undone!`)) {
+window.deleteDisease = async function (diseaseId, name) {
+    if (
+        !confirm(
+            `Are you sure you want to delete "${name}"?\n\nThis action cannot be undone!`
+        )
+    ) {
         return;
     }
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}/diseases/${diseaseId}`, {
-            method: 'DELETE',
-            credentials: 'include'
+            method: "DELETE",
+            credentials: "include",
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             await loadDiseases();
             await loadStats();
-            alert('Disease deleted successfully');
+            alert("Disease deleted successfully");
         } else {
-            alert(data.error || 'Failed to delete disease');
+            alert(data.error || "Failed to delete disease");
         }
     } catch (error) {
-        console.error('Error deleting disease:', error);
-        alert('Failed to delete disease');
+        console.error("Error deleting disease:", error);
+        alert("Failed to delete disease");
     }
 };
 
@@ -448,7 +544,7 @@ window.deleteDisease = async function(diseaseId, name) {
 async function loadGuides() {
     try {
         const response = await fetch(`${API_BASE_URL}/guides`, {
-            credentials: 'include'
+            credentials: "include",
         });
 
         const data = await response.json();
@@ -458,15 +554,16 @@ async function loadGuides() {
             renderGuides(allGuides);
         }
     } catch (error) {
-        console.error('Error loading guides:', error);
+        console.error("Error loading guides:", error);
     }
 }
 
 function renderGuides(guides) {
-    const container = document.getElementById('guidesTable');
+    const container = document.getElementById("guidesTable");
 
     if (guides.length === 0) {
-        container.innerHTML = '<p style="text-align: center; padding: 20px;">No guides found.</p>';
+        container.innerHTML =
+            '<p style="text-align: center; padding: 20px;">No guides found.</p>';
         return;
     }
 
@@ -483,34 +580,46 @@ function renderGuides(guides) {
                 </tr>
             </thead>
             <tbody>
-                ${guides.map(guide => `
+                ${guides
+            .map(
+                (guide) => `
                     <tr>
                         <td>${guide.id}</td>
                         <td><strong>${escapeHTML(guide.name)}</strong></td>
                         <td>
-                            ${guide.image_path ? 
-                                `<img src="${guide.image_path}" alt="${escapeHTML(guide.name)}" style="max-width: 60px; max-height: 60px; object-fit: cover; border-radius: 4px;">` 
-                                : '<em style="color: #999;">No image</em>'}
+                            ${guide.image_path
+                        ? `<img src="${guide.image_path
+                        }" alt="${escapeHTML(
+                            guide.name
+                        )}" style="max-width: 60px; max-height: 60px; object-fit: cover; border-radius: 4px;">`
+                        : '<em style="color: hsl(0, 0%, 50%);">No image</em>'
+                    }
                         </td>
-                        <td>${guide.created_by_username || '<em style="color: #999;">System</em>'}</td>
+                        <td>${guide.created_by_username ||
+                    '<em style="color: hsl(0, 0%, 50%);">System</em>'
+                    }</td>
                         <td>${formatDate(guide.created_at)}</td>
                         <td>
-                            <button class="admin-btn view" onclick="showGuideModal(${guide.id})">
+                            <button class="admin-btn view" onclick="showGuideModal(${guide.id
+                    })">
                                 Edit
                             </button>
-                            <button class="admin-btn delete" onclick="deleteGuide(${guide.id}, '${escapeHTML(guide.name)}')">
+                            <button class="admin-btn delete" onclick="deleteGuide(${guide.id
+                    }, '${escapeHTML(guide.name)}')">
                                 Delete
                             </button>
                         </td>
                     </tr>
-                `).join('')}
+                `
+            )
+            .join("")}
             </tbody>
         </table>
     `;
 }
 
 function filterGuides(searchTerm) {
-    const filtered = allGuides.filter(guide =>
+    const filtered = allGuides.filter((guide) =>
         guide.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     renderGuides(filtered);
@@ -518,18 +627,19 @@ function filterGuides(searchTerm) {
 
 function showGuideModal(guideId = null) {
     const isEdit = guideId !== null;
-    const guide = isEdit ? allGuides.find(g => g.id === guideId) : null;
-    
-    const existingModal = document.getElementById('guideModal');
+    const guide = isEdit ? allGuides.find((g) => g.id === guideId) : null;
+
+    const existingModal = document.getElementById("guideModal");
     if (existingModal) existingModal.remove();
-    
-    const modal = document.createElement('div');
-    modal.id = 'guideModal';
-    modal.className = 'admin-modal open';
+
+    const modal = document.createElement("div");
+    modal.id = "guideModal";
+    modal.className = "admin-modal open";
     modal.innerHTML = `
         <div class="admin-modal-content">
             <div class="admin-modal-header">
-                <div class="admin-modal-title">${isEdit ? 'Edit' : 'Add'} Guide</div>
+                <div class="admin-modal-title">${isEdit ? "Edit" : "Add"
+        } Guide</div>
                 <button class="admin-modal-close" type="button" onclick="closeGuideModal()" aria-label="Close modal">×</button>
             </div>
             <div class="admin-modal-body">
@@ -537,15 +647,22 @@ function showGuideModal(guideId = null) {
                     <div class="admin-form-grid">
                         <label class="admin-field">
                             <span>Name *</span>
-                            <input type="text" id="guideName" value="${isEdit ? escapeHTML(guide.name) : ''}" required>
+                            <input type="text" id="guideName" value="${isEdit ? escapeHTML(guide.name) : ""
+        }" required>
                         </label>
                         <label class="admin-field">
                             <span>Planting Suggestions</span>
-                            <textarea id="guidePlanting" rows="4" placeholder="Soil requirements, planting schedule, spacing">${isEdit && guide.planting_suggestions ? escapeHTML(guide.planting_suggestions) : ''}</textarea>
+                            <textarea id="guidePlanting" rows="4" placeholder="Soil requirements, planting schedule, spacing">${isEdit && guide.planting_suggestions
+            ? escapeHTML(guide.planting_suggestions)
+            : ""
+        }</textarea>
                         </label>
                         <label class="admin-field">
                             <span>Care Instructions</span>
-                            <textarea id="guideCare" rows="4" placeholder="Watering, fertilizing, pest control tips">${isEdit && guide.care_instructions ? escapeHTML(guide.care_instructions) : ''}</textarea>
+                            <textarea id="guideCare" rows="4" placeholder="Watering, fertilizing, pest control tips">${isEdit && guide.care_instructions
+            ? escapeHTML(guide.care_instructions)
+            : ""
+        }</textarea>
                         </label>
                     </div>
                     <div class="admin-field">
@@ -553,28 +670,33 @@ function showGuideModal(guideId = null) {
                         <input type="file" id="guideImage" accept="image/*">
                         <p class="admin-form-help">Upload image (JPG, PNG, or webp).</p>
                     </div>
-                    ${isEdit && guide.image_path ? `
+                    ${isEdit && guide.image_path
+            ? `
                         <div class="admin-form-preview">
                             <strong>Current image preview</strong>
-                            <img src="${guide.image_path}" alt="${escapeHTML(guide.name)} image preview">
+                            <img src="${guide.image_path}" alt="${escapeHTML(
+                guide.name
+            )} image preview">
                         </div>
-                    ` : ''}
+                    `
+            : ""
+        }
                     <div class="admin-error" id="guideError" style="display:none;"></div>
                     <div class="admin-modal-actions">
                         <button type="button" class="modal-btn secondary" onclick="closeGuideModal()">Cancel</button>
                         <button type="submit" class="modal-btn primary">
-                            ${isEdit ? 'Update Guide' : 'Create Guide'}
+                            ${isEdit ? "Update Guide" : "Create Guide"}
                         </button>
                     </div>
                 </form>
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(modal);
-    
-    const form = document.getElementById('guideFormAdmin');
-    form.addEventListener('submit', async (e) => {
+
+    const form = document.getElementById("guideFormAdmin");
+    form.addEventListener("submit", async (e) => {
         e.preventDefault();
         await saveGuideForm(guideId);
     });
@@ -582,32 +704,38 @@ function showGuideModal(guideId = null) {
 
 async function saveGuideForm(guideId) {
     const formData = new FormData();
-    formData.append('name', document.getElementById('guideName').value.trim());
-    formData.append('planting_suggestions', document.getElementById('guidePlanting').value.trim());
-    formData.append('care_instructions', document.getElementById('guideCare').value.trim());
-    
-    const imageFile = document.getElementById('guideImage').files[0];
+    formData.append("name", document.getElementById("guideName").value.trim());
+    formData.append(
+        "planting_suggestions",
+        document.getElementById("guidePlanting").value.trim()
+    );
+    formData.append(
+        "care_instructions",
+        document.getElementById("guideCare").value.trim()
+    );
+
+    const imageFile = document.getElementById("guideImage").files[0];
     if (imageFile) {
-        formData.append('image', imageFile);
+        formData.append("image", imageFile);
     }
-    
-    const errorDiv = document.getElementById('guideError');
-    errorDiv.textContent = '';
-    errorDiv.style.display = 'none';
-    
+
+    const errorDiv = document.getElementById("guideError");
+    errorDiv.textContent = "";
+    errorDiv.style.display = "none";
+
     try {
-        const url = guideId 
+        const url = guideId
             ? `${API_BASE_URL}/guides/${guideId}`
             : `${API_BASE_URL}/guides`;
-        
+
         const response = await fetch(url, {
-            method: guideId ? 'PUT' : 'POST',
-            credentials: 'include',
-            body: formData
+            method: guideId ? "PUT" : "POST",
+            credentials: "include",
+            body: formData,
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             closeGuideModal();
             await loadGuides();
@@ -615,52 +743,56 @@ async function saveGuideForm(guideId) {
             alert(data.message);
         } else {
             errorDiv.textContent = data.error;
-            errorDiv.style.display = data.error ? 'block' : 'none';
+            errorDiv.style.display = data.error ? "block" : "none";
         }
     } catch (error) {
-        console.error('Error saving guide:', error);
-        errorDiv.textContent = 'Failed to save guide';
-        errorDiv.style.display = 'block';
+        console.error("Error saving guide:", error);
+        errorDiv.textContent = "Failed to save guide";
+        errorDiv.style.display = "block";
     }
 }
 
-window.closeGuideModal = function() {
-    const modal = document.getElementById('guideModal');
+window.closeGuideModal = function () {
+    const modal = document.getElementById("guideModal");
     if (modal) modal.remove();
 };
 
 window.showGuideModal = showGuideModal;
 
-window.deleteGuide = async function(guideId, name) {
-    if (!confirm(`Are you sure you want to delete "${name}"?\n\nThis action cannot be undone!`)) {
+window.deleteGuide = async function (guideId, name) {
+    if (
+        !confirm(
+            `Are you sure you want to delete "${name}"?\n\nThis action cannot be undone!`
+        )
+    ) {
         return;
     }
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}/guides/${guideId}`, {
-            method: 'DELETE',
-            credentials: 'include'
+            method: "DELETE",
+            credentials: "include",
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             await loadGuides();
             await loadStats();
-            alert('Guide deleted successfully');
+            alert("Guide deleted successfully");
         } else {
-            alert(data.error || 'Failed to delete guide');
+            alert(data.error || "Failed to delete guide");
         }
     } catch (error) {
-        console.error('Error deleting guide:', error);
-        alert('Failed to delete guide');
+        console.error("Error deleting guide:", error);
+        alert("Failed to delete guide");
     }
 };
 
 async function loadUsers() {
     try {
         const response = await fetch(`${API_BASE_URL}/admin/users`, {
-            credentials: 'include'
+            credentials: "include",
         });
 
         const data = await response.json();
@@ -670,15 +802,16 @@ async function loadUsers() {
             renderUsers(allUsers);
         }
     } catch (error) {
-        console.error('Error loading users:', error);
+        console.error("Error loading users:", error);
     }
 }
 
 function renderUsers(users) {
-    const container = document.getElementById('usersTable');
+    const container = document.getElementById("usersTable");
 
     if (users.length === 0) {
-        container.innerHTML = '<p style="text-align: center; padding: 20px;">No users found.</p>';
+        container.innerHTML =
+            '<p style="text-align: center; padding: 20px;">No users found.</p>';
         return;
     }
 
@@ -699,37 +832,47 @@ function renderUsers(users) {
                 </tr>
             </thead>
             <tbody>
-                ${users.map(user => `
+                ${users
+            .map(
+                (user) => `
                     <tr>
                         <td>${user.id}</td>
                         <td><strong>${escapeHTML(user.username)}</strong></td>
                         <td>${escapeHTML(user.email)}</td>
                         <td>
-                            <span class="admin-badge ${user.is_admin ? 'admin' : 'user'}">
-                                ${user.is_admin ? 'Admin' : 'User'}
+                            <span class="admin-badge ${user.is_admin ? "admin" : "user"
+                    }">
+                                ${user.is_admin ? "Admin" : "User"}
                             </span>
                         </td>
                         <td>${user.post_count}</td>
                         <td>${user.comment_count}</td>
                         <td>${formatDate(user.created_at)}</td>
                         <td>
-                            ${user.id !== currentUser.id ? `
-                                <button class="admin-btn delete" onclick="deleteUser(${user.id}, '${escapeHTML(user.username)}')">
+                            ${user.id !== currentUser.id
+                        ? `
+                                <button class="admin-btn delete" onclick="deleteUser(${user.id
+                        }, '${escapeHTML(user.username)}')">
                                     Delete
                                 </button>
-                            ` : '<em style="color: #999;">You</em>'}
+                            `
+                        : '<em style="color: hsl(0, 0%, 50%);">You</em>'
+                    }
                         </td>
                     </tr>
-                `).join('')}
+                `
+            )
+            .join("")}
             </tbody>
         </table>
     `;
 }
 
 function filterUsers(searchTerm) {
-    const filtered = allUsers.filter(user =>
-        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = allUsers.filter(
+        (user) =>
+            user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
     renderUsers(filtered);
 }
@@ -737,7 +880,7 @@ function filterUsers(searchTerm) {
 async function loadPosts() {
     try {
         const response = await fetch(`${API_BASE_URL}/forum/posts`, {
-            credentials: 'include'
+            credentials: "include",
         });
 
         const data = await response.json();
@@ -747,15 +890,16 @@ async function loadPosts() {
             renderPosts(allPosts);
         }
     } catch (error) {
-        console.error('Error loading posts:', error);
+        console.error("Error loading posts:", error);
     }
 }
 
 function renderPosts(posts) {
-    const container = document.getElementById('postsTable');
+    const container = document.getElementById("postsTable");
 
     if (posts.length === 0) {
-        container.innerHTML = '<p style="text-align: center; padding: 20px;">No posts found.</p>';
+        container.innerHTML =
+            '<p style="text-align: center; padding: 20px;">No posts found.</p>';
         return;
     }
 
@@ -774,38 +918,49 @@ function renderPosts(posts) {
                 </tr>
             </thead>
             <tbody>
-                ${posts.map(post => `
+                ${posts
+            .map(
+                (post) => `
                     <tr>
                         <td>${post.id}</td>
                         <td>
                             <strong>${escapeHTML(post.title)}</strong>
-                            ${post.image_path ? '<span style="color: #999;">📷</span>' : ''}
+                            ${post.image_path
+                        ? '<span style="color: hsl(0, 0%, 50%);">📷</span>'
+                        : ""
+                    }
                         </td>
                         <td>${escapeHTML(post.username)}</td>
-                        <td><span class="badge">${post.category_name}</span></td>
+                        <td><span class="badge">${post.category_name
+                    }</span></td>
                         <td>${post.comment_count}</td>
                         <td>${post.views}</td>
                         <td>${formatDate(post.created_at)}</td>
                         <td>
-                            <button class="admin-btn view" onclick="window.location.href='forum.html#post-${post.id}'">
+                            <button class="admin-btn view" onclick="window.location.href='forum.html#post-${post.id
+                    }'">
                                 View
                             </button>
-                            <button class="admin-btn delete" onclick="deletePost(${post.id}, '${escapeHTML(post.title)}')">
+                            <button class="admin-btn delete" onclick="deletePost(${post.id
+                    }, '${escapeHTML(post.title)}')">
                                 Delete
                             </button>
                         </td>
                     </tr>
-                `).join('')}
+                `
+            )
+            .join("")}
             </tbody>
         </table>
     `;
 }
 
 function filterPosts(searchTerm) {
-    const filtered = allPosts.filter(post =>
-        post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.body.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = allPosts.filter(
+        (post) =>
+            post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            post.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            post.body.toLowerCase().includes(searchTerm.toLowerCase())
     );
     renderPosts(filtered);
 }
@@ -815,33 +970,37 @@ window.deleteUser = function (userId, username) {
 };
 
 window.deletePost = async function (postId, title) {
-    if (!confirm(`Are you sure you want to delete the post "${title}"?\n\nThis will also delete all comments on this post.\n\nThis action cannot be undone!`)) {
+    if (
+        !confirm(
+            `Are you sure you want to delete the post "${title}"?\n\nThis will also delete all comments on this post.\n\nThis action cannot be undone!`
+        )
+    ) {
         return;
     }
 
     try {
         const response = await fetch(`${API_BASE_URL}/admin/posts/${postId}`, {
-            method: 'DELETE',
-            credentials: 'include'
+            method: "DELETE",
+            credentials: "include",
         });
 
         const data = await response.json();
 
         if (data.success) {
-            alert('Post deleted successfully');
+            alert("Post deleted successfully");
             await loadPosts();
             await loadStats();
         } else {
-            alert(data.error || 'Failed to delete post');
+            alert(data.error || "Failed to delete post");
         }
     } catch (error) {
-        console.error('Error deleting post:', error);
-        alert('Failed to delete post');
+        console.error("Error deleting post:", error);
+        alert("Failed to delete post");
     }
 };
 
 function escapeHTML(str) {
-    const div = document.createElement('div');
+    const div = document.createElement("div");
     div.textContent = str;
     return div.innerHTML;
 }
@@ -849,12 +1008,12 @@ function escapeHTML(str) {
 let deleteUserEscapeHandler = null;
 
 function showDeleteUserModal(userId, username) {
-    const existingModal = document.getElementById('deleteUserModal');
+    const existingModal = document.getElementById("deleteUserModal");
     if (existingModal) existingModal.remove();
 
-    const modal = document.createElement('div');
-    modal.id = 'deleteUserModal';
-    modal.className = 'admin-modal open';
+    const modal = document.createElement("div");
+    modal.id = "deleteUserModal";
+    modal.className = "admin-modal open";
     modal.innerHTML = `
         <div class="admin-modal-content">
             <div class="admin-modal-header">
@@ -864,7 +1023,9 @@ function showDeleteUserModal(userId, username) {
             <div class="admin-modal-body">
                 <form id="deleteUserForm" class="admin-form" data-user-id="${userId}">
                     <div style="background: hsl(0, 62%, 96%); border: 1px solid hsl(0, 62%, 80%); border-radius: 12px; padding: 18px;">
-                        <p style="color: hsl(0, 62%, 28%); font-weight: 600; margin-bottom: 8px;">⚠️ Warning: This action permanently removes ${escapeHTML(username)}.</p>
+                        <p style="color: hsl(0, 62%, 28%); font-weight: 600; margin-bottom: 8px;">⚠️ Warning: This action permanently removes ${escapeHTML(
+        username
+    )}.</p>
                         <p style="color: hsl(0, 62%, 24%); font-size: 0.92em; line-height: 1.5;">
                             Deleting this account will immediately and irreversibly remove:
                         </p>
@@ -891,49 +1052,49 @@ function showDeleteUserModal(userId, username) {
 
     document.body.appendChild(modal);
 
-    const confirmInput = document.getElementById('deleteUserConfirmInput');
-    const submitBtn = document.getElementById('deleteUserSubmitBtn');
-    const form = document.getElementById('deleteUserForm');
+    const confirmInput = document.getElementById("deleteUserConfirmInput");
+    const submitBtn = document.getElementById("deleteUserSubmitBtn");
+    const form = document.getElementById("deleteUserForm");
 
-    confirmInput.addEventListener('input', () => {
-        submitBtn.disabled = confirmInput.value.trim().toUpperCase() !== 'DELETE';
+    confirmInput.addEventListener("input", () => {
+        submitBtn.disabled = confirmInput.value.trim().toUpperCase() !== "DELETE";
     });
 
-    modal.addEventListener('click', (e) => {
+    modal.addEventListener("click", (e) => {
         if (e.target === modal) {
             closeDeleteUserModal();
         }
     });
 
     deleteUserEscapeHandler = (e) => {
-        if (e.key === 'Escape') {
+        if (e.key === "Escape") {
             closeDeleteUserModal();
         }
     };
-    document.addEventListener('keydown', deleteUserEscapeHandler);
+    document.addEventListener("keydown", deleteUserEscapeHandler);
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener("submit", async (e) => {
         e.preventDefault();
         await performDeleteUser(userId, username);
     });
 }
 
 async function performDeleteUser(userId, username) {
-    const errorDiv = document.getElementById('deleteUserError');
-    const submitBtn = document.getElementById('deleteUserSubmitBtn');
+    const errorDiv = document.getElementById("deleteUserError");
+    const submitBtn = document.getElementById("deleteUserSubmitBtn");
 
     if (!errorDiv || !submitBtn) return;
 
-    errorDiv.textContent = '';
-    errorDiv.style.display = 'none';
+    errorDiv.textContent = "";
+    errorDiv.style.display = "none";
 
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Deleting...';
+    submitBtn.textContent = "Deleting...";
 
     try {
         const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
-            method: 'DELETE',
-            credentials: 'include'
+            method: "DELETE",
+            credentials: "include",
         });
 
         const data = await response.json();
@@ -945,35 +1106,35 @@ async function performDeleteUser(userId, username) {
             await loadStats();
             await loadPosts();
         } else {
-            errorDiv.textContent = data.error || 'Failed to delete user';
-            errorDiv.style.display = 'block';
+            errorDiv.textContent = data.error || "Failed to delete user";
+            errorDiv.style.display = "block";
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Delete User';
+            submitBtn.textContent = "Delete User";
         }
     } catch (error) {
-        console.error('Error deleting user:', error);
-        errorDiv.textContent = 'Failed to delete user';
-        errorDiv.style.display = 'block';
+        console.error("Error deleting user:", error);
+        errorDiv.textContent = "Failed to delete user";
+        errorDiv.style.display = "block";
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Delete User';
+        submitBtn.textContent = "Delete User";
     }
 }
 
-window.closeDeleteUserModal = function() {
-    const modal = document.getElementById('deleteUserModal');
+window.closeDeleteUserModal = function () {
+    const modal = document.getElementById("deleteUserModal");
     if (modal) modal.remove();
     if (deleteUserEscapeHandler) {
-        document.removeEventListener('keydown', deleteUserEscapeHandler);
+        document.removeEventListener("keydown", deleteUserEscapeHandler);
         deleteUserEscapeHandler = null;
     }
 };
 
 function formatDate(dateString) {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
     });
 }
 
