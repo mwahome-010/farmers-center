@@ -342,6 +342,48 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+app.post('/api/contact', async (req, res) => {
+    try {
+        const { name, email, subject, message } = req.body;
+
+        if (!name || !email || !subject || !message) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'All fields are required' 
+            });
+        }
+
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS contact_messages (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                subject VARCHAR(500) NOT NULL,
+                message TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                read_status BOOLEAN DEFAULT FALSE
+            )
+        `);
+
+        await pool.query(
+            `INSERT INTO contact_messages (name, email, subject, message) 
+             VALUES (?, ?, ?, ?)`,
+            [name, email, subject, message]
+        );
+
+        res.json({ 
+            success: true, 
+            message: 'Your message has been received. We\'ll get back to you soon!' 
+        });
+    } catch (error) {
+        console.error('Contact form error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to send message. Please try again later.' 
+        });
+    }
+});
+
 app.post('/api/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {

@@ -162,6 +162,7 @@ async function logout() {
 
 function setupModalHandlers() {
     const modal = document.getElementById('authModal');
+    const wrapper = document.getElementById('authWrapper');
     const closeBtn = document.getElementById('authModalClose');
     const loginBtns = document.querySelectorAll('.login-popup-btn');
 
@@ -202,16 +203,39 @@ function setupModalHandlers() {
     });
 
 
-    const tabs = document.querySelectorAll('.auth-tab');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const tabName = tab.getAttribute('data-tab');
-            switchTab(tabName);
-        });
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.register-link')) {
+            e.preventDefault();
+            switchTab('register');
+        } else if (e.target.closest('.login-link')) {
+            e.preventDefault();
+            switchTab('login');
+        }
     });
 }
 
 function setupFormHandlers() {
+    const allInputs = document.querySelectorAll('.auth-modal .input-box input');
+    allInputs.forEach(input => {
+        if (input.value) {
+            input.classList.add('has-value');
+        }
+        
+        input.addEventListener('input', function() {
+            if (this.value) {
+                this.classList.add('has-value');
+            } else {
+                this.classList.remove('has-value');
+            }
+        });
+        
+        input.addEventListener('blur', function() {
+            if (this.value) {
+                this.classList.add('has-value');
+            }
+        });
+    });
+
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
 
@@ -324,7 +348,8 @@ function setupLoginButtons() {
 
 function openModal(tab = 'login') {
     const modal = document.getElementById('authModal');
-    if (modal) {
+    const wrapper = document.getElementById('authWrapper');
+    if (modal && wrapper) {
         switchTab(tab);
         modal.classList.add('open');
         modal.setAttribute('aria-hidden', 'false');
@@ -334,17 +359,21 @@ function openModal(tab = 'login') {
 
 function closeModal() {
     const modal = document.getElementById('authModal');
+    const wrapper = document.getElementById('authWrapper');
     if (modal) {
         modal.classList.remove('open');
         modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
 
+        // Reset to login tab
+        if (wrapper) {
+            wrapper.classList.remove('active');
+        }
 
         const loginForm = document.getElementById('loginForm');
         const registerForm = document.getElementById('registerForm');
         if (loginForm) loginForm.reset();
         if (registerForm) registerForm.reset();
-
 
         const loginError = document.getElementById('loginError');
         const registerError = document.getElementById('registerError');
@@ -354,29 +383,13 @@ function closeModal() {
 }
 
 function switchTab(tab) {
-    const tabs = document.querySelectorAll('.auth-tab');
-    const forms = document.querySelectorAll('.auth-form');
-    const title = document.getElementById('authModalTitle');
+    const wrapper = document.getElementById('authWrapper');
+    if (!wrapper) return;
 
-    tabs.forEach(t => {
-        if (t.getAttribute('data-tab') === tab) {
-            t.classList.add('active');
-        } else {
-            t.classList.remove('active');
-        }
-    });
-
-    forms.forEach(f => {
-        if ((tab === 'login' && f.id === 'loginForm') ||
-            (tab === 'register' && f.id === 'registerForm')) {
-            f.classList.add('active');
-        } else {
-            f.classList.remove('active');
-        }
-    });
-
-    if (title) {
-        title.textContent = tab === 'login' ? 'Login' : 'Register';
+    if (tab === 'register') {
+        wrapper.classList.add('active');
+    } else {
+        wrapper.classList.remove('active');
     }
 }
 

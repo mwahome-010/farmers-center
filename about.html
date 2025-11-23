@@ -34,39 +34,181 @@
 	</header>
 
 	<main>
+		<div class="hero" style="margin-top: 72px; padding: 4rem 2rem;">
+			<div class="hero-content" style="max-width: 1200px; margin: 0 auto;">
+				<div class="section-header">
+					<h1 style="font-size: 3rem; font-weight: 700; color: hsl(140, 62%, 20%); margin-bottom: 1rem;">About Farmer's Center</h1>
+					<p style="font-size: 1.25rem; color: hsl(0, 0%, 30%); max-width: 800px; margin: 0 auto;">
+						Empowering farmers with cutting-edge technology and expert knowledge to ensure healthy crops and sustainable agriculture.
+					</p>
+				</div>
+			</div>
+		</div>
 
+		<section class="features" style="padding: 4rem 2rem;">
+			<div style="max-width: 1200px; margin: 0 auto;">
+				<div class="section-header">
+					<h2>Our Mission</h2>
+					<p>To provide farmers with accessible, accurate, and actionable agricultural knowledge through innovative technology and community support.</p>
+				</div>
+
+				<div class="section-header" style="margin-top: 4rem;">
+					<h2>What We Offer</h2>
+					<p>Comprehensive tools and resources to help you succeed in modern farming</p>
+				</div>
+
+				
+
+		<section style="padding: 4rem 2rem; background: hsl(140, 62%, 96%);">
+			<div style="max-width: 1200px; margin: 0 auto;">
+				<div class="section-header">
+					<h2>How It Works</h2>
+					<p>Simple steps to get the help you need</p>
+				</div>
+
+				<div class="features-grid" style="max-width: 900px; margin: 0 auto;">
+					<div class="feature-card" style="text-align: center;">
+						<div style="font-size: 3rem; margin-bottom: 1rem;">1️⃣</div>
+						<h3 style="margin-bottom: 0.5rem;">Upload & Analyze</h3>
+						<p>Upload a photo of your plant and let our AI analyze it for potential diseases.</p>
+					</div>
+
+					<div class="feature-card" style="text-align: center;">
+						<div style="font-size: 3rem; margin-bottom: 1rem;">2️⃣</div>
+						<h3 style="margin-bottom: 0.5rem;">Get Recommendations</h3>
+						<p>Receive detailed information about identified diseases and treatment options.</p>
+					</div>
+
+					<div class="feature-card" style="text-align: center;">
+						<div style="font-size: 3rem; margin-bottom: 1rem;">3️⃣</div>
+						<h3 style="margin-bottom: 0.5rem;">Learn & Connect</h3>
+						<p>Access guides, browse the database, and connect with other farmers in the forum.</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section style="padding: 4rem 2rem;">
+			<div style="max-width: 800px; margin: 0 auto;">
+				<div class="section-header">
+					<h2>Contact Us</h2>
+					<p>Have questions, suggestions, or need assistance? We'd love to hear from you!</p>
+				</div>
+
+				<div class="feature-card" style="padding: 2rem;">
+					<form id="contactForm" style="display: flex; flex-direction: column; gap: 1.5rem;">
+						<div>
+							<label for="contactName" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: hsl(140, 62%, 20%);">Your Name</label>
+							<input type="text" id="contactName" name="name" required 
+								style="width: 100%; padding: 0.75rem; border: 2px solid hsl(140, 62%, 85%); border-radius: 8px; font-size: 1em;"
+								placeholder="Enter your name">
+						</div>
+
+						<div>
+							<label for="contactEmail" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: hsl(140, 62%, 20%);">Your Email</label>
+							<input type="email" id="contactEmail" name="email" required
+								style="width: 100%; padding: 0.75rem; border: 2px solid hsl(140, 62%, 85%); border-radius: 8px; font-size: 1em;"
+								placeholder="your.email@example.com">
+						</div>
+
+						<div>
+							<label for="contactSubject" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: hsl(140, 62%, 20%);">Subject</label>
+							<input type="text" id="contactSubject" name="subject" required
+								style="width: 100%; padding: 0.75rem; border: 2px solid hsl(140, 62%, 85%); border-radius: 8px; font-size: 1em;"
+								placeholder="What is this regarding?">
+						</div>
+
+						<div>
+							<label for="contactMessage" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: hsl(140, 62%, 20%);">Message</label>
+							<textarea id="contactMessage" name="message" required rows="6"
+								style="width: 100%; padding: 0.75rem; border: 2px solid hsl(140, 62%, 85%); border-radius: 8px; font-size: 1em; resize: vertical; font-family: inherit;"
+								placeholder="Tell us how we can help..."></textarea>
+						</div>
+
+						<div id="contactError" style="color: hsl(0, 62%, 50%); font-size: 0.9em; min-height: 20px;"></div>
+						<div id="contactSuccess" style="color: hsl(140, 62%, 40%); font-size: 0.9em; min-height: 20px;"></div>
+
+						<button type="submit" 
+							style="padding: 1rem 2rem; background: hsl(140, 62%, 40%); color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: 600; cursor: pointer; transition: background 0.3s;">
+							Send Message
+						</button>
+					</form>
+				</div>
+			</div>
+		</section>
 	</main>
 
 	<div class="auth-modal" id="authModal" role="dialog" aria-modal="true" aria-hidden="true">
-		<div class="auth-modal-content">
-			<div class="auth-modal-header">
-				<div class="auth-modal-title" id="authModalTitle">Login</div>
-				<button class="auth-modal-close" id="authModalClose" aria-label="Close">
-					<img src="images/ui-icons/cross.svg" alt="close button">
-				</button>
+		<div class="wrapper" id="authWrapper">
+			<span class="close-btn" id="authModalClose"><img src="images/ui-icons/icons8-close.svg" alt="close"></span>
+			<div class="form-box login">
+				<h2>Login</h2>
+				<form id="loginForm">
+					<div class="input-box">
+						<input type="text" id="loginUsername" required>
+						<label>Username</label>
+						<img src="images/ui-icons/user.svg" alt="">
+					</div>
+					<div class="input-box">
+						<input type="password" id="loginPassword" required>
+						<label>Password</label>
+						<img src="images/ui-icons/key.svg" alt="">
+					</div>
+					<!--
+					<div class="remember-forgot">
+						<label>
+							<input type="checkbox">Remember me
+						</label><br>
+						<a href="#">Forgot Password?</a>
+					</div>
+				-->
+					<div class="auth-error" id="loginError"></div>
+					<button type="submit" class="login-btn">Login</button>
+					<div class="login-register">
+						<p>Don't have an account?
+							<a href="#" class="register-link"> Register</a>
+						</p>
+					</div>
+				</form>
 			</div>
-			<div class="auth-modal-body">
-				<div class="auth-tabs">
-					<button class="auth-tab active" data-tab="login">Login</button>
-					<button class="auth-tab" data-tab="register">Register</button>
-				</div>
-				<div class="auth-forms">
-					<form id="loginForm" class="auth-form active">
-						<label>Username<input type="text" id="loginUsername" required /></label>
-						<label>Password<input type="password" id="loginPassword" required /></label>
-						<div class="auth-error" id="loginError"></div>
-						<button type="submit">Login</button>
-					</form>
-					<form id="registerForm" class="auth-form">
-						<label>Username<input type="text" id="registerUsername" required minlength="3" /></label>
-						<label>Email<input type="email" id="registerEmail" required /></label>
-						<label>Password<input type="password" id="registerPassword" required minlength="6" /></label>
-						<label>Confirm Password<input type="password" id="registerConfirmPassword" required
-								minlength="6" /></label>
-						<div class="auth-error" id="registerError"></div>
-						<button type="submit">Register</button>
-					</form>
-				</div>
+
+			<div class="form-box register">
+				<h2>Register</h2>
+				<form id="registerForm">
+					<div class="input-box">
+						<input type="text" id="registerUsername" required minlength="3">
+						<label>Username</label>
+						<img src="images/ui-icons/user.svg" alt="">
+					</div>
+					<div class="input-box">
+						<input type="email" id="registerEmail" required>
+						<label>Email</label>
+						<img src="images/ui-icons/user.svg" alt="">
+					</div>
+					<div class="input-box">
+						<input type="password" id="registerPassword" required minlength="6">
+						<label>Password</label>
+						<img src="images/ui-icons/key.svg" alt="">
+					</div>
+					<div class="input-box">
+						<input type="password" id="registerConfirmPassword" required minlength="6">
+						<label>Confirm Password</label>
+						<img src="images/ui-icons/key.svg" alt="">
+					</div>
+				<!--	<div class="agree-terms">
+						<label>
+							<input type="checkbox">I agree to<a href="#">Terms & Conditions</a>
+						</label><br>
+					</div>
+				-->
+					<div class="auth-error" id="registerError"></div>
+					<button type="submit" class="register-btn">Register</button>
+					<div class="login-register">
+						<p>Already have an account?
+							<a href="#" class="login-link">Login</a>
+						</p>
+					</div>
+				</form>
 			</div>
 		</div>
 	</div>

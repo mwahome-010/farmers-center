@@ -136,7 +136,6 @@ header {
   border-radius: 3px;
 }
 
-/* Mobile responsive */
 @media (max-width: 968px) {
   header {
     padding: 0 12px;
@@ -295,7 +294,7 @@ header {
   right: 0;
   top: calc(100% + 16px);
   min-width: 200px;
-  background: hsl(50, 100%, 70%, 0.6);
+  background: hsl(50, 100%, 80%);
   border: 1px solid hsl(0, 0%, 10%);
   border-radius: 4px;
   box-shadow: 0 10px 20px hsl(0, 0%, 30%);
@@ -1811,26 +1810,254 @@ footer p {
   top: 0;
   width: 100%;
   height: 100%;
-  background-color: hsla(140, 62%, 0%, 0.5);
+  background-color: hsla(0, 0%, 20%, 0.5);
   align-items: center;
   justify-content: center;
-
 }
 
 .auth-modal.open {
   display: flex;
 }
 
-.auth-modal-content {
+.auth-modal .wrapper {
+  position: relative;
+  width: 350px;
+  height: 400px;
+  background: hsl(140, 62%, 42%);
+  border: 2px solid hsl(0, 0%, 20%);
+  border-radius: 20px;
+  backdrop-filter: blur(16px);
+  box-shadow: 10px 20px 40px hsla(140, 62%, 0%, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  transform: scale(0);
+  transition: transform 0.4s ease, height 0.2s ease;
+}
+
+.auth-modal.open .wrapper {
+  transform: scale(1);
+}
+
+.auth-modal .wrapper.active {
+  height: 530px;
+}
+
+.auth-modal .wrapper .form-box {
+  width: 100%;
+  padding: 35px 40px;
+}
+
+.auth-modal .wrapper .form-box.login {
+  transition: transform 0.18s ease;
+  transform: translateX(0);
+}
+
+.auth-modal .wrapper.active .form-box.login {
+  transition: transform 0.18s ease;
+  transform: translateX(-400px);
+}
+
+.auth-modal .wrapper .form-box.register {
+  position: absolute;
+  transition: transform 0.18s ease;
+  transform: translateX(400px);
+}
+
+.auth-modal .wrapper.active .form-box.register {
+  transition: transform 0.18s ease;
+  transform: translateX(0);
+}
+
+.auth-modal .wrapper .close-btn {
+  color: rgba(255, 255, 255, 0.5);
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  background: hsl(50, 100%, 50%);
+  font-size: 1.4em;
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-bottom-left-radius: 20px;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.auth-modal .wrapper .close-btn img {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+}
+
+.auth-modal .form-box h2 {
+  font-size: 2em;
+  color: hsl(50, 100%, 50%);
+  text-align: center;
+}
+
+.auth-modal .input-box {
+  position: relative;
+  width: 100%;
+  border-bottom: 2px solid hsl(140, 62%, 20%);
+  margin: 25px 0;
+}
+
+.auth-modal .input-box label {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  transform: translateY(-50%);
+  font-size: 1em;
+  color: hsl(0, 0%, 10%);
+  font-weight: 500;
+  pointer-events: none;
+  transition: 0.5s;
+}
+
+.auth-modal .input-box input:focus ~ label,
+.auth-modal .input-box input.has-value ~ label,
+.auth-modal .input-box input:valid ~ label {
+  top: -6px;
+}
+
+.auth-modal .input-box input {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: hsl(0, 0%, 10%);
+  font-weight: 500;
+  font-size: 1em;
+  padding: 5px 0;
+}
+
+.auth-modal .input-box img {
+  position: absolute;
+  right: 0;
+  bottom: 5%;
+  width: 20px;
+  height: 20px;
+}
+
+/* 
+.auth-modal .remember-forgot {
+  font-size: 0.9em;
+  color: hsl(140, 62%, 20%);
+  font-weight: 500;
+  margin: -10px 0 12px;
+  justify-content: space-between;
+}
+
+.auth-modal .remember-forgot label input {
+  accent-color: hsl(140, 62%, 20%);
+  margin-right: 3px;
+}
+
+.auth-modal .remember-forgot a,
+.auth-modal .remember-forgot label,
+.auth-modal .agree-terms label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-modal .remember-forgot a,
+.auth-modal .agree-terms label a {
+  text-decoration: none;
+  color: hsl(140, 62%, 20%);
+  font-weight: 600;
+}
+
+.auth-modal .remember-forgot a:hover,
+.auth-modal .agree-terms a:hover {
+  text-decoration: underline;
+}
+*/
+
+.auth-modal .login-btn,
+.auth-modal .register-btn {
+  width: 100%;
+  height: 40px;
+  background: hsl(50, 100%, 50%);
+  border: none;
+  outline: none;
+  border-radius: 13px;
+  cursor: pointer;
+  font-size: 1em;
+  color: hsl(0, 0%, 10%);
+  font-weight: 500;
+}
+
+.auth-modal .login-btn:hover, .auth-modal .register-btn:hover {
+  background-color: hsl(50, 100%, 46%);
+}
+
+.auth-modal .login-btn:active, .auth-modal .register-btn:active {
+  background-color: hsl(50, 100%, 40%);
+}
+
+.auth-modal .login-register {
+  font-size: 0.9em;
+  color: hsl(0, 0%, 10%);
+  text-align: center;
+  font-weight: 500;
+  margin: 20px 0 5px;
+}
+
+.auth-modal .login-register p a {
+  color: hsl(50, 100%, 60%);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-modal .login-register p a:hover {
+  text-decoration: underline;
+}
+
+/*
+.auth-modal .agree-terms {
+  margin: -5px 0 10px;
+}
+
+.auth-modal .agree-terms label {
+  color: hsl(140, 62%, 20%);
+}
+
+.auth-modal .agree-terms label input {
+  accent-color: hsl(140, 62%, 20%);
+  margin-right: 5px;
+}
+
+.auth-modal .agree-terms label a {
+  margin-left: 3px;
+}
+*/
+
+.auth-error {
+  color: hsl(0, 62%, 50%);
+  font-size: 0.9em;
+  margin-bottom: 8px;
+  min-height: 18px;
+  text-align: center;
+}
+
+.auth-modal > .auth-modal-content {
   background-color: hsl(140, 62%, 100%);
   border-radius: 12px;
   width: 90%;
-  max-width: 400px;
+  max-width: 800px;
   box-shadow: 0 4px 6px hsla(140, 62%, 0%, 0.1);
   overflow: hidden;
 }
 
-.auth-modal-header {
+.auth-modal > .auth-modal-content .auth-modal-header {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1840,14 +2067,14 @@ footer p {
   position: relative;
 }
 
-.auth-modal-title {
+.auth-modal > .auth-modal-content .auth-modal-title {
   font-size: 1.5em;
   font-weight: 600;
   color: hsl(140, 62%, 40%);
   display: inline-block;
 }
 
-.auth-modal-close {
+.auth-modal > .auth-modal-content .auth-modal-close {
   position: absolute;
   top: 0;
   right: 0;
@@ -1862,102 +2089,19 @@ footer p {
   background: transparent;
 }
 
-.auth-modal-close:hover {
+.auth-modal > .auth-modal-content .auth-modal-close:hover {
   background: hsl(140, 62%, 40%);
   border-bottom-left-radius: 12px;
   transition: 0.2s ease-in-out;
 }
 
-.auth-modal-close img {
+.auth-modal > .auth-modal-content .auth-modal-close img {
   height: 20px;
   width: 20px;
 }
 
-.auth-modal-body {
+.auth-modal > .auth-modal-content .auth-modal-body {
   padding: 20px;
-}
-
-.auth-tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.auth-tab {
-  flex: 1;
-  padding: 10px;
-  background: hsl(140, 62%, 96%);
-  border: 1px solid hsl(140, 62%, 80%);
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1em;
-  font-weight: 500;
-  color: hsl(146, 38%, 6%);
-  transition: all 0.3s;
-}
-
-.auth-tab.active {
-  background: hsl(140, 62%, 40%);
-  color: white;
-  border-color: hsl(140, 62%, 40%);
-}
-
-.auth-tab:hover:not(.active) {
-  background: hsl(140, 62%, 90%);
-}
-
-.auth-form {
-  display: none;
-}
-
-.auth-form.active {
-  display: block;
-}
-
-.auth-form label {
-  display: block;
-  margin-bottom: 15px;
-  font-weight: 500;
-  color: hsl(146, 38%, 6%);
-}
-
-.auth-form input {
-  display: block;
-  width: 100%;
-  margin-top: 5px;
-  padding: 10px;
-  border: 1px solid hsl(140, 62%, 80%);
-  border-radius: 6px;
-  font-size: 1em;
-}
-
-.auth-form input:focus {
-  outline: none;
-  border-color: hsl(140, 62%, 40%);
-}
-
-.auth-form button[type="submit"] {
-  width: 100%;
-  padding: 12px;
-  background: hsl(140, 62%, 40%);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 1.1em;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.auth-form button[type="submit"]:hover {
-  background: hsl(140, 62%, 35%);
-}
-
-.auth-error {
-  color: hsl(0, 62%, 50%);
-  font-size: 0.9em;
-  margin-bottom: 10px;
-  min-height: 20px;
 }
 
 .user-info {
@@ -1973,9 +2117,9 @@ footer p {
 }
 
 .logout-btn {
-  background: hsla(140, 62%, 6%, 0.55);
-  border: 1px solid hsl(140, 62%, 6%);
-  color: hsl(140, 62%, 100%);
+  background: hsla(0, 0%, 20%, 0.55);
+  border: 1px solid hsl(0, 0%, 10%);
+  color: hsl(0, 0%, 100%);
   padding: 8px 16px;
   border-radius: 6px;
   cursor: pointer;
@@ -1984,7 +2128,7 @@ footer p {
 }
 
 .logout-btn:hover {
-  background: hsla(140, 62%, 6%, 0.64);
+  background: hsla(0, 0%, 20%, 0.64);
 }
 
 #forumPostModal .guide-modal-content {
