@@ -1199,7 +1199,7 @@ app.post('/api/diseases', isAdmin, (req, res, next) => {
         next();
     });
 }, async (req, res) => {
-    const { name, caused_by, affects, symptoms, causes, treatment, prevention } = req.body;
+    const { name, causes, affects, symptoms, treatment, prevention } = req.body;
     const userId = req.session.userId;
 
     if (!name) {
@@ -1211,9 +1211,9 @@ app.post('/api/diseases', isAdmin, (req, res, next) => {
         const imagePath = req.file ? getRelativePath(req.file, 'diseases') : null;
 
         const [result] = await pool.query(
-            `INSERT INTO diseases (name, image_path, caused_by, affects, symptoms, causes, treatment, prevention, created_by)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [name, imagePath, caused_by, affects, symptoms, causes, treatment, prevention, userId]
+            `INSERT INTO diseases (name, image_path, causes, affects, symptoms, treatment, prevention, created_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [name, imagePath, causes, affects, symptoms, treatment, prevention, userId]
         );
 
         const [diseases] = await pool.query('SELECT * FROM diseases WHERE id = ?', [result.insertId]);
@@ -1244,7 +1244,7 @@ app.put('/api/diseases/:id', isAdmin, (req, res, next) => {
     });
 }, async (req, res) => {
     const diseaseId = req.params.id;
-    const { name, caused_by, affects, symptoms, causes, treatment, prevention } = req.body;
+    const { name, causes, affects, symptoms, treatment, prevention } = req.body;
 
     try {
         const [existing] = await pool.query('SELECT * FROM diseases WHERE id = ?', [diseaseId]);
@@ -1263,9 +1263,9 @@ app.put('/api/diseases/:id', isAdmin, (req, res, next) => {
 
         await pool.query(
             `UPDATE diseases 
-             SET name = ?, image_path = ?, caused_by = ?, affects = ?, symptoms = ?, causes = ?, treatment = ?, prevention = ?
+             SET name = ?, image_path = ?, causes = ?, affects = ?, symptoms = ?, treatment = ?, prevention = ?
              WHERE id = ?`,
-            [name, imagePath, caused_by, affects, symptoms, causes, treatment, prevention, diseaseId]
+            [name, imagePath, causes, affects, symptoms, treatment, prevention, diseaseId]
         );
 
         const [updated] = await pool.query('SELECT * FROM diseases WHERE id = ?', [diseaseId]);

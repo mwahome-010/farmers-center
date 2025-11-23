@@ -271,7 +271,7 @@ function renderDiseases(diseases) {
                 <tr>
                     <th>ID</th>
                     <th>Name</th>
-                    <th>Caused By</th>
+                    <th>Causes</th>
                     <th>Image</th>
                     <th>Created By</th>
                     <th>Created</th>
@@ -285,8 +285,8 @@ function renderDiseases(diseases) {
                     <tr>
                         <td>${disease.id}</td>
                         <td><strong>${escapeHTML(disease.name)}</strong></td>
-                        <td>${disease.caused_by
-                        ? escapeHTML(disease.caused_by)
+                        <td>${disease.causes
+                        ? escapeHTML(disease.causes)
                         : '<em style="color: hsl(0, 0%, 50%);">-</em>'
                     }</td>
                         <td>
@@ -325,8 +325,8 @@ function filterDiseases(searchTerm) {
     const filtered = allDiseases.filter(
         (disease) =>
             disease.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (disease.caused_by &&
-                disease.caused_by.toLowerCase().includes(searchTerm.toLowerCase()))
+            (disease.causes &&
+                disease.causes.toLowerCase().includes(searchTerm.toLowerCase()))
     );
     renderDiseases(filtered);
 }
@@ -358,8 +358,8 @@ function showDiseaseModal(diseaseId = null) {
                         </label>
                         <label class="admin-field">
                             <span>Caused By</span>
-                            <input type="text" id="diseaseCausedBy" value="${isEdit && disease.caused_by
-            ? escapeHTML(disease.caused_by)
+                            <input type="text" id="diseaseCauses" value="${isEdit && disease.causes
+            ? escapeHTML(disease.causes)
             : ""
         }">
                         </label>
@@ -374,13 +374,6 @@ function showDiseaseModal(diseaseId = null) {
                             <span>Symptoms</span>
                             <textarea id="diseaseSymptoms" rows="3" placeholder="Visible signs, indicators">${isEdit && disease.symptoms
             ? escapeHTML(disease.symptoms)
-            : ""
-        }</textarea>
-                        </label>
-                        <label class="admin-field">
-                            <span>Causes</span>
-                            <textarea id="diseaseCauses" rows="3" placeholder="Environmental or biological causes">${isEdit && disease.causes
-            ? escapeHTML(disease.causes)
             : ""
         }</textarea>
                         </label>
@@ -439,9 +432,9 @@ function showDiseaseModal(diseaseId = null) {
 async function saveDiseaseForm(diseaseId) {
     const formData = new FormData();
     formData.append("name", document.getElementById("diseaseName").value.trim());
-    formData.append(
-        "caused_by",
-        document.getElementById("diseaseCausedBy").value.trim()
+   formData.append(
+        "causes",
+        document.getElementById("diseaseCauses").value.trim()
     );
     formData.append(
         "affects",
@@ -450,10 +443,6 @@ async function saveDiseaseForm(diseaseId) {
     formData.append(
         "symptoms",
         document.getElementById("diseaseSymptoms").value.trim()
-    );
-    formData.append(
-        "causes",
-        document.getElementById("diseaseCauses").value.trim()
     );
     formData.append(
         "treatment",
