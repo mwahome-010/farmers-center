@@ -962,9 +962,9 @@ main {
   background-color: hsla(50, 100%, 70%, 0.6);
 }
 
-.contact-form-container:hover{
+.contact-form-container:hover {
   border: solid 1px hsl(0, 0%, 10%);
-  transform:translateY(-2px);
+  transform: translateY(-2px);
   transition: ease .4s;
 }
 

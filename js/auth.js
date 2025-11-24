@@ -29,7 +29,12 @@ async function checkAuthStatus() {
         const data = await response.json();
 
         if (data.authenticated && data.user) {
-            currentUser = data.user;
+            currentUser = {
+                id: data.user.id,
+                username: data.user.username,
+                isAdmin: data.user.role === 'admin',
+                role: data.user.role
+            };
         } else {
             currentUser = null;
         }
@@ -50,7 +55,6 @@ async function register(username, email, password) {
             body: JSON.stringify({ username, email, password })
         });
 
-
         let data;
         try {
             data = await response.json();
@@ -63,7 +67,12 @@ async function register(username, email, password) {
         }
 
         if (response.ok && data.success) {
-            currentUser = data.user;
+            currentUser = {
+                id: data.user.id,
+                username: data.user.username,
+                isAdmin: false,
+                role: 'user'
+            };
             updateUI();
             return { success: true, message: data.message };
         } else {
@@ -71,7 +80,6 @@ async function register(username, email, password) {
         }
     } catch (error) {
         console.error('Registration error:', error);
-
 
         if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
             return {
@@ -98,7 +106,6 @@ async function login(username, password) {
             body: JSON.stringify({ username, password })
         });
 
-
         let data;
         try {
             data = await response.json();
@@ -111,7 +118,12 @@ async function login(username, password) {
         }
 
         if (response.ok && data.success) {
-            currentUser = data.user;
+            currentUser = {
+                id: data.user.id,
+                username: data.user.username,
+                isAdmin: data.user.role === 'admin',
+                role: data.user.role
+            };
             updateUI();
             return { success: true, message: data.message };
         } else {
@@ -119,7 +131,6 @@ async function login(username, password) {
         }
     } catch (error) {
         console.error('Login error:', error);
-
 
         if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
             return {
@@ -220,16 +231,16 @@ function setupFormHandlers() {
         if (input.value) {
             input.classList.add('has-value');
         }
-        
-        input.addEventListener('input', function() {
+
+        input.addEventListener('input', function () {
             if (this.value) {
                 this.classList.add('has-value');
             } else {
                 this.classList.remove('has-value');
             }
         });
-        
-        input.addEventListener('blur', function() {
+
+        input.addEventListener('blur', function () {
             if (this.value) {
                 this.classList.add('has-value');
             }
@@ -451,7 +462,7 @@ function renderUserControls() {
         if (existing) return;
 
         const initial = (currentUser && currentUser.username ? currentUser.username.charAt(0) : '?').toUpperCase();
-        const isAdmin = currentUser && currentUser.isAdmin;
+        const isAdmin = currentUser && currentUser.role === 'admin';
 
         const wrapper = document.createElement('div');
         wrapper.className = 'user-menu';

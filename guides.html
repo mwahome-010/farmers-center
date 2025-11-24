@@ -2,66 +2,64 @@
 <html lang="en">
 
 <head>
-        <meta charset="UTF-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Planting Guides</title>
-        <link rel="stylesheet" href="css/styles.css" />
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Planting Guides</title>
+	<link rel="stylesheet" href="css/styles.css" />
 </head>
 
 <body>
-        <header>
-                <div class="logo-container">
-                        <a class="logo-link" href="index.html">
-                                <div class="logo-image-container">
-                                        <img class="logo-img" src="/images/logo/corn-40294.svg"
-                                                alt="Farmer's Center Logo">
-                                </div>
-                                <div class="logo-name-container">
-                                        <h2 class="logo">Farmer's Center</h2>
-                                </div>
-                        </a>
-                </div>
-                <div class="nav-container">
-                        <nav class="nav-bar">
-                                <a href="index.html">Home</a>
-                                <a href="guides.html">Guides</a>
-                                <a href="diseases.html">Diseases</a>
-                                <a href="forum.html">Forum</a>
-                                <a href="about.html">About</a>
-                                <button class="login-popup-btn">Login</button>
-                        </nav>
-                </div>
-        </header>
-        <main>
-                <div id="search-guide" class="search-container">
-                        <input type="text" placeholder="Search for a plant..." />
-                </div>
-                <div class="guide-container">
-                        <!-- Cards will be dynamically loaded here -->
-                        <p style="text-align: center; padding: 40px;">Loading guides...</p>
-                </div>
-        </main>
+	<header>
+		<div class="logo-container">
+			<a class="logo-link" href="index.html">
+				<div class="logo-image-container">
+					<img class="logo-img" src="/images/logo/corn-40294.svg" alt="Farmer's Center Logo">
+				</div>
+				<div class="logo-name-container">
+					<h2 class="logo">Farmer's Center</h2>
+				</div>
+			</a>
+		</div>
+		<div class="nav-container">
+			<nav class="nav-bar">
+				<a href="index.html">Home</a>
+				<a href="guides.html">Guides</a>
+				<a href="diseases.html">Diseases</a>
+				<a href="forum.html">Forum</a>
+				<a href="about.html">About</a>
+				<button class="login-popup-btn">Login</button>
+			</nav>
+		</div>
+	</header>
+	<main>
+		<div id="search-guide" class="search-container">
+			<input type="text" placeholder="Search for a plant..." />
+		</div>
+		<div class="guide-container">
+			<!-- Cards will be dynamically loaded here -->
+			<p style="text-align: center; padding: 40px;">Loading guides...</p>
+		</div>
+	</main>
 
-        <div class="guide-modal" id="guideModal" role="dialog" aria-modal="true" aria-hidden="true">
-                <div class="guide-modal-content">
-                        <div class="guide-modal-header">
-                                <div class="guide-modal-title" id="guideModalTitle"></div>
-                                <button class="guide-modal-download" id="guideModalDownload"
-                                        aria-label="Download as PDF">
-                                </button>
-                                <button class="guide-modal-close" id="guideModalClose" aria-label="Close">
-                                        <img src="images/ui-icons/cross.svg" alt="">
-                                </button>
-                        </div>
-                        <div class="guide-modal-body">
-                                <img id="guideModalImage" alt="" />
-                                <div id="guideModalDetails"></div>
-                        </div>
-                </div>
-        </div>
+	<div class="guide-modal" id="guideModal" role="dialog" aria-modal="true" aria-hidden="true">
+		<div class="guide-modal-content">
+			<div class="guide-modal-header">
+				<div class="guide-modal-title" id="guideModalTitle"></div>
+				<button class="guide-modal-download" id="guideModalDownload" aria-label="Download as PDF">
+				</button>
+				<button class="guide-modal-close" id="guideModalClose" aria-label="Close">
+					<img src="images/ui-icons/cross.svg" alt="">
+				</button>
+			</div>
+			<div class="guide-modal-body">
+				<img id="guideModalImage" alt="" />
+				<div id="guideModalDetails"></div>
+			</div>
+		</div>
+	</div>
 
-        <div class="auth-modal" id="authModal" role="dialog" aria-modal="true" aria-hidden="true">
+	<div class="auth-modal" id="authModal" role="dialog" aria-modal="true" aria-hidden="true">
 		<div class="wrapper" id="authWrapper">
 			<span class="close-btn" id="authModalClose"><img src="images/ui-icons/icons8-close.svg" alt="close"></span>
 			<div class="form-box login">
@@ -118,7 +116,7 @@
 						<label>Confirm Password</label>
 						<img src="images/ui-icons/key.svg" alt="">
 					</div>
-				<!--	<div class="agree-terms">
+					<!--	<div class="agree-terms">
 						<label>
 							<input type="checkbox">I agree to<a href="#">Terms & Conditions</a>
 						</label><br>
@@ -136,15 +134,15 @@
 		</div>
 	</div>
 
-        <footer>
-                <p>&copy; 2025 Farmer's Center. Empowering farmers with technology.</p>
-                <p>Made for the agricultural community</p>
-        </footer>
+	<footer>
+		<p>&copy; 2025 Farmer's Center. Empowering farmers with technology.</p>
+		<p>Made for the agricultural community</p>
+	</footer>
 
-        <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js" type="module"
-                defer></script>
-        <script src="js/index.js" type="module" defer></script>
-        <script src="js/guides-loader.js" type="module" defer></script>
+	<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js" type="module"
+		defer></script>
+	<script src="js/index.js" type="module" defer></script>
+	<script src="js/guides-loader.js" type="module" defer></script>
 </body>
 
 </html>

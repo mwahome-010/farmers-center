@@ -197,11 +197,11 @@ const isAdmin = async (req, res, next) => {
 
     try {
         const [users] = await pool.query(
-            'SELECT is_admin FROM users WHERE id = ?',
+            'SELECT role FROM users WHERE id = ?',
             [req.session.userId]
         );
 
-        if (users.length === 0 || !users[0].is_admin) {
+        if (users.length === 0 || users[0].role !== 'admin') {
             return res.status(403).json({ error: 'Admin access required' });
         }
 
@@ -347,9 +347,9 @@ app.post('/api/contact', async (req, res) => {
         const { name, email, subject, message } = req.body;
 
         if (!name || !email || !subject || !message) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'All fields are required' 
+            return res.status(400).json({
+                success: false,
+                error: 'All fields are required'
             });
         }
 
@@ -371,15 +371,15 @@ app.post('/api/contact', async (req, res) => {
             [name, email, subject, message]
         );
 
-        res.json({ 
-            success: true, 
-            message: 'Your message has been received. We\'ll get back to you soon!' 
+        res.json({
+            success: true,
+            message: 'Your message has been received. We\'ll get back to you soon!'
         });
     } catch (error) {
         console.error('Contact form error:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Failed to send message. Please try again later.' 
+        res.status(500).json({
+            success: false,
+            error: 'Failed to send message. Please try again later.'
         });
     }
 });
@@ -410,7 +410,7 @@ async function initializeDiseaseAnalysesTable() {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             )
         `);
-        
+
     } catch (error) {
         console.error('Error initializing disease_analyses table:', error);
     }
@@ -566,7 +566,7 @@ app.get('/api/auth/status', async (req, res) => {
     if (req.session.userId) {
         try {
             const [users] = await pool.query(
-                'SELECT id, username, is_admin FROM users WHERE id = ?',
+                'SELECT id, username, role FROM users WHERE id = ?',
                 [req.session.userId]
             );
 
@@ -576,7 +576,8 @@ app.get('/api/auth/status', async (req, res) => {
                     user: {
                         id: users[0].id,
                         username: users[0].username,
-                        isAdmin: users[0].is_admin
+                        isAdmin: users[0].role === 'admin',
+                        role: users[0].role
                     }
                 });
             } else {
@@ -837,10 +838,10 @@ app.delete('/api/forum/posts/:id', isAuthenticated, async (req, res) => {
         }
 
         const [users] = await pool.query(
-            'SELECT is_admin FROM users WHERE id = ?',
+            'SELECT role FROM users WHERE id = ?',
             [userId]
         );
-        const isAdmin = users.length > 0 ? users[0].is_admin : false;
+        const isAdmin = users.length > 0 && users[0].role === 'admin';
 
         if (posts[0].user_id !== userId && !isAdmin) {
             return res.status(403).json({ error: 'You can only delete your own posts (or be an admin)' });
@@ -874,10 +875,10 @@ app.delete('/api/forum/comments/:id', isAuthenticated, async (req, res) => {
         }
 
         const [users] = await pool.query(
-            'SELECT is_admin FROM users WHERE id = ?',
+            'SELECT role FROM users WHERE id = ?',
             [userId]
         );
-        const isAdmin = users.length > 0 ? users[0].is_admin : false;
+        const isAdmin = users.length > 0 && users[0].role === 'admin';
 
         if (comments[0].user_id !== userId && !isAdmin) {
             return res.status(403).json({ error: 'You can only delete your own comments (or be an admin)' });
@@ -986,7 +987,7 @@ app.get('/api/admin/users', isAdmin, async (req, res) => {
                 u.id,
                 u.username,
                 u.email,
-                u.is_admin,
+                u.role,
                 u.created_at,
                 COUNT(DISTINCT p.id) as post_count,
                 COUNT(DISTINCT c.id) as comment_count
@@ -1093,11 +1094,11 @@ app.get('/api/admin/stats', isAdmin, async (req, res) => {
         const [commentCount] = await pool.query('SELECT COUNT(*) as count FROM comments');
         const [diseaseCount] = await pool.query('SELECT COUNT(*) as count FROM diseases');
         const [guideCount] = await pool.query('SELECT COUNT(*) as count FROM guides');
-        
+
         const [unansweredPosts] = await pool.query(
             "SELECT COUNT(*) as count FROM posts WHERE status = 'unanswered'"
         );
-        
+
         const [activeUsers7d] = await pool.query(`
             SELECT COUNT(DISTINCT user_id) as count
             FROM (
@@ -1106,7 +1107,7 @@ app.get('/api/admin/stats', isAdmin, async (req, res) => {
                 SELECT user_id FROM comments WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
             ) as active
         `);
-        
+
         const [activeUsers30d] = await pool.query(`
             SELECT COUNT(DISTINCT user_id) as count
             FROM (
@@ -1115,7 +1116,7 @@ app.get('/api/admin/stats', isAdmin, async (req, res) => {
                 SELECT user_id FROM comments WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
             ) as active
         `);
-        
+
         const [retention7d] = await pool.query(`
             SELECT 
                 COUNT(DISTINCT u.id) as total_eligible,
@@ -1132,7 +1133,7 @@ app.get('/api/admin/stats', isAdmin, async (req, res) => {
             ) active ON u.id = active.user_id AND active.user_id IS NOT NULL
             WHERE u.created_at <= DATE_SUB(NOW(), INTERVAL 7 DAY)
         `);
-        
+
         const [retention30d] = await pool.query(`
             SELECT 
                 COUNT(DISTINCT u.id) as total_eligible,
@@ -1149,11 +1150,11 @@ app.get('/api/admin/stats', isAdmin, async (req, res) => {
             ) active ON u.id = active.user_id AND active.user_id IS NOT NULL
             WHERE u.created_at <= DATE_SUB(NOW(), INTERVAL 30 DAY)
         `);
-        
+
         const retentionRate7d = retention7d[0].total_eligible > 0
             ? ((retention7d[0].active_users / retention7d[0].total_eligible) * 100).toFixed(1)
             : 'N/A';
-            
+
         const retentionRate30d = retention30d[0].total_eligible > 0
             ? ((retention30d[0].active_users / retention30d[0].total_eligible) * 100).toFixed(1)
             : 'N/A';
@@ -1514,11 +1515,10 @@ app.post('/api/stats', async (req, res) => {
     const numOfDiseases = req.query.diseaseCount === 'true';
 
     try {
-        const stats = {
-        };
+        const stats = {};
 
         if (numOfUsers) {
-            const [userCount] = await pool.query('SELECT COUNT(*) as count FROM users WHERE is_admin = 0');
+            const [userCount] = await pool.query('SELECT COUNT(*) as count FROM users WHERE role = "user"');
             stats.totalUsers = Number(userCount[0].count);
         }
         if (numOfGuides) {

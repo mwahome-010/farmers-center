@@ -201,13 +201,13 @@ function showAccountOverviewModal(reportData) {
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             const tabName = tab.getAttribute('data-tab');
-            
+
             modal.querySelectorAll('.account-tab').forEach(t => t.classList.remove('active'));
             modal.querySelectorAll('.account-tab-content').forEach(c => {
                 c.style.display = 'none';
                 c.classList.remove('active');
             });
-            
+
             tab.classList.add('active');
             const content = modal.querySelector(`#${tabName}Tab`);
             if (content) {

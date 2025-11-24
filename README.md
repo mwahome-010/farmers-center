@@ -2,8 +2,8 @@ Farmer's Center is a web application designed to help farmers identify and manag
 
 The application provides educational resources about various crops, common plant diseases, and a community forum for discussions.
 
-Objectives
-----------
+## Objectives
+
 1. The system will allow users to login/logout.
 2. The system will allow new users to register.
 3. Users will be able diagnose the likely disease based on images uploaded.

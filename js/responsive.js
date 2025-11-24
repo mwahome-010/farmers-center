@@ -1,12 +1,12 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     /* Create mobile menu toggle button */
     const header = document.querySelector('header');
     const navContainer = document.querySelector('.nav-container');
-    
+
     if (!header || !navContainer) return;
 
     let toggleBtn = document.querySelector('.mobile-menu-toggle');
-    
+
     if (!toggleBtn) {
         toggleBtn = document.createElement('button');
         toggleBtn.className = 'mobile-menu-toggle';
@@ -17,16 +17,16 @@ document.addEventListener('DOMContentLoaded', function() {
             <span></span>
             <span></span>
         `;
-        
+
         header.insertBefore(toggleBtn, navContainer);
     }
 
-    toggleBtn.addEventListener('click', function(e) {
+    toggleBtn.addEventListener('click', function (e) {
         e.stopPropagation();
         const isActive = navContainer.classList.toggle('active');
         toggleBtn.classList.toggle('active');
         toggleBtn.setAttribute('aria-expanded', isActive);
-        
+
         if (isActive) {
             document.body.style.overflow = 'hidden';
         } else {
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const navLinks = document.querySelectorAll('.nav-bar a');
     navLinks.forEach(link => {
-        link.addEventListener('click', function() {
+        link.addEventListener('click', function () {
             navContainer.classList.remove('active');
             toggleBtn.classList.remove('active');
             toggleBtn.setAttribute('aria-expanded', 'false');
@@ -44,9 +44,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    document.addEventListener('click', function(e) {
-        if (navContainer.classList.contains('active') && 
-            !navContainer.contains(e.target) && 
+    document.addEventListener('click', function (e) {
+        if (navContainer.classList.contains('active') &&
+            !navContainer.contains(e.target) &&
             !toggleBtn.contains(e.target)) {
             navContainer.classList.remove('active');
             toggleBtn.classList.remove('active');
@@ -56,9 +56,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     let resizeTimer;
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function () {
         clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function() {
+        resizeTimer = setTimeout(function () {
             if (window.innerWidth > 968 && navContainer.classList.contains('active')) {
                 navContainer.classList.remove('active');
                 toggleBtn.classList.remove('active');

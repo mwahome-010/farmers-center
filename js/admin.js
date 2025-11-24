@@ -228,10 +228,10 @@ async function loadStats() {
             document.getElementById('statUnanswered').textContent = data.stats.unansweredPosts || 0;
             document.getElementById('statActive7d').textContent = data.stats.activeUsers7d || 0;
             document.getElementById('statActive30d').textContent = data.stats.activeUsers30d || 0;
-            
-            document.getElementById('statRetention7d').textContent = 
+
+            document.getElementById('statRetention7d').textContent =
                 data.stats.retentionRate7d === 'N/A' ? 'N/A' : `${data.stats.retentionRate7d}%`;
-            document.getElementById('statRetention30d').textContent = 
+            document.getElementById('statRetention30d').textContent =
                 data.stats.retentionRate30d === 'N/A' ? 'N/A' : `${data.stats.retentionRate30d}%`;
         }
     } catch (error) {
@@ -432,7 +432,7 @@ function showDiseaseModal(diseaseId = null) {
 async function saveDiseaseForm(diseaseId) {
     const formData = new FormData();
     formData.append("name", document.getElementById("diseaseName").value.trim());
-   formData.append(
+    formData.append(
         "causes",
         document.getElementById("diseaseCauses").value.trim()
     );

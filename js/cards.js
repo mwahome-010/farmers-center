@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!modal) {
         return;
     }
-    
+
     function openModalFromCard(card) {
         var titleEl = card.querySelector('h3');
         var imgEl = card.querySelector('img');
@@ -224,11 +224,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
     if (modal) {
-        modal.addEventListener('click', function (e) { 
-            if (e.target === modal) closeModal(); 
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) closeModal();
         });
-        document.addEventListener('keydown', function (e) { 
-            if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); 
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
         });
     }
 
@@ -248,15 +248,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 imgClone.style.borderRadius = '8px';
                 imgClone.style.margin = '8px 0';
             }
-            
+
             // Clone all tab contents for PDF
             var allContent = document.createElement('div');
-            modal.querySelectorAll('.tab-content').forEach(function(tab) {
+            modal.querySelectorAll('.tab-content').forEach(function (tab) {
                 var tabClone = tab.cloneNode(true);
                 tabClone.style.display = 'block';
                 allContent.appendChild(tabClone);
             });
-            
+
             allContent.querySelectorAll('button').forEach(function (b) { b.remove(); });
             content.appendChild(heading);
             if (imgClone) content.appendChild(imgClone);
