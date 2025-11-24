@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const user = auth.getCurrentUser();
 
-    if (!user || !user.isAdmin) {
+    if (!user || user.role !== 'admin') {
         showNoAccess();
         return;
     }
@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     window.addEventListener("auth:changed", () => {
         const updatedUser = auth.getCurrentUser();
-        if (!updatedUser || !updatedUser.isAdmin) {
+        if (!updatedUser || updatedUser.role !== 'admin') {
             showNoAccess();
         }
     });
@@ -829,9 +829,8 @@ function renderUsers(users) {
                         <td><strong>${escapeHTML(user.username)}</strong></td>
                         <td>${escapeHTML(user.email)}</td>
                         <td>
-                            <span class="admin-badge ${user.is_admin ? "admin" : "user"
-                    }">
-                                ${user.is_admin ? "Admin" : "User"}
+                            <span class="admin-badge ${user.role === 'admin' ? "admin" : "user"}">
+                                ${user.role === 'admin' ? "Admin" : "User"}
                             </span>
                         </td>
                         <td>${user.post_count}</td>
