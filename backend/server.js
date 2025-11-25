@@ -346,29 +346,20 @@ app.post('/api/contact', async (req, res) => {
     try {
         const { name, email, subject, message } = req.body;
 
-        if (!name || !email || !subject || !message) {
+        if (!subject || !message) {
             return res.status(400).json({
                 success: false,
-                error: 'All fields are required'
+                error: 'All marked fields are required'
             });
         }
 
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS contact_messages (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                email VARCHAR(255) NOT NULL,
-                subject VARCHAR(500) NOT NULL,
-                message TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                read_status BOOLEAN DEFAULT FALSE
-            )
-        `);
+        const finalName = name || 'Anonymous';
+        const finalEmail = email || 'Anonymous';
 
         await pool.query(
             `INSERT INTO contact_messages (name, email, subject, message) 
              VALUES (?, ?, ?, ?)`,
-            [name, email, subject, message]
+            [finalName, finalEmail, subject, message]
         );
 
         res.json({
@@ -396,24 +387,8 @@ app.post('/api/logout', (req, res) => {
 
 const uploadDiseaseImage = multer({ storage: createStorage('disease') }).single('image');
 
-async function initializeDiseaseAnalysesTable() {
-    try {
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS disease_analyses (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                image_path VARCHAR(500),
-                plant_name VARCHAR(255),
-                result_data JSON,
-                status ENUM('processing', 'completed', 'error') DEFAULT 'processing',
-                error_message TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-            )
-        `);
 
-    } catch (error) {
-        console.error('Error initializing disease_analyses table:', error);
-    }
+async function initializeDiseaseAnalysesTable() {
 }
 
 initializeDiseaseAnalysesTable();

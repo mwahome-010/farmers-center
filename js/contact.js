@@ -10,7 +10,6 @@ function setupContactForm() {
     contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // Clear previous messages
         if (errorDiv) errorDiv.textContent = '';
         if (successDiv) successDiv.textContent = '';
 
@@ -21,13 +20,11 @@ function setupContactForm() {
             message: document.getElementById('contactMessage').value.trim()
         };
 
-        // Validation
-        if (!formData.name || !formData.email || !formData.subject || !formData.message) {
-            if (errorDiv) errorDiv.textContent = 'Please fill in all fields.';
+        if (!formData.subject || !formData.message) {
+            if (errorDiv) errorDiv.textContent = 'Please fill the fields marked with a "*".';
             return;
         }
 
-        // Disable submit button
         const submitBtn = contactForm.querySelector('button[type="submit"]');
         const originalText = submitBtn ? submitBtn.textContent : 'Send Message';
         if (submitBtn) {
