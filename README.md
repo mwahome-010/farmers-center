@@ -158,4 +158,15 @@ The application provides educational resources about various crops, common plant
 1. `npm run dev` (development mode)
 2. `npm start` (production mode)
 
-##
+## Creating Admin user
+### Method 1
+1. Click `Login` button, then choose `Register`.
+2. Go to the database and change role of your user to admin with:
+>`UPDATE users SET role = 'admin' WHERE username = 'your_username_here';`
+
+### Method 2
+1. Generate a password hash for your password. On the terminal type(replace 'your_password'):
+>`node -e "console.log(require('bcrypt').hashSync('your_password', 10))"`
+2. Copy the generated hashed password
+3. On your database replace(replace 'your_hashed_password' and paste the generated hash):
+>`INSERT INTO users (username, email, password_hash, role) VALUES ('admin', 'admin@example.com', 'your_hashed_password', 'admin');`
