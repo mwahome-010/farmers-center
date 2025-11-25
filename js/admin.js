@@ -1225,7 +1225,6 @@ function renderPosts(posts) {
                     <th>Author</th>
                     <th>Category</th>
                     <th>Comments</th>
-                    <th>Views</th>
                     <th>Created</th>
                     <th>Actions</th>
                 </tr>
@@ -1247,7 +1246,6 @@ function renderPosts(posts) {
                         <td><span class="badge">${post.category_name
                     }</span></td>
                         <td>${post.comment_count}</td>
-                        <td>${post.views}</td>
                         <td>${formatDate(post.created_at)}</td>
                         <td>
                             <button class="admin-btn view" onclick="window.location.href='forum.html#post-${post.id

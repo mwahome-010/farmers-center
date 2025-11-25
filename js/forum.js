@@ -97,7 +97,7 @@ function createPostElement(post) {
             ` : ''}
         </div>
         <h3>${escapeHTML(post.title)}</h3>
-        <p class="post-meta">Posted by <strong>${escapeHTML(post.username)}</strong> · <span>${timeAgo}</span> · <span class="counts">${post.views} views · ${post.comment_count} comments</span></p>
+        <p class="post-meta">Posted by <strong>${escapeHTML(post.username)}</strong> · <span>${timeAgo}</span> · ${post.comment_count} comments</span></p>
         ${post.image_path ? `<img src="${post.image_path}" alt="Post image" style="max-width:100%;border-radius:8px;margin:6px 0;" />` : ''}
         <p>${escapeHTML(post.body)}</p>
         <div class="comments" data-post-id="${post.id}">

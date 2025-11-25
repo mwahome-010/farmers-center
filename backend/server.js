@@ -627,7 +627,6 @@ app.get('/api/forum/posts', async (req, res) => {
                 p.body,
                 p.image_path,
                 p.status,
-                p.views,
                 p.created_at,
                 u.username,
                 c.name as category_name,
@@ -709,7 +708,7 @@ app.get('/api/forum/posts/:id', async (req, res) => {
             ORDER BY c.created_at ASC
         `, [postId]);
 
-        await pool.query('UPDATE posts SET views = views + 1 WHERE id = ?', [postId]);
+        //await pool.query('UPDATE posts SET views = views + 1 WHERE id = ?', [postId]);
 
         res.json({
             success: true,
@@ -1558,7 +1557,6 @@ app.get('/api/user/report', isAuthenticated, async (req, res) => {
                 p.title,
                 p.body,
                 p.image_path,
-                p.views,
                 p.created_at,
                 c.name as category_name,
                 COUNT(DISTINCT cm.id) as comment_count
@@ -1585,7 +1583,7 @@ app.get('/api/user/report', isAuthenticated, async (req, res) => {
 
         const totalPosts = posts.length;
         const totalComments = comments.length;
-        const totalViews = posts.reduce((sum, post) => sum + (post.views || 0), 0);
+        //const totalViews = posts.reduce((sum, post) => sum + (post.views || 0), 0);
 
         const report = {
             user: {
@@ -1597,7 +1595,7 @@ app.get('/api/user/report', isAuthenticated, async (req, res) => {
             stats: {
                 totalPosts,
                 totalComments,
-                totalViews
+                //totalViews
             },
             posts: posts.map(post => ({
                 id: post.id,
@@ -1605,7 +1603,7 @@ app.get('/api/user/report', isAuthenticated, async (req, res) => {
                 body: post.body,
                 image_path: post.image_path,
                 category_name: post.category_name,
-                views: post.views,
+                //views: post.views,
                 comment_count: parseInt(post.comment_count),
                 created_at: post.created_at
             })),

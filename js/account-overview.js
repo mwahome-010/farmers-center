@@ -79,7 +79,6 @@ function showAccountOverviewModal(reportData) {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
                     <span style="color: hsl(0, 0%, 40%); font-size: 0.85em;">${formatDate(post.created_at)}</span>
                     <div style="display: flex; gap: 12px; font-size: 0.85em; color: hsl(0, 0%, 40%);">
-                        <span>👁️ ${post.views} views</span>
                         <span>💬 ${post.comment_count} comments</span>
                     </div>
                 </div>
@@ -130,10 +129,6 @@ function showAccountOverviewModal(reportData) {
                         <div style="background: white; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid hsl(140, 62%, 85%);">
                             <div style="font-size: 0.85em; color: hsl(0, 0%, 40%); margin-bottom: 4px;">Total Comments</div>
                             <div style="font-weight: 700; color: hsl(140, 62%, 42%); font-size: 1.5em;">${reportData.stats.totalComments}</div>
-                        </div>
-                        <div style="background: white; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid hsl(140, 62%, 85%);">
-                            <div style="font-size: 0.85em; color: hsl(0, 0%, 40%); margin-bottom: 4px;">Total Views</div>
-                            <div style="font-weight: 700; color: hsl(140, 62%, 42%); font-size: 1.5em;">${reportData.stats.totalViews || 0}</div>
                         </div>
                     </div>
                 </div>
@@ -264,8 +259,7 @@ function exportToPDF(reportData) {
                 <p style="color: hsla(0, 0%, 30%, 1.00); font-size: 0.9em; margin: 6px 0;">${escapeHTML(post.body)}</p>
                 <p style="color: hsla(0, 0%, 50%, 1.00); font-size: 0.85em; margin-top: 8px;">
                     Category: ${escapeHTML(post.category_name)} | 
-                    Posted: ${formatDate(post.created_at)} | 
-                    ${post.views} views | ${post.comment_count} comments
+                    Posted: ${formatDate(post.created_at)} | ${post.comment_count} comments
                 </p>
             </div>
         `).join('')
@@ -309,10 +303,6 @@ function exportToPDF(reportData) {
                 <div style="background: white; padding: 12px; text-align: center; border: 1px solid #d4e9db; border-radius: 6px;">
                     <div style="font-size: 0.85em; color: hsla(0, 0%, 40%, 1.00); margin-bottom: 4px;">Total Comments</div>
                     <div style="font-size: 1.5em; font-weight: bold; color: hsla(98, 48%, 33%, 1.00);">${reportData.stats.totalComments}</div>
-                </div>
-                <div style="background: white; padding: 12px; text-align: center; border: 1px solid #d4e9db; border-radius: 6px;">
-                    <div style="font-size: 0.85em; color: hsla(0, 0%, 40%, 1.00); margin-bottom: 4px;">Total Views</div>
-                    <div style="font-size: 1.5em; font-weight: bold; color: hsla(98, 48%, 33%, 1.00);">${reportData.stats.totalViews || 0}</div>
                 </div>
             </div>
         </div>
