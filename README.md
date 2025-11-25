@@ -3,6 +3,16 @@
 Farmer's Center is a web application designed to help farmers identify and manage plant diseases.
 The application provides educational resources about various crops, common plant diseases, and a community forum for discussions.
 
+<img width="1600" height="790" alt="image" src="https://github.com/user-attachments/assets/76ff293a-e9f1-42ed-b12c-e7d7296d1d4e" />
+<img width="1600" height="790" alt="image" src="https://github.com/user-attachments/assets/d72b8418-09a3-4a54-9015-cd9cf581fe3f" />
+<img width="1600" height="790" alt="image" src="https://github.com/user-attachments/assets/9e5ac321-0afb-44bc-ba67-4b2b0a3e49f5" />
+<img width="1600" height="788" alt="image" src="https://github.com/user-attachments/assets/aa69a202-669c-4ef9-aca5-8fb2d61c3d62" />
+<img width="1600" height="790" alt="image" src="https://github.com/user-attachments/assets/8f2c48ac-4ed5-4812-8063-e6c6fc52996c" />
+<img width="1600" height="790" alt="image" src="https://github.com/user-attachments/assets/dd377f08-977e-4e0c-a628-662e0cca92ec" />
+
+
+
+
 ## Prerequisites
 1. MariaDB/MySQL
 2. Node.js
