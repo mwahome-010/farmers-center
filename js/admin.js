@@ -6,6 +6,7 @@ let allUsers = [];
 let allPosts = [];
 let allDiseases = [];
 let allGuides = [];
+let allContactMessages = [];
 
 document.addEventListener("DOMContentLoaded", async function () {
     await auth.waitForAuth();
@@ -88,6 +89,10 @@ async function initAdminPanel() {
             <button class="admin-tab" data-tab="posts">Posts</button>
             <button class="admin-tab" data-tab="guides">Guides</button>
             <button class="admin-tab" data-tab="diseases">Diseases</button>
+            <button class="admin-tab" data-tab="messages">
+                Messages
+                <span class="message-badge" id="unreadBadge" style="display: none;">0</span>
+            </button>
     </div>
 
     <div class="admin-panel active" id="usersPanel">
@@ -119,6 +124,14 @@ async function initAdminPanel() {
         </div>
         <div id="diseasesTable"></div>
     </div>
+
+    <div class="admin-panel" id="messagesPanel">
+        <div class="search-filter">
+            <input type="text" id="messageSearch" placeholder="Search messages...">
+            <button class="admin-btn danger" id="deleteAllReadBtn">Delete All Read</button>
+        </div>
+        <div id="messagesTable"></div>
+    </div>
     
     `;
 
@@ -128,6 +141,7 @@ async function initAdminPanel() {
     await loadPosts();
     await loadDiseases();
     await loadGuides();
+    await loadContactMessages();
 }
 
 function setupTabHandlers() {
@@ -188,6 +202,21 @@ function setupTabHandlers() {
     if (addGuideBtn) {
         addGuideBtn.addEventListener("click", () => showGuideModal());
     }
+
+    const messageSearch = document.getElementById("messageSearch");
+    if (messageSearch) {
+        messageSearch.addEventListener(
+            "input",
+            debounce((e) => {
+                filterMessages(e.target.value);
+            }, 300)
+        );
+    }
+
+    const deleteAllReadBtn = document.getElementById("deleteAllReadBtn");
+    if (deleteAllReadBtn) {
+        deleteAllReadBtn.addEventListener("click", () => deleteAllReadMessages());
+    }
 }
 
 function switchTab(tabName) {
@@ -207,6 +236,10 @@ function switchTab(tabName) {
     if (selectedPanel) selectedPanel.classList.add("active");
 
     currentTab = tabName;
+
+    if (tabName === 'messages' && allContactMessages.length === 0) {
+    loadContactMessages();
+}
 }
 
 async function loadStats() {
@@ -777,6 +810,298 @@ window.deleteGuide = async function (guideId, name) {
         alert("Failed to delete guide");
     }
 };
+
+async function loadContactMessages() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/contact-messages`, {
+            credentials: "include",
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            allContactMessages = data.messages;
+            renderContactMessages(allContactMessages);
+            await updateUnreadBadge();
+        }
+    } catch (error) {
+        console.error("Error loading contact messages:", error);
+    }
+}
+
+async function updateUnreadBadge() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/contact-messages/unread-count`, {
+            credentials: "include",
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const badge = document.getElementById("unreadBadge");
+            if (badge) {
+                if (data.unreadCount > 0) {
+                    badge.textContent = data.unreadCount;
+                    badge.style.display = "inline-block";
+                } else {
+                    badge.style.display = "none";
+                }
+            }
+        }
+    } catch (error) {
+        console.error("Error updating unread badge:", error);
+    }
+}
+
+function renderContactMessages(messages) {
+    const container = document.getElementById("messagesTable");
+
+    if (messages.length === 0) {
+        container.innerHTML =
+            '<p style="text-align: center; padding: 20px;">No messages found.</p>';
+        return;
+    }
+
+    container.innerHTML = `
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${messages
+                    .map(
+                        (msg) => `
+                    <tr class="${msg.read_status ? '' : 'unread-message'}">
+                        <td>
+                            <span class="admin-badge ${msg.read_status ? 'read' : 'unread'}">
+                                ${msg.read_status ? 'Read' : 'New'}
+                            </span>
+                        </td>
+                        <td><strong>${escapeHTML(msg.name)}</strong></td>
+                        <td>${escapeHTML(msg.email)}</td>
+                        <td>${escapeHTML(msg.subject)}</td>
+                        <td>${formatDate(msg.created_at)}</td>
+                        <td>
+                            <button class="admin-btn view" onclick="viewMessage(${msg.id})">
+                                View
+                            </button>
+                            ${!msg.read_status ? `
+                                <button class="admin-btn mark-read" onclick="markAsRead(${msg.id})">
+                                    Mark Read
+                                </button>
+                            ` : ''}
+                            <button class="admin-btn delete" onclick="deleteMessage(${msg.id})">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                `
+                    )
+                    .join("")}
+            </tbody>
+        </table>
+    `;
+}
+
+function filterMessages(searchTerm) {
+    const filtered = allContactMessages.filter(
+        (msg) =>
+            msg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            msg.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            msg.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            msg.message.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    renderContactMessages(filtered);
+}
+
+window.viewMessage = function (messageId) {
+    const message = allContactMessages.find((m) => m.id === messageId);
+    if (!message) return;
+
+    showMessageModal(message);
+};
+
+function showMessageModal(message) {
+    const existingModal = document.getElementById("messageModal");
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement("div");
+    modal.id = "messageModal";
+    modal.className = "admin-modal open";
+    modal.innerHTML = `
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <div class="admin-modal-title">Contact Message</div>
+                <button class="admin-modal-close" type="button" onclick="closeMessageModal()" aria-label="Close modal">×</button>
+            </div>
+            <div class="admin-modal-body">
+                <div class="message-details">
+                    <div class="message-info">
+                        <div class="info-row">
+                            <strong>From:</strong> ${escapeHTML(message.name)} (${escapeHTML(message.email)})
+                        </div>
+                        <div class="info-row">
+                            <strong>Subject:</strong> ${escapeHTML(message.subject)}
+                        </div>
+                        <div class="info-row">
+                            <strong>Date:</strong> ${formatDate(message.created_at)}
+                        </div>
+                        <div class="info-row">
+                            <strong>Status:</strong> 
+                            <span class="admin-badge ${message.read_status ? 'read' : 'unread'}">
+                                ${message.read_status ? 'Read' : 'Unread'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="message-body">
+                        <strong>Message:</strong>
+                        <p>${escapeHTML(message.message)}</p>
+                    </div>
+                    <div class="message-actions">
+                        <a href="mailto:${escapeHTML(message.email)}?subject=Re: ${encodeURIComponent(message.subject)}" 
+                           class="modal-btn primary" 
+                           target="_blank">
+                            Reply via Email
+                        </a>
+                        ${!message.read_status ? `
+                            <button class="modal-btn secondary" onclick="markAsReadAndClose(${message.id})">
+                                Mark as Read
+                            </button>
+                        ` : ''}
+                        <button class="modal-btn danger" onclick="deleteMessageAndClose(${message.id})">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Automatically mark as read when viewed
+    if (!message.read_status) {
+        markAsRead(message.id, false);
+    }
+}
+
+window.closeMessageModal = function () {
+    const modal = document.getElementById("messageModal");
+    if (modal) modal.remove();
+};
+
+window.markAsRead = async function (messageId, reload = true) {
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/admin/contact-messages/${messageId}/read`,
+            {
+                method: "PATCH",
+                credentials: "include",
+            }
+        );
+
+        const data = await response.json();
+
+        if (data.success) {
+            if (reload) {
+                await loadContactMessages();
+            } else {
+                const msg = allContactMessages.find((m) => m.id === messageId);
+                if (msg) msg.read_status = true;
+                await updateUnreadBadge();
+            }
+        } else {
+            alert(data.error || "Failed to mark message as read");
+        }
+    } catch (error) {
+        console.error("Error marking message as read:", error);
+        alert("Failed to mark message as read");
+    }
+};
+
+window.markAsReadAndClose = async function (messageId) {
+    await markAsRead(messageId);
+    closeMessageModal();
+};
+
+window.deleteMessage = async function (messageId) {
+    if (!confirm("Are you sure you want to delete this message?")) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/admin/contact-messages/${messageId}`,
+            {
+                method: "DELETE",
+                credentials: "include",
+            }
+        );
+
+        const data = await response.json();
+
+        if (data.success) {
+            await loadContactMessages();
+            alert("Message deleted successfully");
+        } else {
+            alert(data.error || "Failed to delete message");
+        }
+    } catch (error) {
+        console.error("Error deleting message:", error);
+        alert("Failed to delete message");
+    }
+};
+
+window.deleteMessageAndClose = async function (messageId) {
+    closeMessageModal();
+    await deleteMessage(messageId);
+};
+
+async function deleteAllReadMessages() {
+    const readMessages = allContactMessages.filter((m) => m.read_status);
+
+    if (readMessages.length === 0) {
+        alert("No read messages to delete");
+        return;
+    }
+
+    if (
+        !confirm(
+            `Are you sure you want to delete all ${readMessages.length} read messages? This action cannot be undone!`
+        )
+    ) {
+        return;
+    }
+
+    try {
+        let deletedCount = 0;
+        for (const msg of readMessages) {
+            const response = await fetch(
+                `${API_BASE_URL}/admin/contact-messages/${msg.id}`,
+                {
+                    method: "DELETE",
+                    credentials: "include",
+                }
+            );
+
+            const data = await response.json();
+            if (data.success) deletedCount++;
+        }
+
+        await loadContactMessages();
+        alert(`Successfully deleted ${deletedCount} read messages`);
+    } catch (error) {
+        console.error("Error deleting messages:", error);
+        alert("Failed to delete some messages");
+    }
+}
 
 async function loadUsers() {
     try {

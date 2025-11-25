@@ -753,7 +753,7 @@ main {
   margin-top: 5px;
 }
 
-.hero {
+.hero, .about {
   margin-top: 72px;
   padding: 6rem 2rem 4rem;
   background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
@@ -955,6 +955,10 @@ main {
   font-weight: 500;
 }
 
+.about-content {
+  
+}
+
 .contact-form-container {
   border: solid 1px hsl(0, 0%, 30%);
   border-radius: 8px;
@@ -992,6 +996,15 @@ main {
   background-color: hsl(140, 62%, 32%);
 }
 
+.contact-form div label {
+  margin-left: 8px;
+  margin-bottom: 4px;
+}
+
+.contact-form div input {
+  margin-bottom: 12px;
+}
+
 footer {
   padding: 12px;
   background: hsl(140, 62%, 40%);
@@ -1006,7 +1019,7 @@ footer p {
 }
 
 @media (max-width: 968px) {
-  .hero-content {
+  .hero-content, .about-content {
     grid-template-columns: 1fr;
     gap: 3rem;
   }

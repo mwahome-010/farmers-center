@@ -1628,3 +1628,69 @@ app.get('/api/user/report', isAuthenticated, async (req, res) => {
         res.status(500).json({ error: 'Failed to generate report' });
     }
 });
+
+app.get('/api/admin/contact-messages', isAdmin, async (req, res) => {
+    try {
+        const [messages] = await pool.query(`
+            SELECT 
+                id,
+                name,
+                email,
+                subject,
+                message,
+                read_status,
+                created_at
+            FROM contact_messages
+            ORDER BY read_status ASC, created_at DESC
+        `);
+
+        res.json({ success: true, messages });
+    } catch (error) {
+        console.error('Error fetching contact messages:', error);
+        res.status(500).json({ error: 'Failed to fetch contact messages' });
+    }
+});
+
+app.get('/api/admin/contact-messages/unread-count', isAdmin, async (req, res) => {
+    try {
+        const [result] = await pool.query(`
+            SELECT COUNT(*) as count 
+            FROM contact_messages 
+            WHERE read_status = FALSE
+        `);
+
+        res.json({ success: true, unreadCount: result[0].count });
+    } catch (error) {
+        console.error('Error fetching unread count:', error);
+        res.status(500).json({ error: 'Failed to fetch unread count' });
+    }
+});
+
+app.patch('/api/admin/contact-messages/:id/read', isAdmin, async (req, res) => {
+    const messageId = req.params.id;
+
+    try {
+        await pool.query(
+            'UPDATE contact_messages SET read_status = TRUE WHERE id = ?',
+            [messageId]
+        );
+
+        res.json({ success: true, message: 'Message marked as read' });
+    } catch (error) {
+        console.error('Error marking message as read:', error);
+        res.status(500).json({ error: 'Failed to mark message as read' });
+    }
+});
+
+app.delete('/api/admin/contact-messages/:id', isAdmin, async (req, res) => {
+    const messageId = req.params.id;
+
+    try {
+        await pool.query('DELETE FROM contact_messages WHERE id = ?', [messageId]);
+
+        res.json({ success: true, message: 'Message deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting message:', error);
+        res.status(500).json({ error: 'Failed to delete message' });
+    }
+});
