@@ -161,27 +161,50 @@ function initDiseaseDetection() {
             `;
             pdfContent.appendChild(footer);
 
-            const opt = {
-                margin: [15, 15, 15, 15],
-                filename: `plant-disease-detection-${new Date().getTime()}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { 
-                    scale: 2, 
-                    useCORS: true,
-                    logging: false,
-                    letterRendering: true
-                },
-                jsPDF: { 
-                    unit: 'mm', 
-                    format: 'a4', 
-                    orientation: 'portrait',
-                    compress: true
-                },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-            };
-
             if (window.html2pdf) {
-                window.html2pdf().set(opt).from(pdfContent).save();
+                const tempContainer = document.createElement('div');
+                tempContainer.style.cssText = 'position: fixed; left: 0; top: 0; width: 100%; visibility: hidden; z-index: -1;';
+                tempContainer.appendChild(pdfContent);
+                document.body.appendChild(tempContainer);
+
+                const contentWidth = pdfContent.scrollWidth + 40;
+                const contentHeight = pdfContent.scrollHeight + 40;
+
+                const opt = {
+                    margin: [15, 15, 15, 15],
+                    filename: `plant-disease-detection-${new Date().getTime()}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { 
+                        scale: 2, 
+                        useCORS: true,
+                        logging: false,
+                        letterRendering: true,
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: contentWidth,
+                        windowHeight: contentHeight
+                    },
+                    jsPDF: { 
+                        unit: 'mm', 
+                        format: 'a4', 
+                        orientation: 'portrait',
+                        compress: true
+                    },
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                };
+
+                const cleanup = () => {
+                    if (tempContainer && tempContainer.parentNode) {
+                        tempContainer.parentNode.removeChild(tempContainer);
+                    }
+                };
+
+                window.html2pdf()
+                    .set(opt)
+                    .from(pdfContent)
+                    .save()
+                    .catch(console.error)
+                    .finally(cleanup);
             } else {
                 alert('PDF library failed to load. Please refresh the page and try again.');
             }

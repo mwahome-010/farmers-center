@@ -51,16 +51,16 @@ function createDiseaseCard(disease) {
     card.className = 'disease-guide-card';
     card.setAttribute('data-disease-id', disease.id);
 
-    // Build the card content
+    // Card content
     let content = `
         <h3>${escapeHTML(disease.name)}</h3>
         ${disease.image_path ?
             `<img src="${disease.image_path}" alt="${escapeHTML(disease.name)}">` :
-            `<img src="images/disease-cards/placeholder.jpg" alt="No image available">`
+            `<img src="images/ui-icons/placeholder.jpeg" alt="No image available">`
         }
     `;
 
-    // Add hidden content for the modal
+    // Modal content
     if (disease.causes) {
         content += `<h2>Causes</h2><p>${escapeHTML(disease.causes)}</p>`;
     }

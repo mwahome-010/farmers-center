@@ -1,9 +1,9 @@
-const express = require('express');
+const http = require('http');
+const { randomUUID } = require('crypto');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
-const cors = require('cors');
-const session = require('express-session');
-const multer = require('multer');
+const Busboy = require('busboy');
+const querystring = require('querystring');
 const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
@@ -11,10 +11,605 @@ require('dotenv').config();
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { SchemaType } = require('@google/generative-ai');
 
+const BODY_LIMIT_BYTES = 20 * 1024 * 1024; // 20MB
+const SESSION_COOKIE_NAME = 'fc_session';
+const SESSION_TTL = 24 * 60 * 60 * 1000;
+const STATIC_METHODS = ['GET', 'HEAD'];
+const ALLOWED_ORIGIN_PREFIXES = ['http://localhost:'];
+const ALLOWED_HEADERS = 'Content-Type, Authorization, X-Requested-With';
+const ALLOWED_METHODS = 'GET,POST,PUT,PATCH,DELETE,OPTIONS';
+
+const MIME_TYPES = {
+    '.html': 'text/html; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.js': 'application/javascript; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.webp': 'image/webp',
+    '.svg': 'image/svg+xml',
+    '.gif': 'image/gif',
+    '.ico': 'image/x-icon',
+    '.txt': 'text/plain; charset=utf-8'
+};
+
+function getMimeType(filePath) {
+    const ext = path.extname(filePath).toLowerCase();
+    return MIME_TYPES[ext] || 'application/octet-stream';
+}
+
+function parseCookies(header = '') {
+    return header.split(';').reduce((acc, part) => {
+        const [key, ...rest] = part.trim().split('=');
+        if (!key) return acc;
+        acc[key] = decodeURIComponent(rest.join('=').trim());
+        return acc;
+    }, {});
+}
+
+function isOriginAllowed(origin) {
+    if (!origin) return true;
+    return ALLOWED_ORIGIN_PREFIXES.some(prefix => origin.startsWith(prefix));
+}
+
+function applyCorsHeaders(req, res) {
+    const origin = req.headers.origin;
+
+    if (origin) {
+        if (!isOriginAllowed(origin)) {
+            return false;
+        }
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Vary', 'Origin');
+    }
+
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Headers', ALLOWED_HEADERS);
+    res.setHeader('Access-Control-Allow-Methods', ALLOWED_METHODS);
+    res.setHeader('Access-Control-Expose-Headers', 'set-cookie');
+
+    return true;
+}
+
+function readRequestBody(stream, limitBytes) {
+    return new Promise((resolve, reject) => {
+        const chunks = [];
+        let total = 0;
+
+        stream.on('data', chunk => {
+            total += chunk.length;
+            if (total > limitBytes) {
+                stream.pause();
+                reject(new Error('Payload too large'));
+                return;
+            }
+            chunks.push(chunk);
+        });
+
+        stream.on('end', () => {
+            resolve(Buffer.concat(chunks));
+        });
+
+        stream.on('error', reject);
+    });
+}
+
+class ResponseWrapper {
+    constructor(res, options = {}) {
+        this.raw = res;
+        this.statusCode = 200;
+        this.ended = false;
+        this.beforeSend = options.beforeSend || null;
+    }
+
+    _ensureBeforeSend() {
+        if (this.beforeSend) {
+            this.beforeSend();
+            this.beforeSend = null;
+        }
+    }
+
+    setHeader(name, value) {
+        if (this.ended) return;
+        this.raw.setHeader(name, value);
+    }
+
+    appendHeader(name, value) {
+        if (this.ended) return;
+        const current = this.raw.getHeader(name);
+        if (!current) {
+            this.raw.setHeader(name, value);
+        } else if (Array.isArray(current)) {
+            this.raw.setHeader(name, current.concat(value));
+        } else {
+            this.raw.setHeader(name, [current, value]);
+        }
+    }
+
+    status(code) {
+        this.statusCode = code;
+        return this;
+    }
+
+    send(payload = '') {
+        if (this.ended) return;
+        this._ensureBeforeSend();
+        if (Buffer.isBuffer(payload)) {
+            this.raw.setHeader('Content-Type', 'application/octet-stream');
+            this.raw.statusCode = this.statusCode;
+            this.raw.end(payload);
+        } else if (typeof payload === 'object') {
+            this.json(payload);
+            return;
+        } else {
+            this.raw.setHeader('Content-Type', 'text/plain; charset=utf-8');
+            this.raw.statusCode = this.statusCode;
+            this.raw.end(String(payload));
+        }
+        this.ended = true;
+    }
+
+    json(data) {
+        if (this.ended) return;
+        this._ensureBeforeSend();
+        this.raw.setHeader('Content-Type', 'application/json');
+        this.raw.statusCode = this.statusCode;
+        this.raw.end(JSON.stringify(data));
+        this.ended = true;
+    }
+
+    sendFile(filePath) {
+        if (this.ended) return;
+        const resolved = path.resolve(filePath);
+
+        fs.stat(resolved, (err, stats) => {
+            if (err || !stats.isFile()) {
+                this.status(404).json({ error: 'File not found' });
+                return;
+            }
+
+            this._ensureBeforeSend();
+            this.raw.statusCode = this.statusCode;
+            this.raw.setHeader('Content-Type', getMimeType(resolved));
+
+            const stream = fs.createReadStream(resolved);
+            stream.on('error', () => {
+                if (!this.ended) {
+                    this.status(500).json({ error: 'Failed to read file' });
+                }
+            });
+            stream.pipe(this.raw);
+            this.ended = true;
+        });
+    }
+
+    clearCookie(name) {
+        this.appendHeader('Set-Cookie', `${name}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax`);
+    }
+}
+
+class SessionManager {
+    constructor({ cookieName, maxAge, sameSite = 'Lax', secure = false } = {}) {
+        this.cookieName = cookieName || SESSION_COOKIE_NAME;
+        this.maxAge = maxAge || SESSION_TTL;
+        this.sameSite = sameSite;
+        this.secure = secure;
+        this.store = new Map();
+    }
+
+    _buildCookie(value) {
+        const attributes = [
+            `${this.cookieName}=${value}`,
+            'Path=/',
+            `Max-Age=${Math.floor(this.maxAge / 1000)}`,
+            'HttpOnly',
+            `SameSite=${this.sameSite}`
+        ];
+        if (this.secure) {
+            attributes.push('Secure');
+        }
+        return attributes.join('; ');
+    }
+
+    attach(req, res) {
+        const cookies = parseCookies(req.headers.cookie || '');
+        let sessionId = cookies[this.cookieName];
+        let sessionData = {};
+        let dirty = false;
+
+        if (sessionId) {
+            const record = this.store.get(sessionId);
+            if (record && record.expires > Date.now()) {
+                sessionData = record.data;
+            } else {
+                this.store.delete(sessionId);
+                sessionId = null;
+            }
+        }
+
+        const proxy = new Proxy(sessionData, {
+            set: (target, key, value) => {
+                if (target[key] !== value) {
+                    dirty = true;
+                }
+                target[key] = value;
+                return true;
+            },
+            deleteProperty: (target, key) => {
+                if (key in target) {
+                    dirty = true;
+                    delete target[key];
+                }
+                return true;
+            }
+        });
+
+        req.session = proxy;
+        req._sessionMeta = { id: sessionId, dirty: () => dirty, data: sessionData };
+
+        req.ensureSession = () => {
+            if (!req._sessionMeta.id) {
+                req._sessionMeta.id = randomUUID();
+            }
+            dirty = true;
+            return req._sessionMeta.id;
+        };
+    }
+
+    commit(req, res) {
+        if (!req._sessionMeta || req._sessionDestroyed) {
+            return;
+        }
+
+        const shouldPersist = req._sessionMeta.id || req._sessionMeta.dirty();
+
+        if (!shouldPersist) {
+            return;
+        }
+
+        if (!req._sessionMeta.id) {
+            req._sessionMeta.id = randomUUID();
+        }
+
+        this.store.set(req._sessionMeta.id, {
+            data: { ...req.session },
+            expires: Date.now() + this.maxAge
+        });
+
+        res.appendHeader('Set-Cookie', this._buildCookie(req._sessionMeta.id));
+    }
+
+    destroy(req, res) {
+        if (req._sessionMeta?.id) {
+            this.store.delete(req._sessionMeta.id);
+        }
+        req._sessionDestroyed = true;
+        req.session = {};
+        res.appendHeader('Set-Cookie', `${this.cookieName}=; Path=/; Max-Age=0; HttpOnly; SameSite=${this.sameSite}`);
+    }
+}
+
+class NativeApp {
+    constructor({ sessionManager, bodyLimit = BODY_LIMIT_BYTES } = {}) {
+        this.routes = [];
+        this.staticMounts = [];
+        this.sessionManager = sessionManager;
+        this.bodyLimit = bodyLimit;
+        this.server = null;
+    }
+
+    static(prefix, directory) {
+        const normalized = prefix.endsWith('/') ? prefix.slice(0, -1) : prefix;
+        this.staticMounts.push({
+            prefix: normalized,
+            directory: path.resolve(directory)
+        });
+    }
+
+    register(method, routePath, handlers) {
+        const { regex, keys } = this._compileRoute(routePath);
+        this.routes.push({
+            method,
+            regex,
+            keys,
+            handlers
+        });
+    }
+
+    get(path, ...handlers) {
+        this.register('GET', path, handlers);
+    }
+
+    post(path, ...handlers) {
+        this.register('POST', path, handlers);
+    }
+
+    put(path, ...handlers) {
+        this.register('PUT', path, handlers);
+    }
+
+    delete(path, ...handlers) {
+        this.register('DELETE', path, handlers);
+    }
+
+    patch(path, ...handlers) {
+        this.register('PATCH', path, handlers);
+    }
+
+    _compileRoute(routePath) {
+        if (routePath === '/') {
+            return { regex: /^\/$/, keys: [] };
+        }
+
+        const segments = routePath.split('/').filter(Boolean);
+        const keys = [];
+        const pattern = segments.map(segment => {
+            if (segment.startsWith(':')) {
+                keys.push(segment.slice(1));
+                return '([^/]+)';
+            }
+            return segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }).join('/');
+
+        return {
+            regex: new RegExp(`^/${pattern}/?$`),
+            keys
+        };
+    }
+
+    listen(port, callback) {
+        this.server = http.createServer(this._handleRequest.bind(this));
+        this.server.listen(port, callback);
+    }
+
+    close() {
+        if (this.server) {
+            this.server.close();
+        }
+    }
+
+    async _handleRequest(nodeReq, nodeRes) {
+        let req;
+        let sessionCommitted = false;
+        const res = new ResponseWrapper(nodeRes, {
+            beforeSend: () => {
+                if (!sessionCommitted && this.sessionManager) {
+                    this.sessionManager.commit(req, res);
+                    sessionCommitted = true;
+                }
+            }
+        });
+        const reqUrl = new URL(nodeReq.url, `http://${nodeReq.headers.host || 'localhost'}`);
+        req = {
+            raw: nodeReq,
+            method: (nodeReq.method || 'GET').toUpperCase(),
+            headers: nodeReq.headers,
+            url: reqUrl,
+            pathname: reqUrl.pathname || '/',
+            query: Object.fromEntries(reqUrl.searchParams.entries()),
+            params: {},
+            body: {},
+            cookies: parseCookies(nodeReq.headers.cookie || ''),
+            isMultipart: false
+        };
+
+        const corsAllowed = applyCorsHeaders(req, res);
+        if (!corsAllowed) {
+            res.status(403).json({ error: 'Not allowed by CORS' });
+            return;
+        }
+
+        if (req.method === 'OPTIONS') {
+            res.status(204).send('');
+            return;
+        }
+
+        if (this.sessionManager) {
+            this.sessionManager.attach(req, res);
+        }
+
+        try {
+            await this._parseBody(req);
+        } catch (error) {
+            res.status(error.message === 'Payload too large' ? 413 : 400).json({ error: error.message });
+            return;
+        }
+
+        if (await this._tryStatic(req, res)) {
+            if (this.sessionManager && !sessionCommitted) {
+                this.sessionManager.commit(req, res);
+                sessionCommitted = true;
+            }
+            return;
+        }
+
+        const match = this._matchRoute(req.method, req.pathname);
+        if (!match) {
+            res.status(404).json({ error: 'Not found' });
+            if (this.sessionManager && !sessionCommitted) {
+                this.sessionManager.commit(req, res);
+                sessionCommitted = true;
+            }
+            return;
+        }
+
+        req.params = match.params;
+
+        try {
+            await this._runHandlers(match.handlers, req, res);
+        } catch (error) {
+            console.error('Request error:', error);
+            if (!res.ended) {
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        }
+
+        if (this.sessionManager && !sessionCommitted) {
+            this.sessionManager.commit(req, res);
+            sessionCommitted = true;
+        }
+    }
+
+    async _parseBody(req) {
+        if (['GET', 'HEAD'].includes(req.method)) {
+            req.body = {};
+            return;
+        }
+
+        const contentType = req.headers['content-type'] || '';
+
+        if (!contentType) {
+            req.body = {};
+            return;
+        }
+
+        if (contentType.startsWith('multipart/form-data')) {
+            req.isMultipart = true;
+            req.body = {};
+            return;
+        }
+
+        const raw = await readRequestBody(req.raw, this.bodyLimit);
+        if (raw.length === 0) {
+            req.body = {};
+            return;
+        }
+
+        if (contentType.includes('application/json')) {
+            try {
+                req.body = JSON.parse(raw.toString());
+            } catch (error) {
+                throw new Error('Invalid JSON payload');
+            }
+            return;
+        }
+
+        if (contentType.includes('application/x-www-form-urlencoded')) {
+            req.body = querystring.parse(raw.toString());
+            return;
+        }
+
+        req.body = raw;
+    }
+
+    async _tryStatic(req, res) {
+        if (!STATIC_METHODS.includes(req.method)) {
+            return false;
+        }
+
+        for (const mount of this.staticMounts) {
+            if (req.pathname === mount.prefix || req.pathname.startsWith(`${mount.prefix}/`)) {
+                const remainder = req.pathname.slice(mount.prefix.length);
+                const relativePath = remainder.replace(/^\/+/, '');
+                const safeRelative = path.normalize(relativePath).replace(/^(\.\.[/\\])+/, '');
+                const filePath = path.join(mount.directory, safeRelative);
+
+                if (!filePath.startsWith(mount.directory)) {
+                    continue;
+                }
+
+                try {
+                    const stats = await fs.promises.stat(filePath);
+                    if (stats.isDirectory()) {
+                        continue;
+                    }
+
+                    res.status(200);
+                    res.setHeader('Content-Type', getMimeType(filePath));
+                    const stream = fs.createReadStream(filePath);
+                    stream.on('error', () => {
+                        if (!res.ended) {
+                            res.status(500).json({ error: 'Failed to read file' });
+                        }
+                    });
+                    stream.pipe(res.raw);
+                    res.ended = true;
+                    return true;
+                } catch (error) {
+                    continue;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    _matchRoute(method, pathname) {
+        for (const route of this.routes) {
+            if (route.method !== method) continue;
+            const match = route.regex.exec(pathname);
+            if (!match) continue;
+            const params = {};
+            route.keys.forEach((key, index) => {
+                params[key] = decodeURIComponent(match[index + 1]);
+            });
+            return { handlers: route.handlers, params };
+        }
+        return null;
+    }
+
+    async _runHandlers(handlers, req, res) {
+        const run = async (index) => {
+            if (index >= handlers.length || res.ended) {
+                return;
+            }
+
+            const handler = handlers[index];
+
+            if (handler.length >= 3) {
+                let nextCalled = false;
+                const next = (err) => {
+                    nextCalled = true;
+                    if (err) {
+                        throw err instanceof Error ? err : new Error(String(err));
+                    }
+                };
+
+                try {
+                    const result = handler(req, res, next);
+                    if (result && typeof result.then === 'function') {
+                        await result;
+                    }
+                } catch (error) {
+                    throw error;
+                }
+
+                if (nextCalled && !res.ended) {
+                    await run(index + 1);
+                }
+                return;
+            }
+
+            try {
+                await handler(req, res);
+            } catch (error) {
+                throw error;
+            }
+            if (!res.ended) {
+                await run(index + 1);
+            }
+        };
+
+        await run(0);
+    }
+}
+
 const ai = new GoogleGenerativeAI(process.env.API_KEY);
 const model = 'gemini-2.5-flash';
 
-const app = express();
+const sessionManager = new SessionManager({
+    cookieName: SESSION_COOKIE_NAME,
+    maxAge: SESSION_TTL,
+    sameSite: 'Lax',
+    secure: false
+});
+
+const app = new NativeApp({
+    sessionManager,
+    bodyLimit: BODY_LIMIT_BYTES
+});
+
 const PORT = process.env.PORT;
 
 //const apiSourceUrl = process.env.API_URL
@@ -33,75 +628,159 @@ const guidesDir = path.join(baseUploadsDir, 'guides');
     }
 });
 
-const createStorage = (uploadType) => {
-    return multer.diskStorage({
-        destination: function (req, file, cb) {
-            let destDir;
-            switch (uploadType) {
-                case 'forum':
-                    destDir = forumDir;
-                    break;
-                case 'disease':
-                    destDir = diseasesDir;
-                    break;
-                case 'guide':
-                    destDir = guidesDir;
-                    break;
-                default:
-                    destDir = baseUploadsDir;
-            }
-            cb(null, destDir);
-        },
-        filename: function (req, file, cb) {
-            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-            const ext = path.extname(file.originalname);
-            cb(null, `${uploadType}-${uniqueSuffix}${ext}`);
-        }
-    });
+const allowedImageTypes = /jpeg|jpg|png|webp/;
+const DEFAULT_FILE_LIMIT = 5 * 1024 * 1024;
+
+const uploadDirectoryMap = {
+    forum: forumDir,
+    disease: diseasesDir,
+    diseases: diseasesDir,
+    guide: guidesDir,
+    guides: guidesDir
 };
 
-const fileFilter = (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|webp/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-
-    if (mimetype && extname) {
-        return cb(null, true);
-    } else {
-        cb(new Error('Only image files are allowed!'));
+async function parseMultipartUpload(req, {
+    uploadType,
+    fieldName = 'image',
+    required = false,
+    maxFileSize = DEFAULT_FILE_LIMIT
+} = {}) {
+    if (!req.isMultipart) {
+        throw new Error('Content-Type must be multipart/form-data');
     }
-};
 
-const forumUpload = multer({
-    storage: createStorage('forum'),
-    limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: fileFilter
-});
+    if (req._uploadParsed) {
+        return req._uploadParsed;
+    }
 
-const diseaseUpload = multer({
-    storage: createStorage('disease'),
-    limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: fileFilter
-});
+    const targetDir = uploadDirectoryMap[uploadType] || baseUploadsDir;
 
-const guideUpload = multer({
-    storage: createStorage('guide'),
-    limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: fileFilter
-});
+    return new Promise((resolve, reject) => {
+        const fields = {};
+        let storedFile = null;
+        let fileWritePromise = Promise.resolve();
+
+        const busboy = Busboy({
+            headers: req.headers,
+            limits: { fileSize: maxFileSize, files: 1 }
+        });
+
+        busboy.on('field', (name, value) => {
+            fields[name] = value;
+        });
+
+        busboy.on('file', (fieldname, file, infoOrFilename, legacyEncoding, legacyMimetype) => {
+            let filename = '';
+            let encoding = legacyEncoding;
+            let mimetype = legacyMimetype;
+
+            if (infoOrFilename && typeof infoOrFilename === 'object' && 'filename' in infoOrFilename) {
+                filename = infoOrFilename.filename || '';
+                encoding = infoOrFilename.encoding || encoding;
+                mimetype = infoOrFilename.mimeType || infoOrFilename.mimetype || mimetype;
+            } else {
+                filename = infoOrFilename || '';
+            }
+            mimetype = mimetype || '';
+
+            if (fieldName && fieldname !== fieldName) {
+                file.resume();
+                return;
+            }
+
+            const ext = path.extname(filename || '').toLowerCase();
+            const isMimeValid = allowedImageTypes.test((mimetype || '').toLowerCase());
+            const isExtValid = allowedImageTypes.test(ext);
+
+            if (!isMimeValid || !isExtValid) {
+                file.resume();
+                busboy.emit('error', new Error('Only image files are allowed!'));
+                return;
+            }
+
+            const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+            const finalName = `${uploadType || 'upload'}-${uniqueSuffix}${ext}`;
+            const absolutePath = path.join(targetDir, finalName);
+            const relativePath = `/images/uploads/${uploadType || 'generic'}/${finalName}`;
+            let size = 0;
+
+            storedFile = {
+                fieldname,
+                originalname: filename,
+                filename: finalName,
+                path: absolutePath,
+                mimetype,
+                size,
+                relativePath
+            };
+
+            fileWritePromise = new Promise((fileResolve, fileReject) => {
+                const writeStream = fs.createWriteStream(absolutePath);
+
+                file.on('data', (chunk) => {
+                    size += chunk.length;
+                    storedFile.size = size;
+                });
+
+                file.on('limit', () => {
+                    writeStream.destroy();
+                    fs.unlink(absolutePath, () => {});
+                    fileReject(new Error('File size must be less than 5MB'));
+                });
+
+                writeStream.on('finish', fileResolve);
+                writeStream.on('error', fileReject);
+
+                file.pipe(writeStream);
+            }).catch((error) => {
+                storedFile = null;
+                throw error;
+            });
+        });
+
+        busboy.on('finish', async () => {
+            try {
+                await fileWritePromise;
+            } catch (error) {
+                reject(error);
+                return;
+            }
+
+            if (required && !storedFile) {
+                reject(new Error('No image file uploaded.'));
+                return;
+            }
+
+            req.body = fields;
+            req.file = storedFile || null;
+            req._uploadParsed = { fields, file: storedFile };
+            resolve(req._uploadParsed);
+        });
+
+        busboy.on('error', (error) => {
+            reject(error);
+        });
+
+        req.raw.pipe(busboy);
+    });
+}
 
 function deleteImageFile(imagePath) {
     if (!imagePath) return;
 
-    // Handle both old and new path formats
-    const fullPath = imagePath.startsWith('/images/')
-        ? path.join(__dirname, '..', imagePath)
-        : path.join(__dirname, '..', 'images', imagePath);
+    let fullPath;
+
+    if (path.isAbsolute(imagePath)) {
+        fullPath = imagePath;
+    } else if (imagePath.startsWith('/images/')) {
+        fullPath = path.join(__dirname, '..', imagePath);
+    } else {
+        fullPath = path.join(__dirname, '..', 'images', imagePath);
+    }
 
     if (fs.existsSync(fullPath)) {
         try {
             fs.unlinkSync(fullPath);
-            //console.log('Deleted image:', fullPath);
         } catch (err) {
             console.error('Error deleting image:', err);
         }
@@ -109,27 +788,14 @@ function deleteImageFile(imagePath) {
 }
 
 function getRelativePath(file, uploadType) {
+    if (!file) return null;
+    if (file.relativePath) return file.relativePath;
     return `/images/uploads/${uploadType}/${file.filename}`;
 }
 
-app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
-        if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true,
-    exposedHeaders: ['set-cookie']
-}));
-
-app.use(express.json({ limit: '20mb' }));
-
-app.use('/images', express.static(path.join(__dirname, '..', 'images')));
-app.use('/css', express.static(path.join(__dirname, '..', 'css')));
-app.use('/js', express.static(path.join(__dirname, '..', 'js')));
+app.static('/images', path.join(__dirname, '..', 'images'));
+app.static('/css', path.join(__dirname, '..', 'css'));
+app.static('/js', path.join(__dirname, '..', 'js'));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'index.html'));
@@ -150,18 +816,6 @@ app.get('/diseases.html', (req, res) => {
 app.get('/about.html', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'about.html'));
 });
-
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: false,
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000,
-        sameSite: 'lax'
-    }
-}));
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
@@ -376,24 +1030,26 @@ app.post('/api/contact', async (req, res) => {
 });
 
 app.post('/api/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            return res.status(500).json({ error: 'Logout failed' });
-        }
-        res.clearCookie('connect.sid');
-        res.json({ success: true, message: 'Logout successful' });
-    });
+    sessionManager.destroy(req, res);
+    res.json({ success: true, message: 'Logout successful' });
 });
-
-const uploadDiseaseImage = multer({ storage: createStorage('disease') }).single('image');
-
 
 async function initializeDiseaseAnalysesTable() {
 }
 
 initializeDiseaseAnalysesTable();
 
-app.post('/api/analyze-disease', uploadDiseaseImage, async (req, res) => {
+app.post('/api/analyze-disease', async (req, res) => {
+    try {
+        await parseMultipartUpload(req, {
+            uploadType: 'disease',
+            fieldName: 'image',
+            required: true
+        });
+    } catch (error) {
+        return res.status(400).json({ error: error.message });
+    }
+
     if (!req.file) {
         return res.status(400).json({ error: 'No image file uploaded.' });
     }
@@ -697,19 +1353,19 @@ app.get('/api/forum/posts/:id', async (req, res) => {
     }
 });
 
-app.post('/api/forum/posts', isAuthenticated, (req, res, next) => {
-    forumUpload.single('image')(req, res, (err) => {
-        if (err instanceof multer.MulterError) {
-            if (err.code === 'LIMIT_FILE_SIZE') {
-                return res.status(400).json({ error: 'File size must be less than 5MB' });
-            }
-            return res.status(400).json({ error: `Upload error: ${err.message}` });
-        } else if (err) {
-            return res.status(400).json({ error: err.message });
+app.post('/api/forum/posts', isAuthenticated, async (req, res) => {
+    try {
+        if (req.isMultipart) {
+            await parseMultipartUpload(req, {
+                uploadType: 'forum',
+                fieldName: 'image',
+                required: false
+            });
         }
-        next();
-    });
-}, async (req, res) => {
+    } catch (error) {
+        return res.status(400).json({ error: error.message });
+    }
+
     const { title, category, body } = req.body;
     const userId = req.session.userId;
 
@@ -926,13 +1582,7 @@ app.delete('/api/user/account', isAuthenticated, async (req, res) => {
 
         await pool.query('DELETE FROM users WHERE id = ?', [userId]);
 
-        req.session.destroy((err) => {
-            if (err) {
-                console.error('Session destruction error:', err);
-            }
-        });
-
-        res.clearCookie('connect.sid');
+        sessionManager.destroy(req, res);
         res.json({
             success: true,
             message: 'Account deleted successfully'
@@ -1164,6 +1814,7 @@ app.listen(PORT, () => {
 
 process.on('SIGINT', async () => {
     console.log('\nShutting down...');
+    app.close();
     await pool.end();
     process.exit(0);
 });
@@ -1203,19 +1854,19 @@ app.get('/api/diseases/:id', async (req, res) => {
     }
 });
 
-app.post('/api/diseases', isAdmin, (req, res, next) => {
-    diseaseUpload.single('image')(req, res, (err) => {
-        if (err instanceof multer.MulterError) {
-            if (err.code === 'LIMIT_FILE_SIZE') {
-                return res.status(400).json({ error: 'File size must be less than 5MB' });
-            }
-            return res.status(400).json({ error: `Upload error: ${err.message}` });
-        } else if (err) {
-            return res.status(400).json({ error: err.message });
+app.post('/api/diseases', isAdmin, async (req, res) => {
+    try {
+        if (req.isMultipart) {
+            await parseMultipartUpload(req, {
+                uploadType: 'diseases',
+                fieldName: 'image',
+                required: false
+            });
         }
-        next();
-    });
-}, async (req, res) => {
+    } catch (error) {
+        return res.status(400).json({ error: error.message });
+    }
+
     const { name, causes, affects, symptoms, treatment, prevention } = req.body;
     const userId = req.session.userId;
 
@@ -1247,19 +1898,19 @@ app.post('/api/diseases', isAdmin, (req, res, next) => {
     }
 });
 
-app.put('/api/diseases/:id', isAdmin, (req, res, next) => {
-    diseaseUpload.single('image')(req, res, (err) => {
-        if (err instanceof multer.MulterError) {
-            if (err.code === 'LIMIT_FILE_SIZE') {
-                return res.status(400).json({ error: 'File size must be less than 5MB' });
-            }
-            return res.status(400).json({ error: `Upload error: ${err.message}` });
-        } else if (err) {
-            return res.status(400).json({ error: err.message });
+app.put('/api/diseases/:id', isAdmin, async (req, res) => {
+    try {
+        if (req.isMultipart) {
+            await parseMultipartUpload(req, {
+                uploadType: 'diseases',
+                fieldName: 'image',
+                required: false
+            });
         }
-        next();
-    });
-}, async (req, res) => {
+    } catch (error) {
+        return res.status(400).json({ error: error.message });
+    }
+
     const diseaseId = req.params.id;
     const { name, causes, affects, symptoms, treatment, prevention } = req.body;
 
@@ -1354,19 +2005,19 @@ app.get('/api/guides/:id', async (req, res) => {
 });
 
 // Create, update and delete guide
-app.post('/api/guides', isAdmin, (req, res, next) => {
-    guideUpload.single('image')(req, res, (err) => {
-        if (err instanceof multer.MulterError) {
-            if (err.code === 'LIMIT_FILE_SIZE') {
-                return res.status(400).json({ error: 'File size must be less than 5MB' });
-            }
-            return res.status(400).json({ error: `Upload error: ${err.message}` });
-        } else if (err) {
-            return res.status(400).json({ error: err.message });
+app.post('/api/guides', isAdmin, async (req, res) => {
+    try {
+        if (req.isMultipart) {
+            await parseMultipartUpload(req, {
+                uploadType: 'guides',
+                fieldName: 'image',
+                required: false
+            });
         }
-        next();
-    });
-}, async (req, res) => {
+    } catch (error) {
+        return res.status(400).json({ error: error.message });
+    }
+
     const { name, planting_suggestions, care_instructions } = req.body;
     const userId = req.session.userId;
 
@@ -1398,19 +2049,19 @@ app.post('/api/guides', isAdmin, (req, res, next) => {
     }
 });
 
-app.put('/api/guides/:id', isAdmin, (req, res, next) => {
-    guideUpload.single('image')(req, res, (err) => {
-        if (err instanceof multer.MulterError) {
-            if (err.code === 'LIMIT_FILE_SIZE') {
-                return res.status(400).json({ error: 'File size must be less than 5MB' });
-            }
-            return res.status(400).json({ error: `Upload error: ${err.message}` });
-        } else if (err) {
-            return res.status(400).json({ error: err.message });
+app.put('/api/guides/:id', isAdmin, async (req, res) => {
+    try {
+        if (req.isMultipart) {
+            await parseMultipartUpload(req, {
+                uploadType: 'guides',
+                fieldName: 'image',
+                required: false
+            });
         }
-        next();
-    });
-}, async (req, res) => {
+    } catch (error) {
+        return res.status(400).json({ error: error.message });
+    }
+
     const guideId = req.params.id;
     const { name, planting_suggestions, care_instructions } = req.body;
 
