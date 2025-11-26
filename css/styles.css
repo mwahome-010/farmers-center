@@ -2200,19 +2200,26 @@ footer p {
 }
 
 #forumPostModal .guide-modal-body {
-  padding: 16px 16px 18px 16px;
+  padding: 20px 24px 24px 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 #forumPostModal #newPostForm {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 100%;
 }
 
 #forumPostModal #newPostForm label {
-  display: grid;
-  gap: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   font-size: 0.95em;
+  font-weight: 600;
   color: hsl(140, 62%, 10%);
 }
 
