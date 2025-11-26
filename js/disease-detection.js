@@ -88,13 +88,13 @@ function initDiseaseDetection() {
 
             if (currentResultData.plant_name) {
                 const plantSection = document.createElement('div');
-                plantSection.style.cssText = 'background: linear-gradient(135deg, #e8f5e9, #f1f8f4); padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #2e7d32;';
+                plantSection.style.cssText = 'background: linear-gradient(135deg, #e8f5e9, #f1f8f4); padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid hsl(123, 46%, 33%);';
                 plantSection.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span style="font-size: 24px;">🌱</span>
                         <div>
                             <p style="margin: 0; font-size: 12px; color: #666; font-weight: 600;">PLANT DETECTED</p>
-                            <h2 style="margin: 5px 0 0 0; color: #2e7d32; font-size: 22px;">${escapeHTML(currentResultData.plant_name)}</h2>
+                            <h2 style="margin: 5px 0 0 0; color:hsl(123, 46.20%, 33.50%); font-size: 22px;">${escapeHTML(currentResultData.plant_name)}</h2>
                         </div>
                     </div>
                 `;
@@ -116,8 +116,7 @@ function initDiseaseDetection() {
                         margin-bottom: 20px; 
                         padding: 20px; 
                         background: ${isHealthy ? '#e8f5e9' : '#fff8e1'}; 
-                        border-radius: 12px;
-                        border-left: 5px solid ${isHealthy ? '#2e7d32' : '#f9a825'};
+                        border-left: 4px solid ${isHealthy ? 'hsl(123, 46%, 33%)' : 'hsl(34, 90%, 50%)'};
                         break-inside: avoid;
                     `;
 
@@ -167,8 +166,17 @@ function initDiseaseDetection() {
                 tempContainer.appendChild(pdfContent);
                 document.body.appendChild(tempContainer);
 
-                const contentWidth = pdfContent.scrollWidth + 40;
-                const contentHeight = pdfContent.scrollHeight + 40;
+                // Make the PDF page size match the rendered content size.
+                // This avoids the "cut in half" effect where content is split
+                // across pages because it is larger than the fixed A4 sheet.
+                const contentWidthPx = pdfContent.scrollWidth + 40;
+                const contentHeightPx = pdfContent.scrollHeight + 40;
+
+                // html2pdf + jsPDF work best when using points; convert px → pt.
+                // 96 px = 72 pt  →  1 px = 0.75 pt
+                const pxToPt = (px) => px * 0.75;
+                const pdfWidthPt = pxToPt(contentWidthPx);
+                const pdfHeightPt = pxToPt(contentHeightPx);
 
                 const opt = {
                     margin: [15, 15, 15, 15],
@@ -178,19 +186,17 @@ function initDiseaseDetection() {
                         scale: 2, 
                         useCORS: true,
                         logging: false,
-                        letterRendering: true,
-                        scrollX: 0,
-                        scrollY: 0,
-                        windowWidth: contentWidth,
-                        windowHeight: contentHeight
+                        letterRendering: true
                     },
+                    // Use a custom page size that matches the content to prevent
+                    // it from being clipped or duplicated across multiple pages.
                     jsPDF: { 
-                        unit: 'mm', 
-                        format: 'a4', 
+                        unit: 'pt', 
+                        format: [pdfWidthPt, pdfHeightPt],
                         orientation: 'portrait',
                         compress: true
                     },
-                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                    pagebreak: { mode: ['css', 'legacy'] }
                 };
 
                 const cleanup = () => {
@@ -468,7 +474,7 @@ function initDiseaseDetection() {
 
         if (data.plant_name) {
             html += `
-                <div style="margin-bottom: 20px; padding: 15px; background: hsl(140, 62%, 95%); border-radius: 8px;">
+                <div style="margin-bottom: 20px; padding: 15px; background: hsl(140, 62%, 95%); border-left: 4px solid hsl(140, 62%, 42%);">
                     <strong style="color: hsl(140, 62%, 42%); font-size: 1.1em;">Plant Detected:</strong>
                     <span style="font-size: 1.1em; margin-left: 10px;">${escapeHTML(data.plant_name)}</span>
                 </div>
@@ -488,7 +494,6 @@ function initDiseaseDetection() {
                         margin-bottom: 20px; 
                         padding: 20px; 
                         background: ${isHealthy ? 'hsl(140, 62%, 95%)' : 'hsl(48, 100%, 95%)'}; 
-                        border-radius: 8px;
                         border-left: 4px solid ${isHealthy ? 'hsl(140, 62%, 42%)' : 'hsl(48, 100%, 50%)'};
                     ">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -512,8 +517,8 @@ function initDiseaseDetection() {
                         </div>
                         ${disease.remedy ? `
                             <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid ${isHealthy ? 'hsl(140, 62%, 80%)' : 'hsl(48, 100%, 80%)'};">
-                                <strong style="color: hsl(0, 0%, 20%);">Remedy:</strong>
-                                <p style="color: hsl(0, 0%, 30%); margin-top: 5px; line-height: 1.6;">${escapeHTML(disease.remedy)}</p>
+                                <strong style="color: hsl(0, 0%, 10%);">Remedy:</strong>
+                                <p style="color: hsl(0, 0%, 20%); margin-top: 5px; line-height: 1.6;">${escapeHTML(disease.remedy)}</p>
                             </div>
                         ` : ''}
                     </div>
@@ -523,7 +528,7 @@ function initDiseaseDetection() {
             html += '</div>';
         } else {
             html += `
-                <div style="padding: 20px; background: hsl(0, 0%, 95%); border-radius: 8px; margin-top: 20px; color: hsl(0, 0%, 30%);">
+                <div style="padding: 20px; background: hsl(0, 0%, 95%); margin-top: 20px; color: hsl(0, 0%, 30%);">
                     No diseases detected. The plant appears to be healthy.
                 </div>
             `;

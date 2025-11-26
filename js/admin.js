@@ -304,7 +304,6 @@ function renderDiseases(diseases) {
                 <tr>
                     <th>ID</th>
                     <th>Name</th>
-                    <th>Causes</th>
                     <th>Image</th>
                     <th>Created By</th>
                     <th>Created</th>
@@ -318,10 +317,6 @@ function renderDiseases(diseases) {
                     <tr>
                         <td>${disease.id}</td>
                         <td><strong>${escapeHTML(disease.name)}</strong></td>
-                        <td>${disease.causes
-                        ? escapeHTML(disease.causes)
-                        : '<em style="color: hsl(0, 0%, 50%);">-</em>'
-                    }</td>
                         <td>
                             ${disease.image_path
                         ? `<img src="${disease.image_path

@@ -1494,7 +1494,6 @@ footer p {
   border-left: 4px solid hsl(140, 62%, 40%);
   padding: 16px 20px;
   margin-bottom: 16px;
-  border-radius: 8px;
 }
 
 .info-section:last-child {
@@ -1511,7 +1510,7 @@ footer p {
 }
 
 .info-section p {
-  color: hsl(140, 10%, 20%);
+  color: hsl(140, 10%, 10%);
   line-height: 1.6;
   margin-bottom: 10px;
 }
@@ -1521,7 +1520,7 @@ footer p {
 }
 
 .info-section ul {
-  color: hsl(140, 10%, 20%);
+  color: hsl(0, 0%, 10%);
   line-height: 1.6;
   padding-left: 20px;
   margin-bottom: 8px;
@@ -1685,10 +1684,9 @@ footer p {
 }
 
 .comment {
-  padding: 8px 10px;
-  border-left: 3px solid hsl(140, 36%, 93%);
+  padding: 4px;
+  border-left: 4px solid hsl(140, 36%, 60%);
   background: hsl(140, 62%, 92%);
-  border-radius: 6px;
   margin-top: 8px;
 }
 

@@ -112,9 +112,9 @@ function showError(message) {
     const container = document.querySelector('.guide-container');
     if (container) {
         container.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: #d32f2f;">
+            <div style="text-align: center; padding: 40px; color:hsl(0, 65%, 50%);">
                 <p style="font-size: 1.2em; margin-bottom: 10px;">⚠️ ${escapeHTML(message)}</p>
-                <button onclick="location.reload()" style="padding: 10px 20px; background: hsl(140, 62%, 39%); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                <button onclick="location.reload()" style="padding: 10px 20px; background: hsl(140, 62%, 42%); color: white; border: none; border-radius: 6px; cursor: pointer;">
                     Retry
                 </button>
             </div>
