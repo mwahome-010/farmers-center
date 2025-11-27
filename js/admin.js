@@ -46,7 +46,7 @@ async function initAdminPanel() {
 
     container.innerHTML = `
     <div class="admin-header">
-        <h1>🛡️ Admin Dashboard</h1>
+        <h1>Admin Dashboard</h1>
         <p>Manage users, posts, diseases, and guides</p>
     </div>
 
@@ -79,10 +79,16 @@ async function initAdminPanel() {
         <div class="stat-card">
             <h3>30-Day Retention</h3>
             <div class="stat-value" id="statRetention30d">-</div>
-            <p style="font-size: 0.75em; color: hsl(0, 0%, 20%); margin-top: 4px;">Users active in last 30d</p>
+            <p style="font-size: 0.75em; color: hsl(0, 0%, 20%); margin-top: 4px;">Users active for more than 30d</p>
         </div>
     </div>
 
+    <div style="text-align: center; margin: 20px 0; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+        <h3 style="color: hsl(0, 0%, 20%); margin-bottom: 16px;">Export Reports</h3>
+        <button id="exportPdfReport" class="admin-btn view" style="margin-right: 10px; padding: 12px 24px; font-size: 1em;">
+            Export Report
+        </button>
+    </div>
 
     <div class="admin-tabs">
             <button class="admin-tab active" data-tab="users">Users</button>
@@ -142,7 +148,18 @@ async function initAdminPanel() {
     await loadDiseases();
     await loadGuides();
     await loadContactMessages();
+
+    const exportPdfBtn = document.getElementById('exportPdfReport');
+    if (exportPdfBtn) {
+        exportPdfBtn.addEventListener('click', generatePDFReport);
+    }
+
+    const exportCsvBtn = document.getElementById('exportCsvReport');
+    if (exportCsvBtn) {
+        exportCsvBtn.addEventListener('click', generateCSVReport);
+    }
 }
+
 
 function setupTabHandlers() {
     const tabs = document.querySelectorAll(".admin-tab");
@@ -238,8 +255,8 @@ function switchTab(tabName) {
     currentTab = tabName;
 
     if (tabName === 'messages' && allContactMessages.length === 0) {
-    loadContactMessages();
-}
+        loadContactMessages();
+    }
 }
 
 async function loadStats() {
@@ -271,6 +288,287 @@ async function loadStats() {
         console.error('Error loading stats:', error);
     }
 }
+
+function showReportPreview(stats) {
+    const reportDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    const existingModal = document.getElementById('reportPreviewModal');
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'reportPreviewModal';
+    modal.className = 'admin-modal open';
+    modal.innerHTML = `
+        <div class="admin-modal-content" style="max-width: 900px; max-height: 90vh;">
+            <div class="admin-modal-header">
+                <div class="admin-modal-title">📊 Report Preview</div>
+                <button class="admin-modal-close" type="button" onclick="closeReportPreview()" aria-label="Close modal">×</button>
+            </div>
+            <div class="admin-modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div id="reportPreviewContent" style="padding: 20px; font-family: Arial, sans-serif;">
+                    <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid hsl(140, 62%, 40%); padding-bottom: 20px;">
+                        <h1 style="color: hsl(140, 62%, 20%); margin: 0 0 10px 0;">Farmer's Center Admin Report</h1>
+                        <p style="color: #666; margin: 0;">Generated on ${reportDate}</p>
+                    </div>
+
+                    <!-- User Statistics -->
+                    <div style="margin-bottom: 30px;">
+                        <h2 style="color: hsl(140, 62%, 20%); border-bottom: 2px solid hsl(140, 62%, 90%); padding-bottom: 8px;">
+                            User Statistics
+                        </h2>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 16px;">
+                            <div style="background: hsl(140, 62%, 98%); padding: 16px; border-radius: 8px; border: 1px solid hsl(140, 62%, 85%);">
+                                <div style="font-size: 0.9em; color: #666; margin-bottom: 4px;">Total Registered Users</div>
+                                <div style="font-size: 2em; font-weight: 700; color: hsl(140, 62%, 40%);">${stats.totalUsers}</div>
+                            </div>
+                            <div style="background: hsl(140, 62%, 98%); padding: 16px; border-radius: 8px; border: 1px solid hsl(140, 62%, 85%);">
+                                <div style="font-size: 0.9em; color: #666; margin-bottom: 4px;">Active Users (7 days)</div>
+                                <div style="font-size: 2em; font-weight: 700; color: hsl(140, 62%, 40%);">${stats.activeUsers7d}</div>
+                            </div>
+                            <div style="background: hsl(140, 62%, 98%); padding: 16px; border-radius: 8px; border: 1px solid hsl(140, 62%, 85%);">
+                                <div style="font-size: 0.9em; color: #666; margin-bottom: 4px;">Active Users (30 days)</div>
+                                <div style="font-size: 2em; font-weight: 700; color: hsl(140, 62%, 40%);">${stats.activeUsers30d}</div>
+                            </div>
+                            <div style="background: hsl(140, 62%, 98%); padding: 16px; border-radius: 8px; border: 1px solid hsl(140, 62%, 85%);">
+                                <div style="font-size: 0.9em; color: #666; margin-bottom: 4px;">Total Comments</div>
+                                <div style="font-size: 2em; font-weight: 700; color: hsl(140, 62%, 40%);">${stats.totalComments}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Forum Statistics -->
+                    <div style="margin-bottom: 30px;">
+                        <h2 style="color: hsl(140, 62%, 20%); border-bottom: 2px solid hsl(140, 62%, 90%); padding-bottom: 8px;">
+                            Forum Statistics
+                        </h2>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 16px;">
+                            <div style="background: hsl(140, 62%, 98%); padding: 16px; border-radius: 8px; border: 1px solid hsl(140, 62%, 85%);">
+                                <div style="font-size: 0.9em; color: #666; margin-bottom: 4px;">Total Posts</div>
+                                <div style="font-size: 2em; font-weight: 700; color: hsl(140, 62%, 40%);">${stats.totalPosts}</div>
+                            </div>
+                            <div style="background: hsl(50, 100%, 96%); padding: 16px; border-radius: 8px; border: 1px solid hsl(50, 100%, 70%);">
+                                <div style="font-size: 0.9em; color: #666; margin-bottom: 4px;">Unanswered Posts</div>
+                                <div style="font-size: 2em; font-weight: 700; color: hsl(48, 100%, 30%);">${stats.unansweredPosts}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Retention Statistics -->
+                    <div style="margin-bottom: 30px;">
+                        <h2 style="color: hsl(140, 62%, 20%); border-bottom: 2px solid hsl(140, 62%, 90%); padding-bottom: 8px;">
+                            User Retention
+                        </h2>
+                        <div style="background: hsl(140, 62%, 98%); padding: 20px; border-radius: 8px; border: 1px solid hsl(140, 62%, 85%); margin-top: 16px;">
+                            <div style="margin-bottom: 16px;">
+                                <div style="font-size: 0.9em; color: #666; margin-bottom: 8px;">7-Day Retention Rate</div>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="font-size: 2em; font-weight: 700; color: hsl(140, 62%, 40%);">${stats.retentionRate7d}${stats.retentionRate7d !== 'N/A' ? '%' : ''}</div>
+                                    <div style="font-size: 0.85em; color: #666;">
+                                        (${stats.activeUsers7d} active out of ${stats.eligibleUsers7d} eligible users)
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.9em; color: #666; margin-bottom: 8px;">30-Day Retention Rate</div>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="font-size: 2em; font-weight: 700; color: hsl(140, 62%, 40%);">${stats.retentionRate30d}${stats.retentionRate30d !== 'N/A' ? '%' : ''}</div>
+                                    <div style="font-size: 0.85em; color: #666;">
+                                        (${stats.activeUsers30d} active out of ${stats.eligibleUsers30d} eligible users)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content Statistics -->
+                    <div style="margin-bottom: 30px;">
+                        <h2 style="color: hsl(140, 62%, 20%); border-bottom: 2px solid hsl(140, 62%, 90%); padding-bottom: 8px;">
+                            Content Statistics
+                        </h2>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 16px;">
+                            <div style="background: hsl(140, 62%, 98%); padding: 16px; border-radius: 8px; border: 1px solid hsl(140, 62%, 85%);">
+                                <div style="font-size: 0.9em; color: #666; margin-bottom: 4px;">Total Guides</div>
+                                <div style="font-size: 2em; font-weight: 700; color: hsl(140, 62%, 40%);">${stats.totalGuides}</div>
+                            </div>
+                            <div style="background: hsl(140, 62%, 98%); padding: 16px; border-radius: 8px; border: 1px solid hsl(140, 62%, 85%);">
+                                <div style="font-size: 0.9em; color: #666; margin-bottom: 4px;">Total Diseases</div>
+                                <div style="font-size: 2em; font-weight: 700; color: hsl(140, 62%, 40%);">${stats.totalDiseases}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Key Insights -->
+                    <div style="background: linear-gradient(135deg, hsl(140, 62%, 98%), hsl(140, 62%, 96%)); padding: 20px; border-radius: 8px; border: 2px solid hsl(140, 62%, 85%);">
+                        <h3 style="color: hsl(140, 62%, 20%); margin-top: 0;">Key Insights</h3>
+                        <ul style="color: hsl(0, 0%, 20%); line-height: 1.8; margin: 10px 0;">
+                            <li><strong>User Engagement:</strong> ${((stats.activeUsers7d / stats.totalUsers) * 100).toFixed(1)}% of users were active in the last 7 days</li>
+                            <li><strong>Forum Activity:</strong> ${stats.totalPosts} total posts with ${stats.unansweredPosts} awaiting responses (${((stats.unansweredPosts / stats.totalPosts) * 100).toFixed(1)}%)</li>
+                            <li><strong>Content Library:</strong> ${stats.totalGuides} guides and ${stats.totalDiseases} disease references available</li>
+                            <li><strong>User Retention:</strong> ${stats.retentionRate7d}${stats.retentionRate7d !== 'N/A' ? '%' : ''} 7-day retention, ${stats.retentionRate30d}${stats.retentionRate30d !== 'N/A' ? '%' : ''} 30-day retention</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid hsl(140, 62%, 90%); text-align: center; color: #888; font-size: 0.9em;">
+                        <p style="margin: 0;">© 2025 Farmer's Center - Admin Report</p>
+                        <p style="margin: 5px 0 0 0;">This report is confidential and intended for administrative use only.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="admin-modal-actions" style="padding: 20px; border-top: 1px solid hsl(140, 62%, 90%);">
+                <button class="modal-btn secondary" style="background-color: hsl(0, 50%, 50%); color: hsl(0, 0%, 100%);" onclick="closeReportPreview()">Cancel</button>
+                <button class="modal-btn view" onclick="downloadReportCSV()" style="background: hsl(140, 62%, 96%); color: hsl(140, 62%, 20%); border: 1px solid hsl(140, 62%, 72%);">
+                    Download CSV
+                </button>
+                <button class="modal-btn primary" onclick="downloadReportPDF()">
+                    Download PDF
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+}
+
+window.closeReportPreview = function () {
+    const modal = document.getElementById('reportPreviewModal');
+    if (modal) modal.remove();
+};
+
+let currentReportStats = null;
+
+async function generatePDFReport() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/stats`, {
+            credentials: 'include'
+        });
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error('Failed to fetch stats');
+        }
+
+        currentReportStats = data.stats;
+        showReportPreview(data.stats);
+
+    } catch (error) {
+        console.error('Error loading report data:', error);
+        alert('Failed to load report data. Please try again.');
+    }
+}
+
+async function generateCSVReport() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/stats`, {
+            credentials: 'include'
+        });
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error('Failed to fetch stats');
+        }
+
+        currentReportStats = data.stats;
+        showReportPreview(data.stats);
+
+    } catch (error) {
+        console.error('Error loading report data:', error);
+        alert('Failed to load report data. Please try again.');
+    }
+}
+
+window.downloadReportPDF = async function () {
+    if (!window.html2pdf) {
+        alert('PDF library not loaded. Please refresh and try again.');
+        return;
+    }
+
+    if (!currentReportStats) {
+        alert('No report data available.');
+        return;
+    }
+
+    try {
+        const previewContent = document.getElementById('reportPreviewContent');
+        if (!previewContent) {
+            alert('Report preview not found.');
+            return;
+        }
+
+        const reportContent = previewContent.cloneNode(true);
+
+        const opt = {
+            margin: 10,
+            filename: `farmers-center-report-${new Date().getTime()}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        await window.html2pdf().set(opt).from(reportContent).save();
+
+        closeReportPreview();
+
+    } catch (error) {
+        console.error('Error generating PDF report:', error);
+        alert('Failed to generate PDF report. Please try again.');
+    }
+};
+
+window.downloadReportCSV = function () {
+    if (!currentReportStats) {
+        alert('No report data available.');
+        return;
+    }
+
+    try {
+        const stats = currentReportStats;
+        const reportDate = new Date().toISOString();
+
+        const csvContent = [
+            ['Farmer\'s Center - Admin Report'],
+            ['Generated:', reportDate],
+            [''],
+            ['Metric', 'Value'],
+            ['Total Registered Users', stats.totalUsers],
+            ['Total Posts', stats.totalPosts],
+            ['Unanswered Posts', stats.unansweredPosts],
+            ['Total Comments', stats.totalComments],
+            ['Total Guides', stats.totalGuides],
+            ['Total Diseases', stats.totalDiseases],
+            ['Active Users (7 days)', stats.activeUsers7d],
+            ['Active Users (30 days)', stats.activeUsers30d],
+            ['7-Day Retention Rate', `${stats.retentionRate7d}${stats.retentionRate7d !== 'N/A' ? '%' : ''}`],
+            ['30-Day Retention Rate', `${stats.retentionRate30d}${stats.retentionRate30d !== 'N/A' ? '%' : ''}`],
+            ['Eligible Users (7 days)', stats.eligibleUsers7d],
+            ['Eligible Users (30 days)', stats.eligibleUsers30d]
+        ].map(row => row.join(',')).join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute('href', url);
+        link.setAttribute('download', `farmers-center-report-${new Date().getTime()}.csv`);
+        link.style.visibility = 'hidden';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        closeReportPreview();
+        alert('CSV report downloaded successfully!');
+
+    } catch (error) {
+        console.error('Error generating CSV report:', error);
+        alert('Failed to generate CSV report. Please try again.');
+    }
+};
 
 async function loadDiseases() {
     try {
@@ -871,8 +1169,8 @@ function renderContactMessages(messages) {
             </thead>
             <tbody>
                 ${messages
-                    .map(
-                        (msg) => `
+            .map(
+                (msg) => `
                     <tr class="${msg.read_status ? '' : 'unread-message'}">
                         <td>
                             <span class="admin-badge ${msg.read_status ? 'read' : 'unread'}">
@@ -898,8 +1196,8 @@ function renderContactMessages(messages) {
                         </td>
                     </tr>
                 `
-                    )
-                    .join("")}
+            )
+            .join("")}
             </tbody>
         </table>
     `;
