@@ -84,9 +84,9 @@ async function initAdminPanel() {
     </div>
 
     <div style="text-align: center; margin: 20px 0; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-        <h3 style="color: hsl(0, 0%, 20%); margin-bottom: 16px;">Export Reports</h3>
+        <h3 style="color: hsl(0, 0%, 20%); margin-bottom: 16px;">Export Dashboard Reports</h3>
         <button id="exportPdfReport" class="admin-btn view" style="margin-right: 10px; padding: 12px 24px; font-size: 1em;">
-            Export Report
+            Export
         </button>
     </div>
 
@@ -415,8 +415,9 @@ function showReportPreview(stats) {
                     </div>
 
                     <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid hsl(140, 62%, 90%); text-align: center; color: #888; font-size: 0.9em;">
-                        <p style="margin: 0;">© 2025 Farmer's Center - Admin Report</p>
-                        <p style="margin: 5px 0 0 0;">This report is confidential and intended for administrative use only.</p>
+                        <p style="margin: 0;">Farmer's Center - Admin Report</p>
+                        <p>&copy; 2025 Farmer's Center. Empowering farmers with technology.</p>
+		                <p>Made for the agricultural community</p>
                     </div>
                 </div>
             </div>

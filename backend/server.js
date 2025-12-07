@@ -1412,7 +1412,7 @@ app.post('/api/forum/posts', isAuthenticated, async (req, res) => {
 });
 
 app.post('/api/forum/comments', isAuthenticated, async (req, res) => {
-    const { post_id, content, parent_comment_id } = req.body;
+    const { post_id, content} = req.body;
     const userId = req.session.userId;
 
     if (!post_id || !content) {
@@ -1421,9 +1421,9 @@ app.post('/api/forum/comments', isAuthenticated, async (req, res) => {
 
     try {
         const [result] = await pool.query(
-            `INSERT INTO comments (post_id, user_id, parent_comment_id, content) 
-             VALUES (?, ?, ?, ?)`,
-            [post_id, userId, parent_comment_id || null, content]
+            `INSERT INTO comments (post_id, user_id, content) 
+             VALUES (?, ?, ?)`,
+            [post_id, userId || null, content]
         );
 
         await pool.query(
