@@ -1,6 +1,6 @@
 # About this project
 
-Farmer's Center is a web application designed to help farmers identify and manage plant diseases.
+Farmer's Center is a disease detection system designed to help farmers identify and manage plant diseases.
 The application provides educational resources about various crops, common plant diseases, and a community forum for discussions.
 
 <img width="1600" height="790" alt="image" src="https://github.com/user-attachments/assets/76ff293a-e9f1-42ed-b12c-e7d7296d1d4e" />
